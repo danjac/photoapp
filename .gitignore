@@ -1,4 +1,5 @@
 *.swp
+*.ini
 *.pyc
 *.webassets-cache
 *.egg-info

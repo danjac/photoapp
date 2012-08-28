@@ -21,7 +21,7 @@ session.key = mykey
 session.secret = mysecret
 session.cookie_on_exception = true
 
-sqlalchemy.url = postgresql://postgres:m0nk3Y@localhost:5432/photoapp
+sqlalchemy.url = postgresql://postgres:*****@localhost:5432/photoapp
 
 photoapp.uploads_dir = %(here)s/uploads
 
