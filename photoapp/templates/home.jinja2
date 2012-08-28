@@ -1,0 +1,44 @@
+{% extends "layout.jinja2" %}
+
+{% block content %}
+<h1>Your own private photos</h1>
+
+<ul class="thumbnails">
+{% for photo in photos %}
+    <li class="span4">
+        <a href="#" class="thumbnail">
+            <img src="{{ request.route_url('thumbnail', id=photo.id) }}" title="{{ photo.title }}" alt="{{ photo.title }}">
+        </a>
+    </li>
+{% endfor %}
+</ul>
+
+{% if not request.user %}
+<form method="POST" action="{{ request.route_url('login') }}">
+    {{ login_form.csrf_token }}
+    <legend>Sign in to get started</legend>
+
+    <div class="controls">
+        {{ login_form.email.label }}
+        {{ login_form.email }}
+    </div>
+
+    <div class="controls">
+        {{ login_form.password.label }}
+        {{ login_form.password }}
+    </div>
+
+    {{ login_form.login(class="btn") }}
+</form>
+
+<ul class="nav nav-pills">
+
+    <li class="disabled"><a href="#">Sign in</a></li>
+    <li><a href="#">Forgot your password?</a></li>
+    <li><a href="#">Need an invite?</a></li>
+
+</ul>
+{% endif %}
+
+
+{% endblock %}

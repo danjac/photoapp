@@ -1,0 +1,28 @@
+{% extends "layout.jinja2" %}
+
+{% block content %}
+
+<form enctype="multipart/form-data" method="POST" action="{{ request.url }}">
+    {{ form.csrf_token }}
+
+    <legend>Upload a photo to your private album</legend>
+
+    <div class="controls">
+    {{ form.title.label }}
+    {{ form.title }}
+    </div>
+
+    <div class="controls">
+    {{ form.tags.label }}
+    {{ form.tags }}
+    </div>
+
+    <div class="controls">
+    {{ form.image.label }}
+    {{ form.image }}
+    </div>
+
+    {{ form.submit(class="btn")}}
+
+
+{% endblock %}
