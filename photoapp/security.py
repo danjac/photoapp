@@ -7,9 +7,8 @@ from pyramid.security import (
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 
-
 from .resources import Root
-from .models import User
+from .models import User, DBSession
 
 Admins = "system:Admins"
 
@@ -31,7 +30,7 @@ def get_user(request):
     user_id = unauthenticated_userid(request)
 
     if user_id:
-        return User.objects.with_id(user_id)
+        return DBSession.query(User).get(user_id)
 
 
 def includeme(config):

@@ -1,6 +1,8 @@
 from pyramid.security import Allow, Authenticated
 from pyramid.exceptions import NotFound
 
+from .models import DBSession
+
 class Root(object):
 
     def __init__(self, request):
@@ -39,6 +41,6 @@ class ModelResource(object):
         return obj 
         
     def get_object(self, id):
-        return self.model.objects.with_id(id)
+        return DBSession.query(self.model).get(id)
     
 

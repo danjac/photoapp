@@ -5,7 +5,9 @@ from pyramid.security import remember, forget, NO_PERMISSION_REQUIRED
 from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound
 
-from .models import User, Photo
+from sqlalchemy import and_
+
+from .models import User, Photo, DBSession
 from .forms import LoginForm, PhotoUploadForm
 
 @view_config(route_name='home',
@@ -14,8 +16,11 @@ from .forms import LoginForm, PhotoUploadForm
 def home(request):
 
     if request.user:
-        photos = Photo.objects.filter(
-                    owner=request.user).order_by('-created_at')
+
+        photos = DBSession.query(Photo).filter(
+                    Photo.owner_id==request.user.id).order_by(
+                    Photo.created_at.desc())
+
     else:
         photos = []
 
@@ -32,12 +37,14 @@ def login(request):
     form = LoginForm(request)
 
     if form.validate():
-        user = User.objects.authenticate(form.email.data, 
-                                         form.password.data)
-        if user:
+
+        user = DBSession.query(User).filter(
+                and_(User.is_active==True, 
+                     User.email==form.email.data)).first()
+                                       
+        if user and user.check_password(form.password.data):
 
             user.last_login_at = datetime.datetime.now()
-            user.save()
 
             request.session.flash("Welcome back, %s" % user.first_name)
 
@@ -51,35 +58,30 @@ def login(request):
              permission="view")
 def thumbnail(photo, request):
     
-    print "THUMBNAIL"
     response = Response(content_type="image/jpeg")
-    response.app_iter = photo.image.thumbnail.read()
+    response.app_iter = photo.load_thumbnail(request.fs)
     return response
+
 
 @view_config(route_name="upload",
              permission="upload",
              renderer="upload.jinja2")
 def upload(request):
 
-
-    print "USER", request.user
-
-    print request.POST
     form = PhotoUploadForm(request)
     if form.validate():
 
         photo = Photo(owner=request.user,
                       title=form.title.data)
 
-        photo.image.put(form.image.data.file, 
-                        filename=form.image.data.filename)
+        photo.save_image(request.fs,
+                         form.image.data.file, 
+                         form.image.data.filename)
 
-        photo.save()
+        DBSession.add(photo)
 
         request.session.flash("Your photo has been uploaded")
         return HTTPFound(request.route_url('home'))
-    else:
-        print form.errors
 
     return {'form' : form}
 

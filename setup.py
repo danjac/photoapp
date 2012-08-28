@@ -13,7 +13,8 @@ requires=[
     'pyramid_beaker',
     'pyramid_tm',
     'pyramid_debugtoolbar',
-    'mongoengine',
+    'sqlalchemy',
+    'psycopg2',
     'wtforms',
     'mailer',
     ]

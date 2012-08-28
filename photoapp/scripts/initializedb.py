@@ -2,11 +2,14 @@ import os
 import sys
 import transaction
 
+from sqlalchemy import engine_from_config
 
 from pyramid.paster import (
     get_appsettings,
     setup_logging,
     )
+
+from ..models import DBSession, Base, User
 
 def usage(argv):
     cmd = os.path.basename(argv[0])
@@ -24,5 +27,18 @@ def main(argv=sys.argv):
 
     setup_logging(config_uri)
     settings = get_appsettings(config_uri)
+    engine = engine_from_config(settings, 'sqlalchemy.')
+    DBSession.configure(bind=engine)
+    Base.metadata.create_all(engine)
+ 
+    with transaction.manager:
+        
+        user = DBSession.query(User).first()
+        if not user:
+            user = User(is_admin=True,
+                        email='danjac354@gmail.com',
+                        password='testpass',
+                        first_name='Dan',
+                        last_name='Jacob')
 
-    #with transaction.manager:
+            DBSession.add(user)
