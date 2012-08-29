@@ -59,7 +59,7 @@ def login(request):
 def thumbnail(photo, request):
     
     response = Response(content_type="image/jpeg")
-    response.app_iter = photo.load_thumbnail(request.fs)
+    response.app_iter = photo.get_thumbnail_obj(request.fs).read()
     return response
 
 

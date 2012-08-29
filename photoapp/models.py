@@ -112,13 +112,13 @@ class Photo(Base):
     def thumbnail(self):
         return "tn-" + self.image
 
-    def load_thumbnail(self, fs):
-        return fs.read(self.thumbnail)
+    def get_thumbnail_obj(self, fs):
+        return fs.file(self.thumbnail)
+
+    def get_image_obj(self, fs):
+        return fs.file(self.image)
 
     def save_image(self, fs, fp, name):
-        """
-        Save image to path
-        """
 
         # create a GUID based name
         name, ext = os.path.splitext(name)
@@ -129,11 +129,12 @@ class Photo(Base):
 
         self.image = base_name + ext
 
-        fs.copyfileobj(fp, self.image)
+        image_obj = self.get_image_obj(fs)
+        image_obj.copy(fp)
 
-        img = Image.open(fs.path(self.image))
+        img = Image.open(image_obj.path)
         img = ImageOps.fit(img, (300, 300), Image.ANTIALIAS)
-        img.save(fs.path(self.thumbnail))
+        img.save(self.get_thumbnail_obj(fs).path)
 
     
     @property
@@ -142,6 +143,26 @@ class Photo(Base):
             (Allow, str(self.owner_id), "view"),
         ]
 
+
+class FileObj(object):
+
+    def __init__(self, fs, name):
+        self.fs = fs
+        self.name = name
+        self.path = self.fs.path(self.name)
+
+    def open(self, mode):
+        return open(self.path, mode)
+
+    def read(self):
+        return self.open("rb").read()
+
+    def write(self, contents):
+        self.open("rb").write(contents)
+
+    def copy(self, fp):
+        shutil.copyfileobj(fp, self.open("wb"))
+        
 
 class FileStorage(object):
 
@@ -152,11 +173,11 @@ class FileStorage(object):
     def path(self, name):
         return os.path.join(self.base_dir, name)
 
-    def read(self, name):
-        return open(self.path(name), "rb").read()
+    def file(self, name):
+        return FileObj(self, name)
 
-    def copyfileobj(self, fp, name):
-        shutil.copyfileobj(fp, open(self.path(name), "wb"))
+    def read(self, name):
+        return self.file(name).read()
 
     def __init__(self, base_dir):
         self.base_dir = base_dir
