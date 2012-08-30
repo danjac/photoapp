@@ -15,7 +15,7 @@ def main(global_config, **settings):
     config.include('photoapp.models')
     config.include('photoapp.storage')
     config.include('photoapp.security')
-    config.include('photoapp.email')
+    config.include('photoapp.emails')
     config.include('photoapp.assets')
     config.include('photoapp.routes')
 

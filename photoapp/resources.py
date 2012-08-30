@@ -25,16 +25,12 @@ class ModelResource(object):
         return _resource
 
     def __init__(self, request, model=None):
-        print "modelresource"
         self.request = request
         self.model = model or self.model
 
     def __getitem__(self, key):
-        print "FINDING", key
-        try:
-            obj = self.get_object(key)
-        except Exception, ex: # validation error etc
-            print ex
+        obj = self.get_object(key)
+        if obj is None:
             raise NotFound()
 
         obj.__name___ = key

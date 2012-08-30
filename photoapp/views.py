@@ -9,6 +9,7 @@ from sqlalchemy import and_
 
 from .models import User, Photo, DBSession
 from .forms import LoginForm, PhotoUploadForm
+from .emails import ForgotPasswordEmail
 
 @view_config(route_name='home',
              permission=NO_PERMISSION_REQUIRED,
@@ -51,6 +52,16 @@ def login(request):
             return HTTPFound(request.route_url('home'), headers=headers)
 
     return {'form' : form}
+
+
+@view_config(route_name='forgot_pass',
+             permission=NO_PERMISSION_REQUIRED,
+             renderer='forgot_password.jinja2')
+def forgot_password(request):
+
+    ForgotPasswordEmail(request.user, request).send()
+
+    return HTTPFound(request.route_url('home'))
 
 
 @view_config(route_name="thumbnail",
