@@ -105,10 +105,10 @@ class Photo(Base):
     def thumbnail(self):
         return "tn-" + self.image
 
-    def get_thumbnail_obj(self, fs):
+    def get_thumbnail(self, fs):
         return fs.file(self.thumbnail)
 
-    def get_image_obj(self, fs):
+    def get_image(self, fs):
         return fs.file(self.image)
 
     def save_image(self, fs, fp, name):
@@ -122,12 +122,12 @@ class Photo(Base):
 
         self.image = base_name + ext
 
-        image_obj = self.get_image_obj(fs)
+        image_obj = self.get_image(fs)
         image_obj.copy(fp)
 
         img = Image.open(image_obj.path)
         img = ImageOps.fit(img, (300, 300), Image.ANTIALIAS)
-        img.save(self.get_thumbnail_obj(fs).path)
+        img.save(self.get_thumbnail(fs).path)
 
     
     @property

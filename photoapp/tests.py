@@ -1,39 +1,130 @@
+import os
+import mock
 import unittest
 import transaction
 
 from pyramid import testing
-from sqlalchemy import create_engine
+from pyramid.paster import get_appsettings
+#from sqlalchemy import create_engine
+from sqlalchemy import engine_from_config
+from webob.multidict import MultiDict
+
 
 
 class TestCase(unittest.TestCase):
 
     def setUp(self):
-        testing.setUp()
-        self.config = testing.setUp()
-        engine = create_engine('sqlite://')
-        from .models import (
-            Base,
-            )
-        DBSession.configure(bind=engine)
-        Base.metadata.create_all(engine)
 
-        #with transaction.manager:
-        #    model = MyModel(name='one', value=55)
-        #     DBSession.add(model)
+        from .models import DBSession, Base
+
+        root_dir = os.path.dirname(os.path.dirname(__file__))
+        config_ini = os.path.join(root_dir, 'test.ini')
+        
+        settings = get_appsettings(config_ini)
+
+        self.config = testing.setUp(settings=settings)
+        self.engine = engine_from_config(settings, 'sqlalchemy.')
+        self.dbconn = self.engine.connect()
+        self.trans = self.dbconn.begin()
+
+        DBSession.configure(bind=self.engine)
+        Base.metadata.create_all(self.engine)
 
        
     def tearDown(self):
+        from .models import DBSession, Base
+
+        self.trans.rollback()
+
         DBSession.remove()
         testing.tearDown()
 
 
 class HomeTests(TestCase):
 
-    def test_home(self):
+    def test_home_if_anonymous(self):
+        from .views import home
 
-        from photoapp.views import home
         request = testing.DummyRequest()
+        request.user = None
+
         response = home(request)
+        self.assert_('photos' not in response)
         self.assert_('login_form' in response)
+
+    def test_home_if_logged_in_user(self):
+
+        from .views import home
+        from .models import User, Photo, DBSession
+
+        user = User(email="danjac354@gmail.com")
+        photo = Photo(owner=user, title="test", image="test.jpg")
+
+        DBSession.add_all([user, photo])
+        DBSession.flush()
+    
+        request = testing.DummyRequest()
+        request.user = user
+
+        response = home(request)
+        self.assert_(len(response['photos'].all()) == 1)
+
+        self.assert_('login_form' not in response)
+
+class LoginTests(TestCase):
+
+    def setUp(self):
+        super(LoginTests, self).setUp()
+        self.config.include('photoapp.routes')
+
+    def get_POST_req(self, **data):
+
+        request = testing.DummyRequest()
+        request.method = "POST"
+        request.session = mock.Mock()
+        data.setdefault('csrf_token', request.session.get_csrf_token())
+        request.POST = MultiDict(data)
+        return request
+
+    def test_login_valid_user(self):
+
+        from .views import login
+        from .models import User, DBSession
+
+        u = User(email="danjac354@gmail.com", password="test")
+        DBSession.add(u)
+        DBSession.flush()
+        
+        request = self.get_POST_req(email="danjac354@gmail.com",
+                                    password="test")
+
+        response = login(request)
+        self.assert_(response.status_code == 302)
+        self.assert_(response.location == "http://example.com/")
+
+    def test_login_invalid_user(self):
+
+        from .views import login
+
+        request = self.get_POST_req(email="danjac354@gmail.com",
+                                    password="test")
+
+        response = login(request)
+        self.assert_('form' in response)
+ 
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
 
 

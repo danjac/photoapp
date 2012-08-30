@@ -21,11 +21,10 @@ def home(request):
                     Photo.owner_id==request.user.id).order_by(
                     Photo.created_at.desc())
 
-    else:
-        photos = []
+        return {'photos' : photos}
 
-    return {'login_form' : LoginForm(request),
-            'photos' : photos }
+    return {'login_form' : LoginForm(request)}
+
 
 
 @view_config(route_name='login',
@@ -59,7 +58,7 @@ def login(request):
 def thumbnail(photo, request):
     
     response = Response(content_type="image/jpeg")
-    response.app_iter = photo.get_thumbnail_obj(request.fs).read()
+    response.app_iter = photo.get_thumbnail(request.fs).read()
     return response
 
 
