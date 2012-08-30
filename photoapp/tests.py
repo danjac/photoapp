@@ -40,6 +40,51 @@ class TestCase(unittest.TestCase):
         testing.tearDown()
 
 
+
+class StorageTests(TestCase):
+
+
+    def test_path(self):
+
+        from .storage import FileStorage
+
+        settings = self.config.get_settings()
+        path = os.path.join(settings['photoapp.uploads_dir'], 'test.jpg')
+
+        fs = FileStorage.from_settings(settings)
+        self.assert_(fs.path("test.jpg") == path)
+    
+    def test_file_obj(self):
+
+        from .storage import FileStorage
+
+        fs = FileStorage.from_settings(self.config.get_settings())
+        fo = fs.file("test.jpg")
+        self.assert_(fo.path == fs.path("test.jpg"))
+
+
+
+class UserTests(TestCase):
+
+    def test_set_password(self):
+
+        from .models import User
+        u = User(password="test")
+        self.assert_(u.password != "test")
+
+    def test_check_password_good(self):
+
+        from .models import User
+        u = User(password="test")
+        self.assert_(u.check_password("test"))
+
+    def test_check_password_bad(self):
+
+        from .models import User
+        u = User(password="test")
+        self.assert_(not u.check_password("TEST"))
+
+
 class HomeTests(TestCase):
 
     def test_home_if_anonymous(self):
@@ -75,7 +120,6 @@ class LoginTests(TestCase):
 
     def setUp(self):
         super(LoginTests, self).setUp()
-        self.config.include('photoapp.routes')
 
     def get_POST_req(self, **data):
 
@@ -90,6 +134,9 @@ class LoginTests(TestCase):
 
         from .views import login
         from .models import User, DBSession
+
+        # add this so we can redirect
+        self.config.include('photoapp.routes')
 
         u = User(email="danjac354@gmail.com", password="test")
         DBSession.add(u)
