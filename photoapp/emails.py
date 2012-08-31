@@ -1,8 +1,9 @@
 import sys
 import mailer
-import transaction
 
 from pyramid.renderers import render
+
+from .utils import with_transaction
 
 
 def get_mailer(request):
@@ -12,35 +13,6 @@ def includeme(config):
     config.set_request_property(get_mailer, 'mailer', reify=True)
 
         
-class MailDataManager(object):
-    """
-    Handle emails inside transaction
-    """
-    transaction_manager = transaction.manager
-
-    def __init__(self, callable, *args, **kwargs):
-        self.callable = callable
-        self.args = args
-        self.kwargs = kwargs
-
-    def commit(self, transaction):
-        pass
-
-    def abort(self, transaction):
-        pass
-
-    def tpc_begin(self, transaction):
-        pass
-    
-    def tpc_vote(self, transaction):
-        pass
-
-    def tpc_finish(self, transaction):
-        self.callable(*self.args, **self.kwargs)
-
-    tpc_abort = abort
-
-
 class Mailer(mailer.Mailer):
 
     @classmethod
@@ -72,16 +44,15 @@ class Mailer(mailer.Mailer):
     def send_to_stdout(self, msg):
         sys.stdout.write(msg.as_string())
 
+    @with_transaction
     def send(self, msg):
         
         msg.From = msg.From or self.from_address
 
         if self.to_stdout:
-            _send = self.send_to_stdout
+            return self.send_to_stdout(msg)
         else:
-            _send = super(Mailer, self).send
-
-        transaction.get().join(MailDataManager(_send, msg))
+            return super(Mailer, self).send(msg)
 
 
 class Email(object):
@@ -149,14 +120,15 @@ class ForgotPasswordEmail(Email):
     subject = "You forgot your password!"
     template = "emails/forgot_password.jinja2"
 
-    def __init__(self, user, request=None):
+    def __init__(self, user, key, request=None):
         self.user = user
+        self.key = key
         super(ForgotPasswordEmail, self).__init__(request)
 
     def get_recipients(self):
         return [self.user.email]
 
     def get_context(self):
-        return {'user' : self.user}
+        return {'user' : self.user, 'key' : self.key}
 
 

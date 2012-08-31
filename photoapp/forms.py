@@ -4,9 +4,15 @@ from wtforms import (
     TextField,
     PasswordField,
     FileField,
+    HiddenField,
     SubmitField,
-    validators,
         )
+
+from wtforms.validators import (
+    Required,
+    EqualTo,
+    Email,
+)
 
 from wtforms.ext.csrf import SecureForm
 
@@ -55,9 +61,27 @@ class LoginForm(Form):
     login = SubmitField("Sign in")
 
 
+class ForgotPasswordForm(Form):
+
+    email = TextField("Email address", validators=[Required(), Email()])
+    submit = SubmitField("Go")
+
+
+class ChangePasswordForm(Form):
+
+    key = HiddenField()
+
+    password = PasswordField("New password", validators=[Required()])
+
+    password_again = PasswordField("Repeat password", 
+                        validators=[EqualTo('password')])
+
+    submit = SubmitField("Change")
+
+
 class PhotoUploadForm(Form):
 
-    title = TextField("Title", validators=[validators.Required()])
+    title = TextField("Title", validators=[Required()])
     tags = TextField("Tags")
     image = FileField("Image", validators=[FileRequired()]) 
     submit = SubmitField("Upload")

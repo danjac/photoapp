@@ -4,7 +4,6 @@
 <form method="POST" action="{{ request.route_url('login') }}">
     {{ form.csrf_token }}
     <legend>Sign in to get started</legend>
-
     <div class="controls">
         {{ form.email.label }}
         {{ form.email }}
@@ -21,7 +20,7 @@
 <ul class="nav nav-pills">
 
     <li class="disabled"><a href="#">Sign in</a></li>
-    <li><a href="#">Forgot your password?</a></li>
+    <li><a href="{{ request.route_url('forgot_pass') }}">Forgot your password?</a></li>
     <li><a href="#">Need an invite?</a></li>
 
 </ul>

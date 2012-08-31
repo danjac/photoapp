@@ -3,12 +3,19 @@ import datetime
 from pyramid.view import view_config, forbidden_view_config
 from pyramid.security import remember, forget, NO_PERMISSION_REQUIRED
 from pyramid.response import Response
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 
 from sqlalchemy import and_
 
 from .models import User, Photo, DBSession
-from .forms import LoginForm, PhotoUploadForm
+
+from .forms import (
+    LoginForm, 
+    PhotoUploadForm,
+    ForgotPasswordForm,
+    ChangePasswordForm
+    )
+
 from .emails import ForgotPasswordEmail
 
 @view_config(route_name='home',
@@ -59,9 +66,48 @@ def login(request):
              renderer='forgot_password.jinja2')
 def forgot_password(request):
 
-    ForgotPasswordEmail(request.user, request).send()
+    form = ForgotPasswordForm(request)
 
-    return HTTPFound(request.route_url('home'))
+    if form.validate():
+        user = DBSession.query(User).filter_by(email=form.email.data).first()
+        if user:
+            # for now we'll just use ID. Obviously in future we'll go with
+            # a one-time random field.
+            key = request.session['key'] = str(user.id)
+            ForgotPasswordEmail(user, key, request).send()
+
+            request.session.flash(
+                "Please check your inbox, we have emailed "
+                "you instructions to recover your password")
+
+            return HTTPFound(request.route_url('home'))
+
+    return {'form' : form}
+
+
+@view_config(route_name='change_pass',
+             permission=NO_PERMISSION_REQUIRED,
+             renderer='change_password.jinja2')
+def change_password(request):
+
+    user = request.user
+    key = None
+
+    if user is None:
+        key = request.session.pop('key', None)
+        if key and key == request.params.get('key'):
+            user = DBSession.query(User).get(key)
+    
+    if user is None:
+        raise HTTPForbidden()
+
+    form = ChangePasswordForm(request, key=key)
+    if form.validate():
+        user.password = form.password.data
+        request.session.flash("Please sign in again with your new password")
+        return HTTPFound(request.route('login'))
+
+    return {'form' : form}
 
 
 @view_config(route_name="thumbnail",
