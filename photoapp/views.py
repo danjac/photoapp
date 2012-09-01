@@ -1,4 +1,5 @@
 import datetime
+import mailer
 
 from pyramid.view import view_config, forbidden_view_config
 from pyramid.security import remember, forget, NO_PERMISSION_REQUIRED
@@ -7,13 +8,12 @@ from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 
 from sqlalchemy import and_
 
-from mailer import Message
-
 from .models import User, Photo, DBSession
 
 from .forms import (
     LoginForm, 
     PhotoUploadForm,
+    SendPhotoForm,
     ForgotPasswordForm,
     ChangePasswordForm
     )
@@ -89,9 +89,9 @@ def forgot_password(request):
                 url=request.route_url('change_pass', _query={'key' : key})
             )
 
-            msg = Message(To=user.email,
-                          Subject="Change your password!",
-                          Body=body)
+            msg = mailer.Message(To=user.email,
+                                 Subject="Change your password!",
+                                 Body=body)
 
             request.mailer.send(msg)
 
@@ -137,6 +137,43 @@ def thumbnail(photo, request):
     response = Response(content_type="image/jpeg")
     response.app_iter = photo.get_thumbnail(request.fs).read()
     return response
+
+
+@view_config(route_name="send",
+             permission="view",
+             renderer="send_photo.jinja2")
+def send_photo(photo, request):
+
+    form = SendPhotoForm(request)
+
+    if form.validate():
+
+        body = """ 
+        Hi {recipient_name},
+        {sender_name} sent you a photo!
+        """.format(sender_name=request.user.first_name,
+                   recipient_name=form.name.data)
+
+        
+        message = mailer.Message(To=form.email.data,
+                                 From=request.user.email,
+                                 Subject=photo.title,
+                                 Body=body)
+
+        message.attach(photo.get_image(request.fs).path)
+
+        request.mailer.send(message)
+
+        request.session.flash(
+            "You sent %s the photo %s"  % (form.name.data, photo.title))
+
+        return HTTPFound(request.route_url('home'))
+
+    return {'photo' : photo, 'form' : form}        
+        
+
+
+
 
 
 @view_config(route_name="upload",

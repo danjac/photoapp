@@ -1,8 +1,9 @@
 {% extends "layout.jinja2" %}
+{% import "_forms.jinja2" as forms with context %}
 
 {% block content %}
 
-<form enctype="multipart/form-data" method="POST" action="{{ request.url }}">
+{% call forms.render_form(form, multipart=True) %}
     {{ form.csrf_token }}
 
     <legend>Upload a photo to your private album</legend>
@@ -24,5 +25,5 @@
 
     {{ form.submit(class="btn")}}
 
-
+{% endcall %}
 {% endblock %}

@@ -1,9 +1,12 @@
 {% extends "layout.jinja2" %}
+{% import "_forms.jinja2" as forms with context %}
 
 {% block content %}
-<form method="POST" action="{{ request.route_url('login') }}">
-    {{ form.csrf_token }}
+
+{% call forms.render_form(form) %}
+ 
     <legend>Sign in to get started</legend>
+
     <div class="controls">
         {{ form.email.label }}
         {{ form.email }}
@@ -16,6 +19,8 @@
 
     {{ form.login(class="btn") }}
 </form>
+
+{% endcall %}
 
 <ul class="nav nav-pills">
 

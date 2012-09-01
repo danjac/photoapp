@@ -1,4 +1,5 @@
 {% extends "layout.jinja2" %}
+{% import "_forms.jinja2" as forms with context %}
 
 {% block content %}
 <h1>Your own private photos</h1>
@@ -14,8 +15,7 @@
 </ul>
 
 {% if not request.user %}
-<form method="POST" action="{{ request.route_url('login') }}">
-    {{ login_form.csrf_token }}
+{% call forms.render_form(login_form, action=request.route_url('login')) %}
     <legend>Sign in to get started</legend>
 
     <div class="controls">
@@ -29,7 +29,8 @@
     </div>
 
     {{ login_form.login(class="btn") }}
-</form>
+
+{% endcall %}
 
 <ul class="nav nav-pills">
 

@@ -4,21 +4,22 @@
 {% block content %}
 
 {% call forms.render_form(form) %}
-    
-    <legend>Change your password</legend>
+
+    <legend>Send someone the photo '{{ photo.title }}'</legend>
 
     <div class="controls">
-       {{ form.password.label }} 
-       {{ form.password }}
+       {{ form.name.label }} 
+       {{ form.name }}
     </div>
+
 
     <div class="controls">
-       {{ form.password_again.label }} 
-       {{ form.password_again }}
+       {{ form.email.label }} 
+       {{ form.email }}
     </div>
-
 
     {{ form.submit(class="btn") }}
     
 {% endcall %}
+
 {% endblock %}

@@ -86,7 +86,9 @@ class PhotoUploadForm(Form):
     image = FileField("Image", validators=[FileRequired()]) 
     submit = SubmitField("Upload")
 
-        
 
+class SendPhotoForm(Form):
 
-
+    name = TextField("Name of person", validators=[Required()])
+    email = TextField("Email address", validators=[Required(), Email()])
+    submit = SubmitField("Send")
