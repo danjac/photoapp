@@ -7,19 +7,20 @@
 <ul class="thumbnails">
 {% for photo in photos %}
     <li class="span4">
-        <a href="#" class="thumbnail">
+        <a data-send-url="{{ request.route_url('send', id=photo.id) }}" href="#" class="thumbnail">
             <img src="{{ request.route_url('thumbnail', id=photo.id) }}" title="{{ photo.title }}" alt="{{ photo.title }}">
         </a>
     </li>
 {% endfor %}
 </ul>
 
+
 {% if not request.user %}
 {% call forms.render_form(login_form, action=request.route_url('login')) %}
     <legend>Sign in to get started</legend>
 
-    {{ forms.render_field(form.email) }}
-    {{ forms.render_field(form.password) }}
+    {{ forms.render_field(login_form.email) }}
+    {{ forms.render_field(login_form.password) }}
 
     {{ login_form.login(class="btn") }}
 
@@ -33,6 +34,21 @@
 
 </ul>
 {% endif %}
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(function(){
+        $('.thumbnails a').popover({
+            content : function(){
+                var url = $(this).attr('data-send-url');
+                return '<a href="' + url + '"><i class="icon-envelope"></i></a>';
+            }
+        });
+    });
+</script>
 
 
 {% endblock %}
