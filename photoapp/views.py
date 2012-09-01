@@ -75,17 +75,18 @@ def forgot_password(request):
             # for now we'll just use ID. Obviously in future we'll go with
             # a one-time random field.
             #key = request.session['key'] = str(user.id)
+            key  = str(user.id)
             #ForgotPasswordEmail(user, key, request).send()
 
             body = """
-            Hi, {{ first_name }}
+            Hi, {first_name}
 
-            Please go here : {{ url }} to change your password.
+            Please go here : {url} to change your password.
 
             Thanks!
             """.format(
-                user.first_name, 
-                request.route_url('change_password', _query={'key' : key})
+                first_name=user.first_name, 
+                url=request.route_url('change_pass', _query={'key' : key})
             )
 
             msg = Message(To=user.email,
