@@ -18,15 +18,8 @@
 {% call forms.render_form(login_form, action=request.route_url('login')) %}
     <legend>Sign in to get started</legend>
 
-    <div class="controls">
-        {{ login_form.email.label }}
-        {{ login_form.email }}
-    </div>
-
-    <div class="controls">
-        {{ login_form.password.label }}
-        {{ login_form.password }}
-    </div>
+    {{ forms.render_field(form.email) }}
+    {{ forms.render_field(form.password) }}
 
     {{ login_form.login(class="btn") }}
 

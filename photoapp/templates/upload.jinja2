@@ -4,24 +4,12 @@
 {% block content %}
 
 {% call forms.render_form(form, multipart=True) %}
-    {{ form.csrf_token }}
 
     <legend>Upload a photo to your private album</legend>
 
-    <div class="controls">
-    {{ form.title.label }}
-    {{ form.title }}
-    </div>
-
-    <div class="controls">
-    {{ form.tags.label }}
-    {{ form.tags }}
-    </div>
-
-    <div class="controls">
-    {{ form.image.label }}
-    {{ form.image }}
-    </div>
+    {{ forms.render_field(form.title) }}
+    {{ forms.render_field(form.tags) }}
+    {{ forms.render_field(form.image) }}
 
     {{ form.submit(class="btn")}}
 

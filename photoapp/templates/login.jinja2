@@ -7,15 +7,8 @@
  
     <legend>Sign in to get started</legend>
 
-    <div class="controls">
-        {{ form.email.label }}
-        {{ form.email }}
-    </div>
-
-    <div class="controls">
-        {{ form.password.label }}
-        {{ form.password }}
-    </div>
+    {{ forms.render_field(form.email) }}
+    {{ forms.render_field(form.password) }}
 
     {{ form.login(class="btn") }}
 </form>

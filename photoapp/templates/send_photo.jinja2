@@ -7,16 +7,8 @@
 
     <legend>Send someone the photo '{{ photo.title }}'</legend>
 
-    <div class="controls">
-       {{ form.name.label }} 
-       {{ form.name }}
-    </div>
-
-
-    <div class="controls">
-       {{ form.email.label }} 
-       {{ form.email }}
-    </div>
+    {{ forms.render_field(form.name) }}
+    {{ forms.render_field(form.email) }}
 
     {{ form.submit(class="btn") }}
     

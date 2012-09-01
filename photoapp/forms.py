@@ -9,6 +9,7 @@ from wtforms import (
         )
 
 from wtforms.validators import (
+    ValidationError,
     Required,
     EqualTo,
     Email,
@@ -27,7 +28,7 @@ class FileRequired(object):
         if not isinstance(field.data, cgi.FieldStorage):
             if self.message is None:
                 self.message = field.gettext("A file is required")
-            raise validators.ValidationError(self.message)
+            raise ValidationError(self.message)
 
 
 
