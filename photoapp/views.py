@@ -7,6 +7,8 @@ from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 
 from sqlalchemy import and_
 
+from mailer import Message
+
 from .models import User, Photo, DBSession
 
 from .forms import (
@@ -16,7 +18,6 @@ from .forms import (
     ChangePasswordForm
     )
 
-from .emails import ForgotPasswordEmail
 
 @view_config(route_name='home',
              permission=NO_PERMISSION_REQUIRED,
@@ -73,8 +74,25 @@ def forgot_password(request):
         if user:
             # for now we'll just use ID. Obviously in future we'll go with
             # a one-time random field.
-            key = request.session['key'] = str(user.id)
-            ForgotPasswordEmail(user, key, request).send()
+            #key = request.session['key'] = str(user.id)
+            #ForgotPasswordEmail(user, key, request).send()
+
+            body = """
+            Hi, {{ first_name }}
+
+            Please go here : {{ url }} to change your password.
+
+            Thanks!
+            """.format(
+                user.first_name, 
+                request.route_url('change_password', _query={'key' : key})
+            )
+
+            msg = Message(To=user.email,
+                          Subject="Change your password!",
+                          Body=body)
+
+            request.mailer.send(msg)
 
             request.session.flash(
                 "Please check your inbox, we have emailed "
@@ -94,8 +112,9 @@ def change_password(request):
     key = None
 
     if user is None:
-        key = request.session.pop('key', None)
-        if key and key == request.params.get('key'):
+        key = request.params.get('key', None)
+        if key:
+        #if key and key == request.params.get('key'):
             user = DBSession.query(User).get(key)
     
     if user is None:
@@ -105,7 +124,7 @@ def change_password(request):
     if form.validate():
         user.password = form.password.data
         request.session.flash("Please sign in again with your new password")
-        return HTTPFound(request.route('login'))
+        return HTTPFound(request.route_url('login'))
 
     return {'form' : form}
 
