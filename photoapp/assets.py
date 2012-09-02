@@ -23,6 +23,13 @@ jquery_js = Bundle(
     debug=False,
 )
 
+app_coffee = Bundle(
+    'photoapp/coffee/*.coffee',
+    filters='coffeescript',
+    output='photoapp.js',
+    debug=False,
+)
+
 def includeme(config):
 
     config.include('pyramid_webassets')
@@ -30,6 +37,7 @@ def includeme(config):
     config.add_webasset('bootstrap_css', bootstrap_css)
     config.add_webasset('bootstrap_js', bootstrap_js)
     config.add_webasset('jquery_js', jquery_js)
+    config.add_webasset('photoapp_js', app_coffee)
 
     # Jinja2 integration
     config.add_jinja2_extension('webassets.ext.jinja2.AssetsExtension')

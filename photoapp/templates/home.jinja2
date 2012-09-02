@@ -69,51 +69,7 @@
 
 {% block scripts %}
 <script>
-    $(function(){
-
-        var modal = $('#photo-modal');
-        var tmpl = $('#photo-modal-template').html();
-
-        $('.thumbnails a').on('click', function(){
-
-            var el = $(this);
-            var imageURL = el.attr('data-image-url');
-            var sendURL = el.attr('data-send-url');
-            var title = el.attr('data-title');
-            var height = el.attr('data-height');
-            var width = el.attr('data-width');
-
-            var content = _.template(tmpl, {
-                image_url : imageURL,
-                send_url : el.attr('data-send-url'),
-                title: el.attr('data-title'),
-                height: el.attr('data-height'),
-                width: el.attr('data-width')
-            });
-
-            modal.on('show', function(){
-                var image = new Image();
-                image.src = imageURL;
-                $(this).html(content);
-                var progressBar = $('#photo-modal .photo-load-progress .bar');
-                var width = 0;
-
-                var progress = setInterval(function() {
-                    if (width < 100){
-                        width += 15;
-                        progressBar.width(width + "%");
-                    }
-                });
-
-                image.onload = function(){
-                    clearInterval(progress);
-                    $('#photo-modal .photo-image').show();
-                    $('#photo-modal .photo-load-progress').hide();
-                }
-           
-            }).modal('show');
-        });
-    });
+var homePage = new PhotoApp.HomePage();
 </script>
 
 
