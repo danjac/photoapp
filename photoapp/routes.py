@@ -22,5 +22,6 @@ def includeme(config):
                                     factory=ModelResource.for_model(Photo))
     
     photo_route('thumbnail', '/thumbnail/{id}.jpg') 
+    photo_route('image', '/photo/{id}.jpg') 
     photo_route('send', '/send/{id}') 
 

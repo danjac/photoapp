@@ -7,6 +7,7 @@ from pyramid.response import Response
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 
 from sqlalchemy import and_
+from webhelpers.paginate import Page
 
 from .models import User, Photo, DBSession
 
@@ -29,6 +30,10 @@ def home(request):
         photos = DBSession.query(Photo).filter(
                     Photo.owner_id==request.user.id).order_by(
                     Photo.created_at.desc())
+        
+        photos = Page(photos, 
+                      int(request.params.get('page', 0)), 
+                      items_per_page=6)
 
         return {'photos' : photos}
 
@@ -130,6 +135,19 @@ def change_password(request):
     return {'form' : form}
 
 
+@view_config(route_name="image",
+             permission="view")
+def image(photo, request):
+    """
+    Show full-size image
+    """
+    
+    response = Response(content_type="image/jpeg")
+    response.app_iter = photo.get_image(request.fs).read()
+    return response
+
+
+
 @view_config(route_name="thumbnail",
              permission="view")
 def thumbnail(photo, request):
@@ -171,10 +189,6 @@ def send_photo(photo, request):
 
     return {'photo' : photo, 'form' : form}        
         
-
-
-
-
 
 @view_config(route_name="upload",
              permission="upload",

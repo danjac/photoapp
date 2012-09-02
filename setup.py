@@ -17,6 +17,7 @@ requires=[
     'psycopg2',
     'wtforms',
     'mailer',
+    'webhelpers',
     ]
 
 setup(name='photoapp',

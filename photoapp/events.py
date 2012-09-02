@@ -2,6 +2,8 @@
 from pyramid.security import has_permission
 from pyramid.events import BeforeRender, subscriber
 
+from webhelpers.paginate import PageURL_WebOb
+
 @subscriber(BeforeRender)
 def add_renderer_globals(event):
     """
@@ -18,5 +20,6 @@ def add_renderer_globals(event):
         return has_permission(permission, context, request)
 
     event['has_permission'] = _has_permission
+    event['page_url'] = PageURL_WebOb(request)
 
 

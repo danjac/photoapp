@@ -96,7 +96,10 @@ class Photo(Base):
 
     title = Column(Unicode(100))
     image = Column(String(200), unique=True)
-    
+
+    height = Column(Integer)
+    width = Column(Integer)
+
     created_at = Column(DateTime, default=func.now())
 
     owner = relationship(User)
@@ -126,6 +129,9 @@ class Photo(Base):
         image_obj.copy(fp)
 
         img = Image.open(image_obj.path)
+
+        self.width, self.height = img.size
+
         img = ImageOps.fit(img, (300, 300), Image.ANTIALIAS)
         img.save(self.get_thumbnail(fs).path)
 
