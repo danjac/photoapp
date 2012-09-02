@@ -18,7 +18,9 @@
     <div class="modal-body">
         <p>
             <div class="photo-load-progress progress progress-striped active"><div class="bar" style="width:0%;"></div></div> 
-            <img class="photo-image hide" src="<%= image_url %>" height="<%= height %>" width="<%= width %>" alt="<%= title %>">
+            <a class="photo-image hide" target="_blank" href="<%= image_url %>">
+                <img src="<%= image_url %>" height="<%= height %>" width="<%= width %>" alt="<%= title %>">
+            </a>
         </p>
     </div>
     <div class="modal-footer">
