@@ -31,11 +31,11 @@ def home(request):
                     Photo.owner_id==request.user.id).order_by(
                     Photo.created_at.desc())
         
-        photos = Page(photos, 
-                      int(request.params.get('page', 0)), 
-                      items_per_page=6)
+        page = Page(photos, 
+                    int(request.params.get('page', 0)), 
+                    items_per_page=6)
 
-        return {'photos' : photos}
+        return {'page' : page}
 
     return {'login_form' : LoginForm(request)}
 

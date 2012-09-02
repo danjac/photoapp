@@ -8,31 +8,38 @@
 
 {% if request.user %}
 
+<div id="photo-modal" class="modal hide fade"></div>
+
+<script type="text/template" id="photo-modal-template">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3><%= title %></h3>
+    </div>
+    <div class="modal-body">
+        <p><img src="<%= image_url %>" height="<%= height %>" width="<%= width %>" alt="<%= title %>"></p>
+    </div>
+    <div class="modal-footer">
+        <a href="<%= send_url %>" class="btn">Send this photo</a>
+        <a href="#" class="btn" data-dismiss="modal">Close</a>
+    </div>
+</script>
+
 <ul class="thumbnails">
-{% for photo in photos.items %}
+{% for photo in page.items %}
     <li class="span4">
-        <a data-send-url="{{ request.route_url('send', id=photo.id) }}" href="#" class="thumbnail">
+        <a data-send-url="{{ request.route_url('send', id=photo.id) }}" 
+           data-image-url="{{ request.route_url('image', id=photo.id) }}"
+           data-width="{{ photo.width }}"
+           data-height="{{ photo.height }}"
+           data-title="{{ photo.title }}"
+           href="#" class="thumbnail">
             <img src="{{ request.route_url('thumbnail', id=photo.id) }}" title="{{ photo.title }}" alt="{{ photo.title }}">
         </a>
-        {#
-        <div class="modal hide fade photo-modal">
-            <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h3>{{ photo.title }}</h3>
-            </div>
-            <div class="modal-body">
-            <p><img src="{{ request.route_url('image', id=photo.id) }} height="{{ photo.height }}" width="{{ photo.width }}" alt="{{ photo.title }}"></p>
-            </div>
-            <div class="modal-footer">
-            <a href="#" class="btn">Close</a>
-            </div>
-        </div>
-#}
     </li>
 {% endfor %}
 </ul>
 
-{{ pagination.render_page_links(photos) }}
+{{ pagination.render_page_links(page) }}
 
 {% else %}
 {% call forms.render_form(login_form, action=request.route_url('login')) %}
@@ -60,7 +67,22 @@
 {% block scripts %}
 <script>
     $(function(){
-        $('.thumbnails a').modal('.photo-modal');
+        var modal = $('#photo-modal');
+        var tmpl = $('#photo-modal-template').html();
+
+        $('.thumbnails a').on('click', function(){
+            var el = $(this);
+            var content = _.template(tmpl, {
+                image_url : el.attr('data-image-url'),
+                send_url : el.attr('data-send-url'),
+                title: el.attr('data-title'),
+                height: el.attr('data-height'),
+                width: el.attr('data-width')
+            });
+            modal.on('show', function(){
+                $(this).html(content);
+            }).modal('show');
+        });
     });
 </script>
 
