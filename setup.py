@@ -18,6 +18,7 @@ requires=[
     'wtforms',
     'mailer',
     'webhelpers',
+    'alembic',
     ]
 
 setup(name='photoapp',

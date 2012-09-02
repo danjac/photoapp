@@ -48,6 +48,12 @@ def includeme(config):
     engine = engine_from_config(config.get_settings(), 'sqlalchemy.')
     DBSession.configure(bind=engine)
 
+def random_string():
+    s = base64.urlsafe_b64encode(uuid.uuid4().bytes)
+    for c in ('-', '_', '='):
+        s = s.replace(c, '')
+    return s 
+
     
 class User(Base):
 
@@ -67,6 +73,8 @@ class User(Base):
     created_at = Column(DateTime, default=func.now())
     last_login_at = Column(DateTime)
 
+    key = Column(String(30), unique=True)
+
     def __unicode__(self):
         return self.name or self.email
 
@@ -85,6 +93,9 @@ class User(Base):
     
     def check_password(self, password):
         return _passwd_mgr.check(self.password, password)
+
+    def reset_key(self):
+        self.key = random_string()
 
 
 class Photo(Base):
@@ -119,9 +130,7 @@ class Photo(Base):
         # create a GUID based name
         name, ext = os.path.splitext(name)
 
-        base_name = base64.urlsafe_b64encode(uuid.uuid4().bytes)
-        for c in ('-', '_', '='):
-            base_name = base_name.replace(c, '')
+        base_name = random_string()
 
         self.image = base_name + ext
 

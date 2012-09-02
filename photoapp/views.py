@@ -77,11 +77,8 @@ def forgot_password(request):
     if form.validate():
         user = DBSession.query(User).filter_by(email=form.email.data).first()
         if user:
-            # for now we'll just use ID. Obviously in future we'll go with
-            # a one-time random field.
-            #key = request.session['key'] = str(user.id)
-            key  = str(user.id)
-            #ForgotPasswordEmail(user, key, request).send()
+
+            user.reset_key()
 
             body = """
             Hi, {first_name}
@@ -91,7 +88,8 @@ def forgot_password(request):
             Thanks!
             """.format(
                 first_name=user.first_name, 
-                url=request.route_url('change_pass', _query={'key' : key})
+                url=request.route_url('change_pass', 
+                                      _query={'key' : user.key})
             )
 
             msg = mailer.Message(To=user.email,
@@ -120,8 +118,7 @@ def change_password(request):
     if user is None:
         key = request.params.get('key', None)
         if key:
-        #if key and key == request.params.get('key'):
-            user = DBSession.query(User).get(key)
+            user = DBSession.query(User).filter_by(key=key).first()
     
     if user is None:
         raise HTTPForbidden()
@@ -129,6 +126,7 @@ def change_password(request):
     form = ChangePasswordForm(request, key=key)
     if form.validate():
         user.password = form.password.data
+        user.key = None
         request.session.flash("Please sign in again with your new password")
         return HTTPFound(request.route_url('login'))
 
