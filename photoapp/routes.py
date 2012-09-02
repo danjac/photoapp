@@ -24,4 +24,5 @@ def includeme(config):
     photo_route('thumbnail', '/thumbnail/{id}.jpg') 
     photo_route('image', '/photo/{id}.jpg') 
     photo_route('send', '/send/{id}') 
+    photo_route('delete', '/delete/{id}')
 

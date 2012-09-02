@@ -157,6 +157,15 @@ def thumbnail(photo, request):
     return response
 
 
+@view_config(route_name="delete",
+             permission="delete")
+def delete_photo(photo, request):
+
+    DBSession.delete(photo)
+    request.session.flash("You have deleted the photo %s" % photo.title)
+    return HTTPFound(request.route_url("home"))
+
+             
 @view_config(route_name="send",
              permission="view",
              renderer="send_photo.jinja2")

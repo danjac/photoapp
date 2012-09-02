@@ -140,6 +140,7 @@ class Photo(Base):
     def __acl__(self):
         return [
             (Allow, str(self.owner_id), "view"),
+            (Allow, str(self.owner_id), "delete"),
         ]
 
 
