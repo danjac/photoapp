@@ -1,4 +1,5 @@
 import cgi
+import mimetypes
 
 from wtforms import (
     TextField,
@@ -18,18 +19,20 @@ from wtforms.validators import (
 from wtforms.ext.csrf import SecureForm
 
 
-class FileRequired(object):
+class JpegRequired(object):
 
     def __init__(self, message=None):
         self.message = message
 
     def __call__(self, form, field):
+        message = self.message or field.gettext("A JPEG file is required")
 
         if not isinstance(field.data, cgi.FieldStorage):
-            if self.message is None:
-                self.message = field.gettext("A file is required")
-            raise ValidationError(self.message)
+            raise ValidationError(message)
 
+        type, _ = mimetypes.guess_type(field.data.filename)
+        if type != "image/jpeg":
+            raise ValidationError(message)
 
 
 class Form(SecureForm):
@@ -84,7 +87,7 @@ class PhotoUploadForm(Form):
 
     title = TextField("Title", validators=[Required()])
     tags = TextField("Tags")
-    image = FileField("Image", validators=[FileRequired()]) 
+    image = FileField("Image", validators=[JpegRequired()]) 
     submit = SubmitField("Upload")
 
 
