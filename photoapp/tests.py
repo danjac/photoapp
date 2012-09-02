@@ -159,19 +159,3 @@ class LoginTests(TestCase):
         response = login(request)
         self.assert_('form' in response)
  
-
-
-
-
-
-        
-
-
-
-
-
-
-
-
-
-

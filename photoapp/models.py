@@ -144,7 +144,12 @@ class Photo(Base):
         img = ImageOps.fit(img, (300, 300), Image.ANTIALIAS)
         img.save(self.get_thumbnail(fs).path)
 
-    
+    def delete_image(self, fs):
+
+        self.get_image(fs).delete()
+        self.get_thumbnail(fs).delete()
+
+   
     @property
     def __acl__(self):
         return [

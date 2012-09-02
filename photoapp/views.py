@@ -33,7 +33,7 @@ def home(request):
         
         page = Page(photos, 
                     int(request.params.get('page', 0)), 
-                    items_per_page=6)
+                    items_per_page=18)
 
         return {'page' : page}
 
@@ -160,6 +160,7 @@ def thumbnail(photo, request):
 def delete_photo(photo, request):
 
     DBSession.delete(photo)
+    photo.delete_image(request.fs)
     request.session.flash("You have deleted the photo %s" % photo.title)
     return HTTPFound(request.route_url("home"))
 

@@ -46,6 +46,7 @@ setup(name='photoapp',
       main = photoapp:main
       [console_scripts]
       initialize_photoapp_db = photoapp.scripts.initializedb:main
+      import_photos = photoapp.scripts.importfolder:main
       """,
       paster_plugins=['pyramid'],
       )
