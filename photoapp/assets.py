@@ -30,6 +30,20 @@ jquery_css = Bundle(
     debug=False,
 )
 
+ias_js = Bundle(
+    'ias/*.js',
+    filters='uglifyjs',
+    output='ias.js',
+    debug=False,
+)
+
+ias_css = Bundle(
+    'ias/*.css',
+    filters='cssmin',
+    output='ias.css',
+    debug=False,
+)
+
 
 app_coffee = Bundle(
     'photoapp/coffee/*.coffee',
@@ -44,8 +58,10 @@ def includeme(config):
 
     config.add_webasset('bootstrap_css', bootstrap_css)
     config.add_webasset('jquery_css', jquery_css)
+    config.add_webasset('ias_css', ias_css)
     config.add_webasset('bootstrap_js', bootstrap_js)
     config.add_webasset('jquery_js', jquery_js)
+    config.add_webasset('ias_js', ias_js)
     config.add_webasset('photoapp_js', app_coffee)
 
     # Jinja2 integration

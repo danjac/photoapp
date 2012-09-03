@@ -26,9 +26,11 @@
 </script>
 
 
+<div id="tag-cloud" style="height:250px;"></div>
+
 <ul class="thumbnails">
 {% for photo in page.items %}
-    <li class="span4">
+    <li class="span4 photo">
         <a data-send-url="{{ request.route_url('send', id=photo.id) }}" 
            data-image-url="{{ request.route_url('image', id=photo.id) }}"
            {% if has_permission('delete', photo) %}data-delete-url="{{ request.route_url('delete', id=photo.id) }}"{% endif %}
@@ -42,10 +44,8 @@
 {% endfor %}
 </ul>
 
-<div id="tag-cloud" style="height:250px;"></div>
 
 {{ pagination.render_page_links(page) }}
-
 
 {% endblock %}
 
@@ -63,6 +63,15 @@ tagList.push({
 
 var page = new PhotoApp.PhotosPage(tagList);
 
+$(function() {
+    $.ias({
+        container : '.thumbnails',
+        item: '.photo',
+        pagination: '.pagination',
+        next: '.next a',
+        loader: '<img src="{{ request.static_url('photoapp:static/ias/loader.gif') }}"/>'
+    });
+});
 </script>
 
 

@@ -2,6 +2,7 @@ import os
 import uuid
 import base64
 import datetime
+import logging
 
 import Image
 import ImageOps
@@ -27,7 +28,7 @@ from sqlalchemy import (
     and_,
         )
 
-
+from sqlalchemy.exc import IntegrityError
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property

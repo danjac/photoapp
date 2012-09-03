@@ -23,6 +23,7 @@ requires=[
     'alembic',
     'PIL',
     'mock',
+    'cssmin',
     ]
 
 setup(name='photoapp',

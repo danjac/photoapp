@@ -20,7 +20,7 @@
         {% endfor %}
 
         {% if page.next_page %}
-            <li><a href="{{ page_url(page.next_page) }}">&raquo;</a></li>
+            <li class="next"><a href="{{ page_url(page.next_page) }}">&raquo;</a></li>
             {% else %}
             <li class="disabled"><a href="#">&raquo;</a></li>
         {% endif %}
