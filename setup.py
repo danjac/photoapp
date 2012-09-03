@@ -14,11 +14,15 @@ requires=[
     'pyramid_tm',
     'pyramid_debugtoolbar',
     'sqlalchemy',
+    'zope.sqlalchemy',
     'psycopg2',
     'wtforms',
+    'cryptacular',
     'mailer',
     'webhelpers',
     'alembic',
+    'PIL',
+    'mock',
     ]
 
 setup(name='photoapp',
