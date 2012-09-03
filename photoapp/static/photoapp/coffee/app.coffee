@@ -73,8 +73,12 @@ class PhotoApp.PhotosPage
 
         $('.thumbnails a').on 'click', ->
             new PhotoApp.Photo($(@))
-               
         
+        $.ias
+            container : '.thumbnails'
+            item: '.photo'
+            pagination: '.pagination'
+            next: '.next a'
 
 
 

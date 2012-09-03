@@ -246,10 +246,11 @@ def photo_delete_listener(mapper, connection, target):
     tags = Base.metadata.tables['tags']
     photos_tags = Base.metadata.tables['photos_tags']
 
-    u = tags.update().values(
-        frequency=select([func.count(photos_tags.c.tag_id)]).where(
-            and_(tags.c.id==photos_tags.c.tag_id,
-                 photos_tags.c.photo_id==target.id)))
+    freq = select([func.count(photos_tags.c.tag_id)]).where(
+        photos_tags.c.tag_id==tags.c.id
+        )
+
+    u = tags.update().values(frequency=freq)
 
     connection.execute(u)
 

@@ -72,8 +72,14 @@ PhotoApp.PhotosPage = (function() {
 
   PhotosPage.prototype.onload = function() {
     $('#tag-cloud').jQCloud(this.tagList);
-    return $('.thumbnails a').on('click', function() {
+    $('.thumbnails a').on('click', function() {
       return new PhotoApp.Photo($(this));
+    });
+    return $.ias({
+      container: '.thumbnails',
+      item: '.photo',
+      pagination: '.pagination',
+      next: '.next a'
     });
   };
 

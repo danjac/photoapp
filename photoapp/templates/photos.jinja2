@@ -61,17 +61,8 @@ tagList.push({
 });
 {% endfor %}
 
-var page = new PhotoApp.PhotosPage(tagList);
+new PhotoApp.PhotosPage(tagList);
 
-$(function() {
-    $.ias({
-        container : '.thumbnails',
-        item: '.photo',
-        pagination: '.pagination',
-        next: '.next a',
-        loader: '<img src="{{ request.static_url('photoapp:static/ias/loader.gif') }}"/>'
-    });
-});
 </script>
 
 
