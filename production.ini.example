@@ -1,0 +1,62 @@
+[app:main]
+use = egg:photoapp
+
+pyramid.reload_templates = false
+pyramid.debug_authorization = false
+pyramid.debug_notfound = false
+pyramid.debug_routematch = false
+pyramid.default_locale_name = en
+
+jinja2.directories = photoapp:templates
+
+webassets.base_dir=%(here)s/photoapp/static
+webassets.base_url=/static
+
+session.type = ext:database
+session.url = postgresql://postgres:*****@localhost:5432/photoapp
+session.key = mykey
+session.secret = mysecret
+session.cookie_on_exception = true
+
+sqlalchemy.url = postgresql://postgres:*****@localhost:5432/photoapp
+
+photoapp.uploads_dir = %(here)s/uploads
+
+photoapp.mailer.to_stdout = true
+photoapp.mailer.from_address = accounts@photoapp.com
+
+[server:main]
+use = egg:gunicorn#main
+host = 127.0.0.1
+port = 6543
+
+# Begin logging configuration
+
+[loggers]
+keys = root, photoapp
+
+[handlers]
+keys = console
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = INFO
+handlers = console
+
+[logger_photoapp]
+level = DEBUG
+handlers =
+qualname = photoapp
+
+[handler_console]
+class = StreamHandler
+args = (sys.stderr,)
+level = NOTSET
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s %(levelname)-5.5s [%(name)s][%(threadName)s] %(message)s
+
+# End logging configuration
