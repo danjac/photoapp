@@ -1,10 +1,7 @@
 {% extends "layout.jinja2" %}
-{% import "_forms.jinja2" as forms with context %}
 {% import "_pagination.jinja2" as pagination with context %}
 
 {% block content %}
-
-{% if request.user %}
 
 <div id="photo-modal" class="modal hide fade"></div>
 
@@ -49,31 +46,10 @@
 
 {{ pagination.render_page_links(page) }}
 
-{% else %}
-{% call forms.render_form(login_form, action=request.route_url('login')) %}
-    <legend>Sign in to get started</legend>
-
-    {{ forms.render_field(login_form.email) }}
-    {{ forms.render_field(login_form.password) }}
-
-    {{ login_form.login(class="btn") }}
-
-{% endcall %}
-
-<ul class="nav nav-pills">
-
-    <li class="disabled"><a href="#">Sign in</a></li>
-    <li><a href="{{ request.route_url('forgot_pass') }}">Forgot your password?</a></li>
-    <li><a href="#">Need an invite?</a></li>
-
-</ul>
-{% endif %}
-
 
 {% endblock %}
 
 {% block scripts %}
-{% if request.user %}
 <script>
 var tagList = [];
 
@@ -85,10 +61,9 @@ tagList.push({
 });
 {% endfor %}
 
-var homePage = new PhotoApp.HomePage(tagList);
+var page = new PhotoApp.PhotosPage(tagList);
 
 </script>
-{% endif %}
 
 
 {% endblock %}

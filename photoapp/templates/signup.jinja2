@@ -1,0 +1,23 @@
+{% extends "layout.jinja2" %}
+{% import "_forms.jinja2" as forms with context %}
+
+{% block content %}
+
+{% call forms.render_form(form) %}
+ 
+    <legend>Sign up to get started</legend>
+
+    {{ forms.render_field(form.first_name) }}
+    {{ forms.render_field(form.last_name) }}
+    
+    {{ forms.render_field(form.email) }}
+
+    {{ forms.render_field(form.password) }}
+    {{ forms.render_field(form.password_again) }}
+
+    {{ form.submit(class="btn") }}
+</form>
+
+{% endcall %}
+
+{% endblock %}

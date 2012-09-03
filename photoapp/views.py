@@ -15,6 +15,7 @@ from .models import User, Photo, DBSession
 
 from .forms import (
     LoginForm, 
+    SignupForm,
     PhotoUploadForm,
     SendPhotoForm,
     ForgotPasswordForm,
@@ -23,27 +24,23 @@ from .forms import (
 
 
 @view_config(route_name='home',
-             permission=NO_PERMISSION_REQUIRED,
-             renderer='home.jinja2')
+             renderer='photos.jinja2')
 def home(request):
 
-    if request.user:
+    photos = DBSession.query(Photo).filter(
+                Photo.owner_id==request.user.id).order_by(
+                Photo.created_at.desc())
+    
+    page = Page(photos, 
+                int(request.params.get('page', 0)), 
+                items_per_page=18)
 
-        photos = DBSession.query(Photo).filter(
-                    Photo.owner_id==request.user.id).order_by(
-                    Photo.created_at.desc())
-        
-        page = Page(photos, 
-                    int(request.params.get('page', 0)), 
-                    items_per_page=18)
+    return {'page' : page}
 
-        return {'page' : page}
-
-    return {'login_form' : LoginForm(request)}
 
 
 @view_config(route_name='tag',
-             renderer='home.jinja2')
+             renderer='photos.jinja2')
 def tagged_photos(tag, request):
 
     page = Page(tag.photos, 
@@ -76,6 +73,28 @@ def login(request):
 
             headers = remember(request, str(user.id))
             return HTTPFound(request.route_url('home'), headers=headers)
+
+    return {'form' : form}
+
+@view_config(route_name='signup',
+             permission=NO_PERMISSION_REQUIRED,
+             renderer='signup.jinja2')
+def signup(request):
+
+    form = SignupForm(request)
+
+    if form.validate():
+
+        user = User()
+        form.populate_obj(user)
+
+        DBSession.add(user)
+        DBSession.flush()
+
+        request.session.flash("Welcome, %s" % user.first_name)
+        headers = remember(request, str(user.id))
+
+        return HTTPFound(request.route_url('home'), headers=headers)
 
     return {'form' : form}
 

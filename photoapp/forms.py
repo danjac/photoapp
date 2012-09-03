@@ -1,5 +1,6 @@
 import cgi
 import mimetypes
+import string
 
 from wtforms import (
     TextField,
@@ -17,6 +18,10 @@ from wtforms.validators import (
 )
 
 from wtforms.ext.csrf import SecureForm
+
+from sqlalchemy import exists
+
+from .models import User, DBSession
 
 
 class JpegRequired(object):
@@ -63,6 +68,28 @@ class LoginForm(Form):
     email = TextField("Email address")
     password = PasswordField("Password")
     login = SubmitField("Sign in")
+
+
+class SignupForm(Form):
+
+    first_name = TextField("First name", validators=[Required()])
+    last_name = TextField("Last name", validators=[Required()])
+
+    email = TextField("Email address", 
+                      validators=[Required(), Email()])
+
+    password = PasswordField("New password", validators=[Required()])
+
+    password_again = PasswordField("Repeat password", 
+                        validators=[EqualTo('password')])
+
+    
+    submit = SubmitField("Sign up")
+
+    def validate_email(self, field):
+
+        if DBSession.query(exists().where(User.email==field.data)).scalar():
+            raise ValidationError("This email address is already taken")
 
 
 class ForgotPasswordForm(Form):

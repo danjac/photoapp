@@ -61,7 +61,7 @@ class PhotoApp.Photo
         confirm 'Are you sure you want to delete this photo?'
 
 
-class PhotoApp.HomePage
+class PhotoApp.PhotosPage
 
     constructor: (tagList) ->
         @tagList = tagList

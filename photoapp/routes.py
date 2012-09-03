@@ -3,6 +3,9 @@ import functools
 from .resources import ModelResource
 from .models import Photo, Tag
 
+TagResource = ModelResource.for_model(Tag)
+PhotoResource = ModelResource.for_model(Photo)
+
 def includeme(config):
 
     config.add_route('home', '/')
@@ -10,11 +13,12 @@ def includeme(config):
 
     config.add_route('tag', '/tag/{id}/{name}',
                      traverse='/{id}',
-                     factory=ModelResource.for_model(Tag))
+                     factory=TagResource)
 
     # auth routes
 
     config.add_route('login', '/login')
+    config.add_route('signup', '/signup')
     config.add_route('forgot_pass', '/forgot_pass')
     config.add_route('change_pass', '/change_pass')
     config.add_route('logout', '/logout')
@@ -23,7 +27,7 @@ def includeme(config):
 
     photo_route = functools.partial(config.add_route, 
                                     traverse='/{id}', 
-                                    factory=ModelResource.for_model(Photo))
+                                    factory=PhotoResource)
     
     photo_route('thumbnail', '/thumbnail/{id}.jpg') 
     photo_route('image', '/photo/{id}.jpg') 
