@@ -24,6 +24,7 @@ from sqlalchemy import (
     func,
     event,
     select,
+    and_,
         )
 
 
@@ -38,8 +39,6 @@ from sqlalchemy.orm import (
     )
 
 from zope.sqlalchemy import ZopeTransactionExtension
-
-from .utils import with_transaction
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
@@ -248,7 +247,8 @@ def photo_delete_listener(mapper, connection, target):
 
     u = tags.update().values(
         frequency=select([func.count(photos_tags.c.tag_id)]).where(
-            tags.c.id==photos_tags.c.tag_id))
+            and_(tags.c.id==photos_tags.c.tag_id,
+                 photos_tags.c.photo_id==target.id)))
 
     connection.execute(u)
 
