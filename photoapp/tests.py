@@ -153,16 +153,6 @@ class UserTests(TestCase):
 
 class HomeTests(TestCase):
 
-    def test_home_if_anonymous(self):
-        from .views import home
-
-        request = testing.DummyRequest()
-        request.user = None
-
-        response = home(request)
-        self.assert_('photos' not in response)
-        self.assert_('login_form' in response)
-
     def test_home_if_logged_in_user(self):
 
         from .views import home
@@ -181,6 +171,7 @@ class HomeTests(TestCase):
         self.assert_(len(response['page'].items) == 1)
 
         self.assert_('login_form' not in response)
+
 
 class LoginTests(TestCase):
 
