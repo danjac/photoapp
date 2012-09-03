@@ -81,7 +81,7 @@ var tagList = [];
 tagList.push({
    text: '{{ tag.name }}',
    weight: {{ tag.frequency }},
-   link: '{{ request.route_url('tag', id=tag.id) }}'
+   link: '{{ request.route_url('tag', id=tag.id, name=tag.name) }}'
 });
 {% endfor %}
 
