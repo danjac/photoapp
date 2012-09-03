@@ -22,6 +22,8 @@ from sqlalchemy import (
     DateTime,
     engine_from_config,
     func,
+    event,
+    select,
         )
 
 
@@ -36,6 +38,8 @@ from sqlalchemy.orm import (
     )
 
 from zope.sqlalchemy import ZopeTransactionExtension
+
+from .utils import with_transaction
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
@@ -116,6 +120,10 @@ class Photo(Base):
 
     owner = relationship("User")
 
+    tags = relationship("Tag", 
+                        secondary="photos_tags", 
+                        backref="photos")
+
     def add_tags(self, tagstring):
 
         tagstring = (tagstring or '').strip()
@@ -135,11 +143,6 @@ class Photo(Base):
             old_names.append(tag.name)
 
             tag.photos.append(self)
-            try:
-                tag.frequency += 1
-            except TypeError:
-                tag.frequency = 1
-
             rv.append(tag)
 
         new_names = [name for name in names if name not in old_names]
@@ -207,7 +210,6 @@ class Tag(Base):
     frequency = Column(Integer, default=1)
 
     owner = relationship("User", backref="tags")
-    photos = relationship("Photo", secondary="photos_tags", backref="tags")
 
     def __unicode__(self):
         return self.name or ''
@@ -228,4 +230,33 @@ photos_tags = Table(
 )
 
 
+# Events
+
+def photo_tags_append_listener(target, value, initiator):
+    if value.frequency:
+        value.frequency += 1
+    else:
+        value.frequency = 1
+
+event.listen(Photo.tags, 'append', photo_tags_append_listener)
+
+
+def photo_delete_listener(mapper, connection, target):
+
+    tags = Base.metadata.tables['tags']
+    photos_tags = Base.metadata.tables['photos_tags']
+
+    u = tags.update().values(
+        frequency=select([func.count(photos_tags.c.tag_id)]).where(
+            tags.c.id==photos_tags.c.tag_id))
+
+    connection.execute(u)
+
+    # remove any tags with frequency 0
+
+    d = tags.delete().where(tags.c.frequency==0)
+    connection.execute(d)
+
+
+event.listen(Photo, 'after_delete', photo_delete_listener)
 

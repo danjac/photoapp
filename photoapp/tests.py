@@ -65,6 +65,21 @@ class StorageTests(TestCase):
 
 class PhotoTests(TestCase):
 
+    def test_delete_with_tags(self):
+
+        from .models import User, Photo, DBSession, Tag
+
+        user = User(email="tester@gmail.com")
+        photo = Photo(owner=user)
+        tags = photo.add_tags("landscapes norway winter snow")
+
+        self.assert_(len(tags) == 4)
+        self.assert_(DBSession.query(Tag).count() == 4)
+
+        DBSession.delete(photo)
+
+        self.assert_(DBSession.query(Tag).count() == 0)
+
     def test_add_tags_if_none(self):
 
         from .models import User, Photo, DBSession, Tag
