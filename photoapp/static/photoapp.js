@@ -62,14 +62,16 @@ PhotoApp.Photo = (function() {
 
 PhotoApp.HomePage = (function() {
 
-  function HomePage() {
+  function HomePage(tagList) {
     var _this = this;
+    this.tagList = tagList;
     jQuery(function() {
       return _this.onload();
     });
   }
 
   HomePage.prototype.onload = function() {
+    $('#tag-cloud').jQCloud(this.tagList);
     return $('.thumbnails a').on('click', function() {
       return new PhotoApp.Photo($(this));
     });

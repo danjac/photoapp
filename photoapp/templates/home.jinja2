@@ -28,6 +28,7 @@
     </div>
 </script>
 
+
 <ul class="thumbnails">
 {% for photo in page.items %}
     <li class="span4">
@@ -43,6 +44,8 @@
     </li>
 {% endfor %}
 </ul>
+
+<div id="tag-cloud" style="height:250px;"></div>
 
 {{ pagination.render_page_links(page) }}
 
@@ -70,9 +73,22 @@
 {% endblock %}
 
 {% block scripts %}
+{% if request.user %}
 <script>
-var homePage = new PhotoApp.HomePage();
+var tagList = [];
+
+{% for tag in request.user.tags %}
+tagList.push({
+   text: '{{ tag.name }}',
+   weight: {{ tag.frequency }},
+   link: '{{ request.route_url('tag', id=tag.id) }}'
+});
+{% endfor %}
+
+var homePage = new PhotoApp.HomePage(tagList);
+
 </script>
+{% endif %}
 
 
 {% endblock %}

@@ -63,6 +63,72 @@ class StorageTests(TestCase):
         self.assert_(fo.path == fs.path("test.jpg"))
 
 
+class PhotoTests(TestCase):
+
+    def test_add_tags_if_none(self):
+
+        from .models import User, Photo, DBSession, Tag
+
+        user = User(email="tester@gmail.com")
+        photo = Photo(owner=user)
+        tags  = photo.add_tags(None)
+
+        self.assert_(tags == [])
+        self.assert_(DBSession.query(Tag).count() == 0)
+
+    def test_add_tags_if_all_new(self):
+
+        from .models import User, Photo, DBSession, Tag
+
+        user = User(email="tester@gmail.com")
+        photo = Photo(owner=user)
+        tags = photo.add_tags("landscapes norway winter snow")
+
+        self.assert_(len(tags) == 4)
+        self.assert_(DBSession.query(Tag).count() == 4)
+
+    def test_add_tags_if_dupes(self):
+
+        from .models import User, Photo, DBSession, Tag
+
+        user = User(email="tester@gmail.com")
+        photo = Photo(owner=user)
+        tags = photo.add_tags("landscapes norway snow winter snow")
+
+        self.assert_(len(tags) == 4)
+        self.assert_(DBSession.query(Tag).count() == 4)
+
+    def test_add_tags_if_exist(self):
+
+        from .models import User, Photo, DBSession, Tag
+
+        user = User(email="tester@gmail.com")
+        DBSession.add(user)
+
+        photo = Photo(owner=user)
+        DBSession.add(photo)
+
+        tags = photo.add_tags("landscapes norway winter snow")
+
+        DBSession.flush()
+
+        self.assert_(len(tags) == 4)
+        self.assert_(DBSession.query(Tag).count() == 4)
+
+        photo = Photo(owner=user)
+        tags = photo.add_tags("norway winter snow skiing")
+
+        self.assert_(len(tags) == 4)
+        self.assert_(len(photo.tags) == 4)
+        self.assert_(DBSession.query(Tag).count() == 5)
+
+        for tag in tags:
+            if tag.name in ("norway", "winter", "snow"):
+                self.assert_(tag.frequency == 2)
+            else:
+                self.assert_(tag.frequency == 1)
+
+
 
 class UserTests(TestCase):
 
@@ -112,7 +178,7 @@ class HomeTests(TestCase):
         request.user = user
 
         response = home(request)
-        self.assert_(len(response['photos'].all()) == 1)
+        self.assert_(len(response['page'].items) == 1)
 
         self.assert_('login_form' not in response)
 

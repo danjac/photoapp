@@ -12,6 +12,7 @@ from cryptacular.bcrypt import BCRYPTPasswordManager
 from pyramid.security import Allow, Authenticated
 
 from sqlalchemy import (
+    Table,
     Column,
     ForeignKey,
     Integer,
@@ -113,7 +114,45 @@ class Photo(Base):
 
     created_at = Column(DateTime, default=func.now())
 
-    owner = relationship(User)
+    owner = relationship("User")
+
+    def add_tags(self, tagstring):
+
+        tagstring = (tagstring or '').strip()
+
+        if not tagstring:
+            return []
+
+        names = set(tagstring.lower().split())
+        old_names = []
+        rv = []
+
+        for tag in self.owner.tags:
+
+            if tag.name not in names:
+                continue
+
+            old_names.append(tag.name)
+
+            tag.photos.append(self)
+            try:
+                tag.frequency += 1
+            except TypeError:
+                tag.frequency = 1
+
+            rv.append(tag)
+
+        new_names = [name for name in names if name not in old_names]
+
+        for name in new_names:
+
+            tag = Tag(owner=self.owner, name=name)
+            tag.photos.append(self)
+            DBSession.add(tag)
+
+            rv.append(tag)
+
+        return rv
 
     @property
     def thumbnail(self):
@@ -158,6 +197,35 @@ class Photo(Base):
         ]
 
 
+class Tag(Base):
+
+    __tablename__ = "tags"
+
+    id = Column(Integer, primary_key=True)
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    name = Column(String(100))
+    frequency = Column(Integer, default=1)
+
+    owner = relationship("User", backref="tags")
+    photos = relationship("Photo", secondary="photos_tags", backref="tags")
+
+    def __unicode__(self):
+        return self.name or ''
+
+    def __repr__(self):
+        return "<%s>" % unicode(self)
+
+    @property
+    def __acl__(self):
+        return [(Allow, str(self.owner_id), "view")]
+
+
+photos_tags = Table(
+    "photos_tags", 
+    Base.metadata,
+    Column("tag_id", Integer, ForeignKey("tags.id"), primary_key=True),
+    Column("photo_id", Integer, ForeignKey("photos.id"), primary_key=True),
+)
 
 
 

@@ -60,12 +60,16 @@ class PhotoApp.Photo
     delete: ->
         confirm 'Are you sure you want to delete this photo?'
 
+
 class PhotoApp.HomePage
 
-    constructor: ->
+    constructor: (tagList) ->
+        @tagList = tagList
         jQuery => @onload()
 
     onload: ->
+
+        $('#tag-cloud').jQCloud(@tagList)
 
         $('.thumbnails a').on 'click', ->
             new PhotoApp.Photo($(@))

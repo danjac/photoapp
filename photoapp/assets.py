@@ -23,6 +23,14 @@ jquery_js = Bundle(
     debug=False,
 )
 
+jquery_css = Bundle(
+    'jquery/*.css',
+    filters='cssmin',
+    output='jquery.css',
+    debug=False,
+)
+
+
 app_coffee = Bundle(
     'photoapp/coffee/*.coffee',
     filters='coffeescript',
@@ -35,6 +43,7 @@ def includeme(config):
     config.include('pyramid_webassets')
 
     config.add_webasset('bootstrap_css', bootstrap_css)
+    config.add_webasset('jquery_css', jquery_css)
     config.add_webasset('bootstrap_js', bootstrap_js)
     config.add_webasset('jquery_js', jquery_js)
     config.add_webasset('photoapp_js', app_coffee)

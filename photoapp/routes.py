@@ -1,12 +1,16 @@
 import functools
 
 from .resources import ModelResource
-from .models import Photo
+from .models import Photo, Tag
 
 def includeme(config):
 
     config.add_route('home', '/')
     config.add_route('upload', '/upload')
+
+    config.add_route('tag', '/tag/{id}',
+                     traverse='/{id}',
+                     factory=ModelResource.for_model(Tag))
 
     # auth routes
 

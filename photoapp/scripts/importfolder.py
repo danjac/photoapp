@@ -28,10 +28,14 @@ def add_new_photos(owner, fs, dir):
             if filename.endswith(".jpg"):
 
                 name, ext = os.path.splitext(filename)
+                rel_path = path[len(dir):]
+                tags = rel_path.replace(os.path.sep, " ")
+
                 full_path = os.path.join(path, filename)
                 print(full_path)
 
                 photo = Photo(owner=owner, title=name)
+
                 try:
                     photo.save_image(fs, open(full_path, "rb"), filename)
                 except IOError:
@@ -39,6 +43,8 @@ def add_new_photos(owner, fs, dir):
                     continue
 
                 DBSession.add(photo)
+                photo.add_tags(tags)
+
 
     
 

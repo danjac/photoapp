@@ -1,4 +1,6 @@
+import random
 import datetime
+
 import mailer
 
 from pyramid.view import view_config, forbidden_view_config
@@ -38,6 +40,17 @@ def home(request):
         return {'page' : page}
 
     return {'login_form' : LoginForm(request)}
+
+
+@view_config(route_name='tag',
+             renderer='home.jinja2')
+def tagged_photos(tag, request):
+
+    page = Page(tag.photos, 
+                int(request.params.get('page', 0)), 
+                items_per_page=18)
+
+    return {'page' : page}
 
 
 
@@ -214,6 +227,8 @@ def upload(request):
                          form.image.data.filename)
 
         DBSession.add(photo)
+
+        photo.add_tags(form.tags.data)
 
         request.session.flash("Your photo has been uploaded")
         return HTTPFound(request.route_url('home'))
