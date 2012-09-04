@@ -1,10 +1,10 @@
 {% import "_forms.jinja2" as forms with context %}
-{% call forms.render_form(form, id="send-photo-form") %}
+{% call forms.render_form(form, id="edit-photo-form") %}
 
     <legend>Edit this photo</legend>
 
     {{ forms.render_field(form.title) }}
-    {{ forms.render_field(form.tags) }}
+    {{ forms.render_field(form.taglist) }}
 
     {{ form.submit(class="btn") }}
 

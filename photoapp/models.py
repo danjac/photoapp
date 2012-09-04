@@ -32,6 +32,7 @@ from sqlalchemy.exc import IntegrityError
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.ext.associationproxy import association_proxy
 
 from sqlalchemy.orm import (
     scoped_session,
@@ -127,41 +128,41 @@ class Photo(Base):
                         backref="photos")
 
     @property
-    def tagstring(self):
+    def taglist(self):
         return " ".join([t.name for t in self.tags])
 
-    def add_tags(self, tagstring):
+    @taglist.setter
+    def taglist(self, taglist):
 
-        tagstring = (tagstring or '').strip()
+        taglist = (taglist or '').strip().lower().split()
+        taglist = set(name for name in taglist if name)
 
-        if not tagstring:
-            return []
+        ignore = set()
 
-        names = set(tagstring.lower().split())
-        old_names = []
-        rv = []
+        # remove any unused tags
+
+        for tag in self.tags:
+            if tag.name in taglist:
+                ignore.add(tag.name)
+            else:
+                self.tags.remove(tag)
+
+        # find existing tags
+
+        taglist = taglist - ignore
+
+        ignore = set()
 
         for tag in self.owner.tags:
+            if tag.name in taglist:
+                self.tags.append(tag)
+                ignore.add(tag.name)
 
-            if tag.name not in names:
-                continue
+        taglist = taglist - ignore
 
-            old_names.append(tag.name)
+        for name in taglist:
+            self.tags.append(Tag(name=name, owner_id=self.owner_id))
 
-            tag.photos.append(self)
-            rv.append(tag)
-
-        new_names = [name for name in names if name not in old_names]
-
-        for name in new_names:
-
-            tag = Tag(owner=self.owner, name=name)
-            tag.photos.append(self)
-            DBSession.add(tag)
-
-            rv.append(tag)
-
-        return rv
 
     @property
     def thumbnail(self):
@@ -204,9 +205,7 @@ class Photo(Base):
     @property
     def __acl__(self):
         return [
-            (Allow, str(self.owner_id), "view"),
-            (Allow, str(self.owner_id), "edit"),
-            (Allow, str(self.owner_id), "delete"),
+            (Allow, str(self.owner_id), ("view", "edit", "delete")),
         ]
 
 
@@ -249,6 +248,15 @@ def photo_tags_append_listener(target, value, initiator):
         value.frequency = 1
 
 event.listen(Photo.tags, 'append', photo_tags_append_listener)
+
+
+def photo_tags_remove_listener(target, value, initiator):
+    value.frequency -= 1
+    if value.frequency == 0:
+        DBSession.delete(value)
+
+
+event.listen(Photo.tags, 'remove', photo_tags_remove_listener)
 
 
 def photo_delete_listener(mapper, connection, target):

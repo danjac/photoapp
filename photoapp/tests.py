@@ -70,11 +70,16 @@ class PhotoTests(TestCase):
         from .models import User, Photo, DBSession, Tag
 
         user = User(email="tester@gmail.com")
-        photo = Photo(owner=user)
-        tags = photo.add_tags("landscapes norway winter snow")
+        DBSession.add(user)
+        DBSession.flush()
 
-        self.assert_(len(tags) == 4)
-        self.assert_(DBSession.query(Tag).count() == 4)
+        photo = Photo(owner=user, owner_id=user.id)
+        photo.taglist = "landscapes norway winter snow"
+
+        DBSession.add(photo)
+        DBSession.flush()
+
+        self.assert_(len(photo.tags) == 4)
 
         DBSession.delete(photo)
 
@@ -86,10 +91,9 @@ class PhotoTests(TestCase):
 
         user = User(email="tester@gmail.com")
         photo = Photo(owner=user)
-        tags  = photo.add_tags(None)
+        photo.taglist = None
 
-        self.assert_(tags == [])
-        self.assert_(DBSession.query(Tag).count() == 0)
+        self.assert_(photo.tags == [])
 
     def test_add_tags_if_all_new(self):
 
@@ -97,10 +101,10 @@ class PhotoTests(TestCase):
 
         user = User(email="tester@gmail.com")
         photo = Photo(owner=user)
-        tags = photo.add_tags("landscapes norway winter snow")
+        photo.taglist = "landscapes norway winter snow"
 
-        self.assert_(len(tags) == 4)
-        self.assert_(DBSession.query(Tag).count() == 4)
+        self.assert_(len(photo.tags) == 4)
+
 
     def test_add_tags_if_dupes(self):
 
@@ -108,10 +112,9 @@ class PhotoTests(TestCase):
 
         user = User(email="tester@gmail.com")
         photo = Photo(owner=user)
-        tags = photo.add_tags("landscapes norway snow winter snow")
+        photo.taglist = "landscapes norway snow winter snow"
 
-        self.assert_(len(tags) == 4)
-        self.assert_(DBSession.query(Tag).count() == 4)
+        self.assert_(len(photo.tags) == 4)
 
     def test_add_tags_if_exist(self):
 
@@ -119,31 +122,23 @@ class PhotoTests(TestCase):
 
         user = User(email="tester@gmail.com")
         DBSession.add(user)
+        DBSession.flush()
 
         photo = Photo(owner=user)
         DBSession.add(photo)
 
-        tags = photo.add_tags("landscapes norway winter snow")
+        photo.taglist = "landscapes norway winter snow"
 
         DBSession.flush()
 
-        self.assert_(len(tags) == 4)
-        self.assert_(DBSession.query(Tag).count() == 4)
+        self.assert_(len(photo.tags) == 4)
 
         photo = Photo(owner=user)
-        tags = photo.add_tags("norway winter snow skiing")
+        photo.taglist = "norway winter snow skiing"
 
-        self.assert_(len(tags) == 4)
         self.assert_(len(photo.tags) == 4)
-        self.assert_(DBSession.query(Tag).count() == 5)
 
-        for tag in tags:
-            if tag.name in ("norway", "winter", "snow"):
-                self.assert_(tag.frequency == 2)
-            else:
-                self.assert_(tag.frequency == 1)
-
-
+  
 
 class UserTests(TestCase):
 

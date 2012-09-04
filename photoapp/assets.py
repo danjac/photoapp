@@ -47,8 +47,8 @@ ias_css = Bundle(
 
 app_coffee = Bundle(
     'photoapp/coffee/*.coffee',
-    filters='coffeescript',
-    output='photoapp.js',
+    filters='coffeescript,uglifyjs',
+    output='js/photoapp.js',
     debug=False,
 )
 

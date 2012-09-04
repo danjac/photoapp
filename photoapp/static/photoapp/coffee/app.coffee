@@ -12,7 +12,7 @@ class PhotoApp.Message
             <button type=\"button\" class=\"close\" data-dismiss=\"alert\">&times;</button>
             #{@message}
         </div>"
-        $('#messages').append(html)
+        $('#messages').html(html)
 
 
 PhotoApp.showMessage = (message) ->
@@ -59,12 +59,14 @@ class PhotoApp.Photo
             false
 
         @doc.on 'submit', '#edit-photo-form', (event) =>
+
             @submitForm($('#edit-photo-form'), (response) =>
-                alert response.title
-                $("[data-photo-id]='#{@photoID}'").attr('data-title', response.title)
-                $("[data-photo-id]='#{@photoID}' img").attr(title, response.title)
+                el = $("[data-photo-id='#{@photoID}']")
+                el.attr('data-title', response.title)
+                el.find('img').attr('title', response.title)
                 $("#photo-modal h3").text(response.title)
             )
+
             false
            
         @modal.on 'show', =>
@@ -124,7 +126,14 @@ class PhotoApp.Photo
         $('#photo-modal-load').hide()
         $('#photo-modal-content').show()
 
+    showForm: (url) ->
+        $('#photo-modal-content').hide()
+        $.get url, null, (response) =>
+            $('#photo-modal-load').show().html(response.html)
+            #$('#photo-modal-footer a').addClass('disabled')
 
+        false
+ 
     delete: ->
         if confirm "Are you sure you want to delete this photo?"
             @modal.modal('hide')
@@ -134,20 +143,11 @@ class PhotoApp.Photo
                     PhotoApp.showMessage("Photo '#{@title}' has been deleted")
         false
 
-    send: ->
-        $('#photo-modal-content').hide()
-        $.get @sendURL, null, (response) =>
-            $('#photo-modal-load').show().html(response.html)
+    send: -> @showForm @sendURL
+       
+    edit: -> @showForm @editURL
 
-        false
-        
-    edit: ->
-        $('#photo-modal-content').hide()
-        $.get @editURL, null, (response) =>
-            $('#photo-modal-load').show().html(response.html)
 
-        false
- 
 class PhotoApp.PhotosPage
 
     constructor: (tagList) ->

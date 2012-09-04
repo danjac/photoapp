@@ -121,7 +121,7 @@ class PhotoUploadForm(Form):
 class PhotoEditForm(Form):
 
     title = TextField("Title", validators=[Required()])
-    tags = TextField("Tags")
+    taglist = TextField("Tags")
     submit = SubmitField("Update")
 
 

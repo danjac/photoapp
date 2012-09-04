@@ -256,10 +256,9 @@ def upload(request):
         photo.save_image(request.fs,
                          form.image.data.file, 
                          form.image.data.filename)
+        
 
-        DBSession.add(photo)
-
-        photo.add_tags(form.tags.data)
+        photo.taglist = form.tags.data
 
         request.session.flash("Your photo has been uploaded")
         return HTTPFound(request.route_url('home'))
@@ -274,15 +273,13 @@ def edit(photo, request):
 
     form = PhotoEditForm(
         request, 
-        title=photo.title, 
-        tags=photo.tagstring
+        obj=photo
         )
 
 
     if form.validate():
 
-        photo.title = form.title.data
-        photo.add_tags(form.tags.data)
+        form.populate_obj(photo)
 
         return {'success' : True, 
                 'title' : photo.title,
