@@ -79,11 +79,11 @@ class PhotoApp.Photo
 
     delete: ->
         if confirm "Are you sure you want to delete this photo?"
+            @modal.modal('hide')
             $.post @deleteURL, null, (response) =>
                 if response.success?
-                    @el.remove()
+                    @el.parent().remove()
                     PhotoApp.showMessage("Photo '#{@title}' has been deleted")
-            @modal.modal('hide')
         false
 
 class PhotoApp.PhotosPage

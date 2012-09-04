@@ -77,13 +77,13 @@ PhotoApp.Photo = (function() {
   Photo.prototype["delete"] = function() {
     var _this = this;
     if (confirm("Are you sure you want to delete this photo?")) {
+      this.modal.modal('hide');
       $.post(this.deleteURL, null, function(response) {
         if (response.success != null) {
-          _this.el.remove();
+          _this.el.parent().remove();
           return PhotoApp.showMessage("Photo '" + _this.title + "' has been deleted");
         }
       });
-      this.modal.modal('hide');
     }
     return false;
   };
