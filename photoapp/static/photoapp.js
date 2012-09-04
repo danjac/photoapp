@@ -103,10 +103,17 @@ PhotoApp.PhotosPage = (function() {
   }
 
   PhotosPage.prototype.onload = function() {
+    var _this = this;
     this.doc = $(document);
-    $('#tag-cloud').jQCloud(this.tagList);
+    this.tagCloud = $('#tag-cloud');
+    this.tagCloud.jQCloud(this.tagList);
+    this.tagCloud.hide();
+    this.tagBtn = $('#tags-btn');
     this.doc.on('click', '.thumbnails a', function(event) {
       return new PhotoApp.Photo($(this));
+    });
+    this.doc.on('click', '#tags-btn', function(event) {
+      return _this.tagCloud.slideToggle('slow');
     });
     return $.ias({
       container: '.thumbnails',

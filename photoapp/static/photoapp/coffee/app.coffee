@@ -96,11 +96,19 @@ class PhotoApp.PhotosPage
 
         @doc = $(document)
 
-        $('#tag-cloud').jQCloud(@tagList)
+        @tagCloud = $('#tag-cloud')
+        @tagCloud.jQCloud(@tagList)
+        @tagCloud.hide()
+
+        @tagBtn = $('#tags-btn')
 
         @doc.on 'click', '.thumbnails a', (event) ->
             new PhotoApp.Photo($(@))
         
+        @doc.on 'click', '#tags-btn', (event) =>
+
+            @tagCloud.slideToggle('slow')
+
         $.ias
             container : '.thumbnails'
             item: '.photo'
