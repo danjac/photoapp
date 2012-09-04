@@ -40,6 +40,18 @@ def home(request):
     return {'page' : page}
 
 
+@view_config(route_name='tags',
+             renderer='json',
+             xhr=True)
+def tags(request):
+
+    tags = [{'text' : tag.name,
+             'link' : request.route_url('tag', id=tag.id, name=tag.name),
+             'weight' : tag.frequency,
+             } for tag in request.user.tags]
+
+    return {'tags' : tags}
+
 
 @view_config(route_name='tag',
              renderer='photos.jinja2')
@@ -257,8 +269,9 @@ def upload(request):
                          form.image.data.file, 
                          form.image.data.filename)
         
+        DBSession.add(photo)
 
-        photo.taglist = form.tags.data
+        photo.taglist = form.taglist.data
 
         request.session.flash("Your photo has been uploaded")
         return HTTPFound(request.route_url('home'))

@@ -28,11 +28,9 @@ from sqlalchemy import (
     and_,
         )
 
-from sqlalchemy.exc import IntegrityError
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.ext.associationproxy import association_proxy
 
 from sqlalchemy.orm import (
     scoped_session,

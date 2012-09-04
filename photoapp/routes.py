@@ -10,6 +10,7 @@ def includeme(config):
 
     config.add_route('home', '/')
     config.add_route('upload', '/upload')
+    config.add_route('tags', '/tags')
 
     config.add_route('tag', '/tag/{id}/{name}',
                      traverse='/{id}',

@@ -21,9 +21,8 @@ PhotoApp.showMessage = (message) ->
  
 class PhotoApp.Photo
 
-    constructor: (el) ->
-        @el = el
-        @doc = $(document)
+    constructor: (@page, @el) ->
+        @doc = @page.doc
 
         @modal = $('#photo-modal')
 
@@ -65,6 +64,7 @@ class PhotoApp.Photo
                 el.attr('data-title', response.title)
                 el.find('img').attr('title', response.title)
                 $("#photo-modal h3").text(response.title)
+                @page.loadTags()
             )
 
             false
@@ -140,7 +140,8 @@ class PhotoApp.Photo
             $.post @deleteURL, null, (response) =>
                 if response.success?
                     @el.parent().remove()
-                    PhotoApp.showMessage("Photo '#{@title}' has been deleted")
+                    PhotoApp().showMessage("Photo '#{@title}' has been deleted")
+                    @page.loadTags()
         false
 
     send: -> @showForm @sendURL
@@ -150,26 +151,34 @@ class PhotoApp.Photo
 
 class PhotoApp.PhotosPage
 
-    constructor: (tagList) ->
-        @tagList = tagList
+    constructor: (@tagsURL) ->
         jQuery => @onload()
 
+    loadTags: ->
+
+         @tagCloud.html('')
+
+         $.get(@tagsURL, null, (response) =>
+            @tagCloud.jQCloud(response.tags)
+            @tagCloud.hide()
+            if not response.tags
+                @tagBtn.hide()
+            else
+                @tagBtn.addClass 'btn-primary'
+                @tagBtn.find('i').addClass 'icon-white'
+         )
+       
     onload: ->
 
         @doc = $(document)
 
-        if @tagList?
-
-            @tagCloud = $('#tag-cloud')
-            @tagCloud.jQCloud(@tagList)
-            @tagCloud.hide()
+        @tagCloud = $('#tag-cloud')
 
         @tagBtn = $('#tags-btn')
-        if not @tagList?
-            @tagBtn.remove()
+        @loadTags()
 
-        @doc.on 'click', '.thumbnails a', (event) ->
-            new PhotoApp.Photo($(@))
+        @doc.on 'click', '.thumbnails a', (event) =>
+            new PhotoApp.Photo(@, $(event.currentTarget))
         
         @doc.on 'click', '#tags-btn', (event) =>
 

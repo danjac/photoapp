@@ -113,7 +113,7 @@ class ChangePasswordForm(Form):
 class PhotoUploadForm(Form):
 
     title = TextField("Title", validators=[Required()])
-    tags = TextField("Tags")
+    taglist = TextField("Tags")
     image = FileField("Image", validators=[JpegRequired()]) 
     submit = SubmitField("Upload")
 
