@@ -2,6 +2,26 @@ var PhotoApp;
 
 PhotoApp = PhotoApp || {};
 
+PhotoApp.Message = (function() {
+
+  function Message(message) {
+    this.message = message;
+  }
+
+  Message.prototype.show = function() {
+    var html;
+    html = "        <div class=\"alert\">            <button type=\"button\" class=\"close\" data-dismiss=\"alert\">×</button>            " + this.message + "        </div>";
+    return $('#messages').append(html);
+  };
+
+  return Message;
+
+})();
+
+PhotoApp.showMessage = function(message) {
+  return new PhotoApp.Message(message).show();
+};
+
 PhotoApp.Photo = (function() {
 
   function Photo(el) {
@@ -55,7 +75,17 @@ PhotoApp.Photo = (function() {
   }
 
   Photo.prototype["delete"] = function() {
-    return confirm('Are you sure you want to delete this photo?');
+    var _this = this;
+    if (confirm("Are you sure you want to delete this photo?")) {
+      $.post(this.deleteURL, null, function(response) {
+        if (response.success != null) {
+          _this.el.remove();
+          return PhotoApp.showMessage("Photo '" + _this.title + "' has been deleted");
+        }
+      });
+      this.modal.modal('hide');
+    }
+    return false;
   };
 
   return Photo;
@@ -73,8 +103,9 @@ PhotoApp.PhotosPage = (function() {
   }
 
   PhotosPage.prototype.onload = function() {
+    this.doc = $(document);
     $('#tag-cloud').jQCloud(this.tagList);
-    $('.thumbnails a').on('click', function() {
+    this.doc.on('click', '.thumbnails a', function(event) {
       return new PhotoApp.Photo($(this));
     });
     return $.ias({

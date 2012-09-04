@@ -32,7 +32,7 @@ class DataManager(object):
     tpc_abort = abort
 
 
-def with_transaction(func, data_manager_cls=DataManager, on_abort=None):
+def on_commit(func, data_manager_cls=DataManager, on_abort=None):
     """
     Decorator for managing transactions
     """

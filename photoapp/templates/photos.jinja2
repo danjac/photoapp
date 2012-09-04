@@ -19,7 +19,7 @@
         </p>
     </div>
     <div class="modal-footer">
-        <a href="<%= delete_url %>" class="btn delete-btn">Delete this photo</a>
+        <a href="javascript:void(0);" class="btn delete-btn">Delete this photo</a>
         <a href="<%= send_url %>" class="btn">Send this photo</a>
         <a href="#" class="btn" data-dismiss="modal">Close</a>
     </div>
@@ -34,6 +34,7 @@
         <a data-send-url="{{ request.route_url('send', id=photo.id) }}" 
            data-image-url="{{ request.route_url('image', id=photo.id) }}"
            data-thumbnail-url="{{ request.route_url('thumbnail', id=photo.id) }}"
+           data-photo-id="{{ photo.id }}"
            {% if has_permission('delete', photo) %}data-delete-url="{{ request.route_url('delete', id=photo.id) }}"{% endif %}
            data-width="{{ photo.width }}"
            data-height="{{ photo.height }}"

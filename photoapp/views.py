@@ -188,13 +188,15 @@ def thumbnail(photo, request):
 
 
 @view_config(route_name="delete",
-             permission="delete")
+             permission="delete",
+             request_method="POST",
+             renderer='json',
+             xhr=True)
 def delete_photo(photo, request):
 
     DBSession.delete(photo)
-    photo.delete_image(request.fs)
-    request.session.flash("You have deleted the photo %s" % photo.title)
-    return HTTPFound(request.route_url("home"))
+    photo.delete_image_on_commit(request.fs)
+    return {'success' : True}
 
              
 @view_config(route_name="send",

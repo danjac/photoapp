@@ -41,6 +41,8 @@ from sqlalchemy.orm import (
 
 from zope.sqlalchemy import ZopeTransactionExtension
 
+from .utils import on_commit
+
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
 Base = declarative_base()
@@ -186,11 +188,14 @@ class Photo(Base):
         img = ImageOps.fit(img, (300, 300), Image.ANTIALIAS)
         img.save(self.get_thumbnail(fs).path)
 
+    save_image_on_commit = on_commit(save_image)
+
     def delete_image(self, fs):
 
         self.get_image(fs).delete()
         self.get_thumbnail(fs).delete()
 
+    delete_image_on_commit = on_commit(delete_image)
    
     @property
     def __acl__(self):

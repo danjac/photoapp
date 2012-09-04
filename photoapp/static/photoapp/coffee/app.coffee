@@ -1,6 +1,24 @@
     
 PhotoApp = PhotoApp or {}
 
+class PhotoApp.Message
+
+    constructor: (@message) ->
+    
+    show: () ->
+
+        html = "
+        <div class=\"alert\">
+            <button type=\"button\" class=\"close\" data-dismiss=\"alert\">×</button>
+            #{@message}
+        </div>"
+        $('#messages').append(html)
+
+
+PhotoApp.showMessage = (message) ->
+    new PhotoApp.Message(message).show()
+
+ 
 class PhotoApp.Photo
 
     constructor: (el) ->
@@ -60,8 +78,13 @@ class PhotoApp.Photo
         @modal.modal('show')
 
     delete: ->
-        confirm 'Are you sure you want to delete this photo?'
-
+        if confirm "Are you sure you want to delete this photo?"
+            $.post @deleteURL, null, (response) =>
+                if response.success?
+                    @el.remove()
+                    PhotoApp.showMessage("Photo '#{@title}' has been deleted")
+            @modal.modal('hide')
+        false
 
 class PhotoApp.PhotosPage
 
@@ -71,9 +94,11 @@ class PhotoApp.PhotosPage
 
     onload: ->
 
+        @doc = $(document)
+
         $('#tag-cloud').jQCloud(@tagList)
 
-        $('.thumbnails a').on 'click', ->
+        @doc.on 'click', '.thumbnails a', (event) ->
             new PhotoApp.Photo($(@))
         
         $.ias

@@ -3,7 +3,7 @@ import mailer
 
 from pyramid.renderers import render
 
-from .utils import with_transaction
+from .utils import on_commit
 
 
 def get_mailer(request):
@@ -56,7 +56,7 @@ class Mailer(mailer.Mailer):
     def send_to_stdout(self, msg):
         sys.stdout.write(msg.as_string())
 
-    @with_transaction
+    @on_commit
     def send(self, msg):
         
         msg.From = msg.From or self.from_address
