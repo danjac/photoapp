@@ -1,5 +1,5 @@
 {% macro render_form(form, method="POST", action=None, multipart=False) %}
-<form method="{{ method }}" action="{{ action or request.url }}" {% if multipart %}enctype="multipart/form-data"{% endif %}>
+<form method="{{ method }}" action="{{ action or request.url }}" {% if multipart %}enctype="multipart/form-data"{% endif %} {% for k, v in kwargs.items() %} {{ k }}="{{ v }}" {% endfor %}>
    {{ form.csrf_token }}
    {{ caller() }} 
 </form>

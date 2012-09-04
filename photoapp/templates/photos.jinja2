@@ -10,24 +10,26 @@
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h3><%= title %></h3>
     </div>
-    <div class="modal-body">
-        <p>
-            <div class="photo-load-progress progress progress-striped active"><div class="bar" style="width:0%;"></div></div> 
+    <div class="modal-body" id="photo-modal-body">
+        <div class="photo-load-progress progress progress-striped active"><div class="bar" style="width:0%;"></div></div> 
+        <div id="photo-modal-load"></div>
+        <p id="photo-modal-content">
             <a class="photo-image hide" target="_blank" href="<%= image_url %>">
                 <img src="<%= thumbnail_url %>" height="<%= height %>" width="<%= width %>" alt="<%= title %>">
             </a>
         </p>
     </div>
-    <div class="modal-footer">
-        <a href="javascript:void(0);" class="btn delete-btn">Delete this photo</a>
-        <a href="<%= send_url %>" class="btn">Send this photo</a>
-        <a href="#" class="btn" data-dismiss="modal">Close</a>
+    <div class="modal-footer hide" id="photo-modal-footer">
+        <a href="javascript:void(0);" class="btn send-btn"><i class="icon-envelope"></i> Send</a>
+        <a href="javascript:void(0);" class="btn edit-btn"><i class="icon-pencil"></i> Edit</a>
+        <a href="javascript:void(0);" class="btn delete-btn"><i class="icon-trash"></i> Delete</a>
     </div>
 </script>
 
 
-
-<button class="btn-large btn-block btn-primary" type="button" id="tags-btn">Tags</button>
+<div class="btn-group">
+    <button class="btn btn-large btn-block btn-primary" href="#" type="button" id="tags-btn"><i class="icon-search icon-white"></i></button>
+</div>
 
 <div class="well" id="tag-cloud" style="height:250px;"></div>
 
@@ -35,6 +37,7 @@
 {% for photo in page.items %}
     <li class="span4 photo">
         <a data-send-url="{{ request.route_url('send', id=photo.id) }}" 
+           {% if has_permission('edit', photo) %}data-edit-url="{{ request.route_url('edit', id=photo.id) }}"{% endif %}
            data-image-url="{{ request.route_url('image', id=photo.id) }}"
            data-thumbnail-url="{{ request.route_url('thumbnail', id=photo.id) }}"
            data-photo-id="{{ photo.id }}"

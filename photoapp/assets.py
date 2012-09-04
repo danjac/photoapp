@@ -4,14 +4,14 @@ from webassets import Bundle
 bootstrap_css = Bundle(
     'bootstrap/css/*.css',
     filters='cssmin',
-    output='bootstrap.css',
+    output='css/bootstrap.css',
     debug=False,
 )
 
 bootstrap_js = Bundle(
     'bootstrap/js/*.js',
     filters='uglifyjs',
-    output='bootstrap.js',
+    output='js/bootstrap.js',
     debug=False,
 )
 
@@ -19,28 +19,28 @@ bootstrap_js = Bundle(
 jquery_js = Bundle(
     'jquery/*.js',
     filters='uglifyjs',
-    output='jquery.js',
+    output='js/jquery.js',
     debug=False,
 )
 
 jquery_css = Bundle(
     'jquery/*.css',
     filters='cssmin',
-    output='jquery.css',
+    output='css/jquery.css',
     debug=False,
 )
 
 ias_js = Bundle(
     'ias/*.js',
     filters='uglifyjs',
-    output='ias.js',
+    output='js/ias.js',
     debug=False,
 )
 
 ias_css = Bundle(
     'ias/*.css',
     filters='cssmin',
-    output='ias.css',
+    output='css/ias.css',
     debug=False,
 )
 

@@ -126,6 +126,10 @@ class Photo(Base):
                         secondary="photos_tags", 
                         backref="photos")
 
+    @property
+    def tagstring(self):
+        return " ".join([t.name for t in self.tags])
+
     def add_tags(self, tagstring):
 
         tagstring = (tagstring or '').strip()
@@ -201,6 +205,7 @@ class Photo(Base):
     def __acl__(self):
         return [
             (Allow, str(self.owner_id), "view"),
+            (Allow, str(self.owner_id), "edit"),
             (Allow, str(self.owner_id), "delete"),
         ]
 

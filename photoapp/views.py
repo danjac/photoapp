@@ -6,6 +6,7 @@ import mailer
 from pyramid.view import view_config, forbidden_view_config
 from pyramid.security import remember, forget, NO_PERMISSION_REQUIRED
 from pyramid.response import Response
+from pyramid.renderers import render
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 
 from sqlalchemy import and_
@@ -17,6 +18,7 @@ from .forms import (
     LoginForm, 
     SignupForm,
     PhotoUploadForm,
+    PhotoEditForm,
     SendPhotoForm,
     ForgotPasswordForm,
     ChangePasswordForm
@@ -201,7 +203,8 @@ def delete_photo(photo, request):
              
 @view_config(route_name="send",
              permission="view",
-             renderer="send_photo.jinja2")
+             renderer="json",
+             xhr=True)
 def send_photo(photo, request):
 
     form = SendPhotoForm(request)
@@ -224,13 +227,20 @@ def send_photo(photo, request):
 
         request.mailer.send(message)
 
-        request.session.flash(
-            "You sent %s the photo %s"  % (form.name.data, photo.title))
+        message = "You have emailed the photo %s to %s" % (
+                photo.title, 
+                form.email.data
+                )
 
-        return HTTPFound(request.route_url('home'))
+        return {'success' : True, 'message' : message}
 
-    return {'photo' : photo, 'form' : form}        
-        
+    html = render('send_photo.jinja2', {
+        'photo' : photo,
+        'form' : form,
+        }, request)
+
+    return {'success' : False, 'html' : html}
+
 
 @view_config(route_name="upload",
              permission="upload",
@@ -255,6 +265,36 @@ def upload(request):
         return HTTPFound(request.route_url('home'))
 
     return {'form' : form}
+
+@view_config(route_name="edit",
+             permission="edit",
+             renderer="json",
+             xhr=True)
+def edit(photo, request):
+
+    form = PhotoEditForm(
+        request, 
+        title=photo.title, 
+        tags=photo.tagstring
+        )
+
+
+    if form.validate():
+
+        photo.title = form.title.data
+        photo.add_tags(form.tags.data)
+
+        return {'success' : True, 
+                'title' : photo.title,
+                'message' : 'Your photo has been updated'}
+
+    html = render('edit_photo.jinja2', {
+        'form' : form,
+        'photo' : photo,
+        }, request)
+
+
+    return {'success' : False, 'html' : html}
 
 
 @view_config(route_name='logout')

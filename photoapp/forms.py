@@ -118,6 +118,13 @@ class PhotoUploadForm(Form):
     submit = SubmitField("Upload")
 
 
+class PhotoEditForm(Form):
+
+    title = TextField("Title", validators=[Required()])
+    tags = TextField("Tags")
+    submit = SubmitField("Update")
+
+
 class SendPhotoForm(Form):
 
     name = TextField("Name of person", validators=[Required()])

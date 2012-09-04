@@ -8,8 +8,8 @@ class PhotoApp.Message
     show: () ->
 
         html = "
-        <div class=\"alert\">
-            <button type=\"button\" class=\"close\" data-dismiss=\"alert\">×</button>
+        <div class=\"alert alert-success\">
+            <button type=\"button\" class=\"close\" data-dismiss=\"alert\">&times;</button>
             #{@message}
         </div>"
         $('#messages').append(html)
@@ -23,13 +23,18 @@ class PhotoApp.Photo
 
     constructor: (el) ->
         @el = el
+        @doc = $(document)
 
         @modal = $('#photo-modal')
 
+        @photoID = @el.attr 'data-photo-id'
+
         @imageURL = @el.attr 'data-image-url'
         @thumbURL = @el.attr 'data-thumbnail-url'
+
         @sendURL = @el.attr 'data-send-url'
         @deleteURL = @el.attr 'data-delete-url'
+        @editURL = @el.attr 'data-edit-url'
 
         @title = @el.attr 'data-title'
         @height = @el.attr 'data-height'
@@ -40,31 +45,53 @@ class PhotoApp.Photo
         @content = _.template(@tmpl,
             image_url: @imageURL
             thumbnail_url: @thumbURL
-            send_url: @sendURL
-            delete_url: @deleteURL
             title: @title
             height: @height
             width: @width
         )
 
 
+        @doc.on 'click', '#photo-modal .cancel-btn', (event) =>
+            @showDefaultContent()
+        
+        @doc.on 'submit', '#send-photo-form', (event) =>
+            @submitForm($('#send-photo-form'))
+            false
+
+        @doc.on 'submit', '#edit-photo-form', (event) =>
+            @submitForm($('#edit-photo-form'), (response) =>
+                alert response.title
+                $("[data-photo-id]='#{@photoID}'").attr('data-title', response.title)
+                $("[data-photo-id]='#{@photoID}' img").attr(title, response.title)
+                $("#photo-modal h3").text(response.title)
+            )
+            false
+           
         @modal.on 'show', =>
             @modal.html(@content)
 
+            if @editURL?
+                $('#photo-modal .edit-btn').show().on 'click', => @edit()
+            else
+                $('#photo-modal .edit-btn').hide()
+
+ 
             if @deleteURL?
                 $('#photo-modal .delete-btn').show().on 'click', => @delete()
             else
                 $('#photo-modal .delete-btn').hide()
 
+            $('#photo-modal .send-btn').on 'click', => @send()
 
             progressBar = $('#photo-modal .photo-load-progress .bar')
             progressWidth = 0
 
-            progress = setInterval =>
+            setProgressWidth = ->
                 if progressWidth < 100
-                    progressWidth += 30
+                    progressWidth += 5
                     progressBar.width progressWidth + "%"
 
+            progress = setInterval setProgressWidth, 300
 
             image = new Image()
             image.src = @imageURL
@@ -74,8 +101,29 @@ class PhotoApp.Photo
                 clearInterval progress
                 $('#photo-modal .photo-image').show()
                 $('#photo-modal .photo-load-progress').hide()
+                $('#photo-modal-footer').show()
         
         @modal.modal('show')
+
+    submitForm: (form, callback) ->
+
+        $.post(form.attr('action'), form.serialize(), (response) =>
+            if response.success
+                if response.message?
+                    PhotoApp.showMessage response.message
+                @showDefaultContent()
+                if callback?
+                    callback(response)
+            else
+                $('#photo-modal-load').html(response.html)
+        )
+        false
+
+
+    showDefaultContent: ->
+        $('#photo-modal-load').hide()
+        $('#photo-modal-content').show()
+
 
     delete: ->
         if confirm "Are you sure you want to delete this photo?"
@@ -86,6 +134,20 @@ class PhotoApp.Photo
                     PhotoApp.showMessage("Photo '#{@title}' has been deleted")
         false
 
+    send: ->
+        $('#photo-modal-content').hide()
+        $.get @sendURL, null, (response) =>
+            $('#photo-modal-load').show().html(response.html)
+
+        false
+        
+    edit: ->
+        $('#photo-modal-content').hide()
+        $.get @editURL, null, (response) =>
+            $('#photo-modal-load').show().html(response.html)
+
+        false
+ 
 class PhotoApp.PhotosPage
 
     constructor: (tagList) ->
@@ -96,24 +158,35 @@ class PhotoApp.PhotosPage
 
         @doc = $(document)
 
-        @tagCloud = $('#tag-cloud')
-        @tagCloud.jQCloud(@tagList)
-        @tagCloud.hide()
+        if @tagList?
+
+            @tagCloud = $('#tag-cloud')
+            @tagCloud.jQCloud(@tagList)
+            @tagCloud.hide()
 
         @tagBtn = $('#tags-btn')
+        if not @tagList?
+            @tagBtn.remove()
 
         @doc.on 'click', '.thumbnails a', (event) ->
             new PhotoApp.Photo($(@))
         
         @doc.on 'click', '#tags-btn', (event) =>
 
-            @tagCloud.slideToggle('slow')
+            @tagCloud.slideToggle 'slow'
+            @tagBtn.toggleClass 'btn-primary'
+
+            icon = @tagBtn.find 'i'
+            icon.toggleClass 'icon-white'
+
+            false
 
         $.ias
             container : '.thumbnails'
             item: '.photo'
             pagination: '.pagination'
             next: '.next a'
+            loader: '<img src="ias/loader.gif">'
 
 
 
