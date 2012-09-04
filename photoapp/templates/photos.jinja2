@@ -14,7 +14,7 @@
         <p>
             <div class="photo-load-progress progress progress-striped active"><div class="bar" style="width:0%;"></div></div> 
             <a class="photo-image hide" target="_blank" href="<%= image_url %>">
-                <img src="<%= image_url %>" height="<%= height %>" width="<%= width %>" alt="<%= title %>">
+                <img src="<%= thumbnail_url %>" height="<%= height %>" width="<%= width %>" alt="<%= title %>">
             </a>
         </p>
     </div>
@@ -33,6 +33,7 @@
     <li class="span4 photo">
         <a data-send-url="{{ request.route_url('send', id=photo.id) }}" 
            data-image-url="{{ request.route_url('image', id=photo.id) }}"
+           data-thumbnail-url="{{ request.route_url('thumbnail', id=photo.id) }}"
            {% if has_permission('delete', photo) %}data-delete-url="{{ request.route_url('delete', id=photo.id) }}"{% endif %}
            data-width="{{ photo.width }}"
            data-height="{{ photo.height }}"

@@ -2,10 +2,6 @@ import os
 import shutil
 import logging
 
-from .utils import with_transaction
-
-log = logging.getLogger(__name__)
-
 
 def get_storage(request):
     return FileStorage.from_settings(request.registry.settings)
@@ -38,7 +34,7 @@ class FileObj(object):
         try:
             os.remove(self.path)
         except OSError, e:
-            log.exception(e)
+            logging.exception(e)
 
 
 class FileStorage(object):

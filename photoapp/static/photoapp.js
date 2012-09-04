@@ -9,6 +9,7 @@ PhotoApp.Photo = (function() {
     this.el = el;
     this.modal = $('#photo-modal');
     this.imageURL = this.el.attr('data-image-url');
+    this.thumbURL = this.el.attr('data-thumbnail-url');
     this.sendURL = this.el.attr('data-send-url');
     this.deleteURL = this.el.attr('data-delete-url');
     this.title = this.el.attr('data-title');
@@ -17,6 +18,7 @@ PhotoApp.Photo = (function() {
     this.tmpl = $('#photo-modal-template').html();
     this.content = _.template(this.tmpl, {
       image_url: this.imageURL,
+      thumbnail_url: this.thumbURL,
       send_url: this.sendURL,
       delete_url: this.deleteURL,
       title: this.title,

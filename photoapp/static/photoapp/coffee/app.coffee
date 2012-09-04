@@ -9,6 +9,7 @@ class PhotoApp.Photo
         @modal = $('#photo-modal')
 
         @imageURL = @el.attr 'data-image-url'
+        @thumbURL = @el.attr 'data-thumbnail-url'
         @sendURL = @el.attr 'data-send-url'
         @deleteURL = @el.attr 'data-delete-url'
 
@@ -20,6 +21,7 @@ class PhotoApp.Photo
 
         @content = _.template(@tmpl,
             image_url: @imageURL
+            thumbnail_url: @thumbURL
             send_url: @sendURL
             delete_url: @deleteURL
             title: @title
