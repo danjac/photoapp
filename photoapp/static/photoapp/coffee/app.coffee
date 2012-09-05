@@ -96,7 +96,7 @@ class PhotoApp.Photo
             progress = setInterval setProgressWidth, 300
 
             image = new Image()
-            image.src = @imageURL
+            image.src = @thumbURL
         
             image.onload = =>
 
@@ -151,7 +151,7 @@ class PhotoApp.Photo
 
 class PhotoApp.PhotosPage
 
-    constructor: (@tagsURL) ->
+    constructor: (@tagsURL, @showSearch) ->
         jQuery => @onload()
 
     loadTags: ->
@@ -160,12 +160,10 @@ class PhotoApp.PhotosPage
 
          $.get(@tagsURL, null, (response) =>
             @tagCloud.jQCloud(response.tags)
-            @tagCloud.hide()
             if not response.tags
-                @tagBtn.hide()
-            else
-                @tagBtn.addClass 'btn-primary'
-                @tagBtn.find('i').addClass 'icon-white'
+                @tagCloud.hide()
+            if @showSearch?
+                @searchBtn.trigger 'click'
          )
        
     onload: ->
@@ -173,22 +171,23 @@ class PhotoApp.PhotosPage
         @doc = $(document)
 
         @tagCloud = $('#tag-cloud')
-
-        @tagBtn = $('#tags-btn')
+        @searchBox = $('#search-box')
+        @searchBtn = $('#search-btn')
         @loadTags()
 
         @doc.on 'click', '.thumbnails a', (event) =>
             new PhotoApp.Photo(@, $(event.currentTarget))
         
-        @doc.on 'click', '#tags-btn', (event) =>
+        @doc.on 'click', '#search-btn', (event) =>
 
-            @tagCloud.slideToggle 'slow'
-            @tagBtn.toggleClass 'btn-primary'
+            @searchBox.slideToggle 'slow'
+            @searchBtn.toggleClass 'btn-primary'
 
-            icon = @tagBtn.find 'i'
+            icon = @searchBtn.find 'i'
             icon.toggleClass 'icon-white'
 
             false
+
 
         $.ias
             container : '.thumbnails'

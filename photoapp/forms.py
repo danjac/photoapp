@@ -47,7 +47,7 @@ class Form(SecureForm):
         self.request = request
 
         if self.request.method == "POST":
-            formdata = self.request.POST.copy()
+            formdata = self.request.POST
 
         else:
             formdata = None

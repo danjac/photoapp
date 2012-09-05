@@ -28,10 +28,17 @@
 
 
 <div class="btn-group">
-    <button class="btn btn-large btn-block btn-primary" href="#" type="button" id="tags-btn"><i class="icon-search icon-white"></i></button>
+    <button class="btn btn-large btn-block btn-primary" href="#" type="button" id="search-btn"><i class="icon-search icon-white"></i></button>
 </div>
 
-<div class="well" id="tag-cloud" style="height:250px;"></div>
+<div id="search-box">
+    <form class="form-search" method="GET" action="{{ request.route_url('search') }}">
+        <div class="btn-group">
+            <input type="search" style="font-size:large; font-weight:bold;" name="search" value="{{ request.params.get('search', '') }}" placeholder="Search for...." class="span12">
+        </div>
+    </form>
+    <div class="well" id="tag-cloud" style="height:250px;"></div>
+</div>
 
 <ul class="thumbnails">
 {% for photo in page.items %}
@@ -59,7 +66,7 @@
 
 {% block scripts %}
 <script>
-new PhotoApp.PhotosPage('{{ request.route_url('tags') }}');
+new PhotoApp.PhotosPage('{{ request.route_url('tags') }}', {{ 'true' if 'search' in request.params else 'false' }});
 
 </script>
 

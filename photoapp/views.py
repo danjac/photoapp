@@ -9,10 +9,11 @@ from pyramid.response import Response
 from pyramid.renderers import render
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
+
 from webhelpers.paginate import Page
 
-from .models import User, Photo, DBSession
+from .models import User, Photo, Tag, DBSession
 
 from .forms import (
     LoginForm, 
@@ -33,8 +34,34 @@ def home(request):
                 Photo.owner_id==request.user.id).order_by(
                 Photo.created_at.desc())
     
+    page = Page(photos, int(request.params.get('page', 0)), items_per_page=18)
+
+    return {'page' : page}
+
+@view_config(route_name="search",
+             renderer='photos.jinja2')
+def search(request):
+
+    search_terms = request.params.get('search', '').split()
+    search_terms = set(s for s in search_terms if len(s) > 3)
+
+    if search_terms:
+        q = [(or_(Photo.title.ilike("%%%s%%" % q), 
+                  Tag.name.ilike(q))) for q in search_terms]
+
+        q = reduce(and_, q)
+
+        photos = DBSession.query(Photo).filter(q).join(
+                    Photo.tags).distinct().all()
+
+        num_photos = len(photos)
+    else:
+        photos = []
+        num_photos = 0
+
     page = Page(photos, 
                 int(request.params.get('page', 0)), 
+                item_count=num_photos,
                 items_per_page=18)
 
     return {'page' : page}
