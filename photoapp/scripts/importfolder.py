@@ -15,7 +15,7 @@ from ..storage import FileStorage
 def usage(argv):
     cmd = os.path.basename(argv[0])
     print('usage: %s <config_uri> <email> <folder>\n'
-          '(example %s development.ini danjac354@gmail.com ~/wallpaper' % (
+          '(example %s development.ini danjac354@gmail.com ~/wallpaper)' % (
                   cmd, cmd))
 
     sys.exit(1)
@@ -43,10 +43,8 @@ def add_new_photos(owner, fs, dir):
                     continue
 
                 DBSession.add(photo)
-                photo.add_tags(tags)
+                photo.taglist = tags
 
-
-    
 
 def main(argv=sys.argv):
 

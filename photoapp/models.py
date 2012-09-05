@@ -109,9 +109,13 @@ class Photo(Base):
     __tablename__ = "photos"
 
     id = Column(Integer, primary_key=True)
-    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
-    title = Column(Unicode(100))
+    owner_id = Column(Integer, 
+                      ForeignKey("users.id"), 
+                      nullable=False, 
+                      index=True)
+
+    title = Column(Unicode(100), index=True)
     image = Column(String(200), unique=True)
 
     height = Column(Integer)
@@ -159,7 +163,7 @@ class Photo(Base):
         taglist = taglist - ignore
 
         for name in taglist:
-            self.tags.append(Tag(name=name, owner_id=self.owner_id))
+            self.tags.append(Tag(name=name, owner=self.owner))
 
 
     @property
@@ -212,8 +216,13 @@ class Tag(Base):
     __tablename__ = "tags"
 
     id = Column(Integer, primary_key=True)
-    owner_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    name = Column(String(100))
+    owner_id = Column(Integer, 
+                      ForeignKey("users.id"), 
+                      nullable=False,
+                      index=True)
+
+    name = Column(String(100), nullable=False, index=True)
+
     frequency = Column(Integer, default=1)
 
     owner = relationship("User", backref="tags")

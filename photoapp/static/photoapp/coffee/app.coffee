@@ -1,5 +1,5 @@
     
-PhotoApp = PhotoApp or {}
+PhotoApp = {} unless PhotoApp?
 
 class PhotoApp.Message
 
@@ -12,7 +12,7 @@ class PhotoApp.Message
             <button type=\"button\" class=\"close\" data-dismiss=\"alert\">&times;</button>
             #{@message}
         </div>"
-        $('#messages').html(html)
+        $('#messages').html(html).show()
 
 
 PhotoApp.showMessage = (message) ->
@@ -51,14 +51,15 @@ class PhotoApp.Photo
 
 
         @doc.on 'click', '#photo-modal .cancel-btn', (event) =>
+            event.preventDefault()
             @showDefaultContent()
         
         @doc.on 'submit', '#send-photo-form', (event) =>
+            event.preventDefault()
             @submitForm($('#send-photo-form'))
-            false
 
         @doc.on 'submit', '#edit-photo-form', (event) =>
-
+            event.preventDefault()
             @submitForm($('#edit-photo-form'), (response) =>
                 el = $("[data-photo-id='#{@photoID}']")
                 el.attr('data-title', response.title)
@@ -66,7 +67,6 @@ class PhotoApp.Photo
                 $("#photo-modal h3").text(response.title)
             )
 
-            false
            
         @modal.on 'show', =>
             @modal.html(@content)
@@ -118,7 +118,6 @@ class PhotoApp.Photo
             else
                 $('#photo-modal-load').html(response.html)
         )
-        false
 
 
     showDefaultContent: ->
@@ -131,16 +130,13 @@ class PhotoApp.Photo
             $('#photo-modal-load').show().html(response.html)
             #$('#photo-modal-footer a').addClass('disabled')
 
-        false
- 
     delete: ->
         if confirm "Are you sure you want to delete this photo?"
             @modal.modal('hide')
             $.post @deleteURL, null, (response) =>
                 if response.success?
                     @el.parent().remove()
-                    PhotoApp().showMessage("Photo '#{@title}' has been deleted")
-        false
+                    PhotoApp.showMessage("Photo '#{@title}' has been deleted")
 
     send: -> @showForm @sendURL
        
