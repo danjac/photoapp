@@ -64,7 +64,6 @@ class PhotoApp.Photo
                 el.attr('data-title', response.title)
                 el.find('img').attr('title', response.title)
                 $("#photo-modal h3").text(response.title)
-                @page.loadTags()
             )
 
             false
@@ -141,7 +140,6 @@ class PhotoApp.Photo
                 if response.success?
                     @el.parent().remove()
                     PhotoApp().showMessage("Photo '#{@title}' has been deleted")
-                    @page.loadTags()
         false
 
     send: -> @showForm @sendURL
@@ -151,29 +149,30 @@ class PhotoApp.Photo
 
 class PhotoApp.PhotosPage
 
-    constructor: (@tagsURL, @showSearch) ->
+    constructor: (@tagsURL) ->
         jQuery => @onload()
 
     loadTags: ->
 
-         @tagCloud.html('')
+        $('#tag-cloud').remove()
 
-         $.get(@tagsURL, null, (response) =>
-            @tagCloud.jQCloud(response.tags)
-            if not response.tags
-                @tagCloud.hide()
-            if @showSearch?
-                @searchBtn.trigger 'click'
-         )
-       
+        $.get(@tagsURL, null, (response) =>
+
+            if response.tags
+                html = '<div class="well" id="tag-cloud" style="height:250px;"></div>'
+                @searchBox.append(html)
+
+                $('#tag-cloud').jQCloud(response.tags)
+        )
+
     onload: ->
 
         @doc = $(document)
 
-        @tagCloud = $('#tag-cloud')
         @searchBox = $('#search-box')
+        @searchBox.hide()
+
         @searchBtn = $('#search-btn')
-        @loadTags()
 
         @doc.on 'click', '.thumbnails a', (event) =>
             new PhotoApp.Photo(@, $(event.currentTarget))
@@ -185,6 +184,9 @@ class PhotoApp.PhotosPage
 
             icon = @searchBtn.find 'i'
             icon.toggleClass 'icon-white'
+
+            unless @searchBtn.is '.btn-primary'
+                @loadTags()
 
             false
 
