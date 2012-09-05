@@ -38,6 +38,7 @@ def home(request):
 
     return {'page' : page}
 
+
 @view_config(route_name="search",
              renderer='photos.jinja2')
 def search(request):
@@ -91,7 +92,6 @@ def tagged_photos(tag, request):
     return {'page' : page}
 
 
-
 @view_config(route_name='login',
              permission=NO_PERMISSION_REQUIRED,
              renderer='login.jinja2')
@@ -116,6 +116,7 @@ def login(request):
             return HTTPFound(request.route_url('home'), headers=headers)
 
     return {'form' : form}
+
 
 @view_config(route_name='signup',
              permission=NO_PERMISSION_REQUIRED,
@@ -305,17 +306,14 @@ def upload(request):
 
     return {'form' : form}
 
+
 @view_config(route_name="edit",
              permission="edit",
              renderer="json",
              xhr=True)
 def edit(photo, request):
 
-    form = PhotoEditForm(
-        request, 
-        obj=photo
-        )
-
+    form = PhotoEditForm(request, obj=photo)
 
     if form.validate():
 
