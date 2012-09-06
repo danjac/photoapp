@@ -39,6 +39,7 @@ def _get_credentials(request):
         email, password = auth.split(":", 1)
     except ValueError:
         return
+
     return (email, password)
 
 

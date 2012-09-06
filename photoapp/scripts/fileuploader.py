@@ -28,7 +28,7 @@ def upload_files(url, auth, base_dir):
                 data = {'title' : name, 'tags' : tags}
                 files = {"uploaded_file" : open(full_path, "rb")}
 
-                resp = requests.post(url, data, files=files, auth=auth)
+                resp = requests.put(url, data, files=files, auth=auth)
 
 
 def main(argv=sys.argv):

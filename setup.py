@@ -13,6 +13,7 @@ requires=[
     'pyramid_beaker',
     'pyramid_tm',
     'pyramid_debugtoolbar',
+    'cornice',
     'sqlalchemy',
     'zope.sqlalchemy',
     'psycopg2',

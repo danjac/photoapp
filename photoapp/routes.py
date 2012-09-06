@@ -39,5 +39,5 @@ def includeme(config):
 
     # API routes
 
-    config.add_route('api/upload', '/api/upload')
+    #config.add_route('api/upload', '/api/upload')
      

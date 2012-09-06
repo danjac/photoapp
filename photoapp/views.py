@@ -334,11 +334,64 @@ def logout(request):
     headers = forget(request)
     return HTTPFound(request.route_url('home'), headers=headers)
                       
+#@view_config(route_name='share')
+def share_photo(photo, request):
 
+    form = PhotoShareForm(request)
+
+    if form.validate():
+
+        # if users already exist, let them
+        # know by email 
+
+        users = DBSession.query(User).filter(
+                    User.email.in_(form.emails.data))
+
+        for user in users:
+            user.shared_photos.append(photo)
+            send_email_to_user()
+        
+        registered_emails = [u.email for u in users]
+
+        unregistered_emails = [email for email in form.emails.data
+                               if email not in registered_emails]
+
+        for email in unregistered_emails:
+
+            # the invite should have a key/ID so we
+            # can check for it at signup. 
+
+            # we'll then share the photo automatically
+            # with the newly-signed up user.
+
+            invite = Invite(email=email,
+                            sender=request.user,
+                            photo=photo)
+
+            DBSession.add(invite)
+
+        # so we get the IDs & default cols
+        DBSession.flush()
+
+        for invite in invites:
+            send_invite_email()
+
+        return {'success' : True, 'emails' : form.emails.data}
+
+    return render('share_photo.jinja2', {
+        'form' : form,
+        'photo' : photo,
+        }, request)
+
+
+
+# TBD: move this into Cornice API
+"""
 @view_config(route_name="api/upload",
              renderer="json",
              request_method="POST",
              permission="upload")
+"""
 def upload(request):
 
     uploaded_file = request.params.get('uploaded_file')
@@ -359,3 +412,4 @@ def upload(request):
     photo.taglist = tags
 
     return {"success" : True}
+
