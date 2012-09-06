@@ -9,17 +9,24 @@ from pyramid.response import Response
 from pyramid.renderers import render
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, not_
 
 from webhelpers.paginate import Page
 
-from .models import User, Photo, Tag, DBSession
+from .models import (
+    DBSession,
+    User, 
+    Photo, 
+    Tag, 
+    Invite,
+    )
 
 from .forms import (
     LoginForm, 
     SignupForm,
     PhotoUploadForm,
     PhotoEditForm,
+    PhotoShareForm,
     SendPhotoForm,
     ForgotPasswordForm,
     ChangePasswordForm
@@ -34,6 +41,17 @@ def home(request):
                 Photo.owner_id==request.user.id).order_by(
                 Photo.created_at.desc())
     
+    page = Page(photos, int(request.params.get('page', 0)), items_per_page=18)
+
+    return {'page' : page}
+
+
+@view_config(route_name='shared',
+             renderer='shared.jinja2')
+def shared_photos(request):
+
+    photos = request.user.shared_photos
+
     page = Page(photos, int(request.params.get('page', 0)), items_per_page=18)
 
     return {'page' : page}
@@ -119,7 +137,20 @@ def login(request):
              renderer='signup.jinja2')
 def signup(request):
 
-    form = SignupForm(request)
+    invite_key = request.params.get('invite')
+
+    if invite_key:
+        invite = DBSession.query(Invite).filter_by(
+            accepted_on=None,
+            key=invite_key).first()
+
+        form = SignupForm(request, 
+                          invite=invite_key,
+                          email=invite.email)
+
+    else:
+        form = SignupForm(request)
+        invite = None
 
     if form.validate():
 
@@ -128,6 +159,10 @@ def signup(request):
 
         DBSession.add(user)
         DBSession.flush()
+
+        if invite:
+            user.shared_photos.append(invite.photo)
+            invite.accepted_on = datetime.datetime.now()
 
         request.session.flash("Welcome, %s" % user.first_name)
         headers = remember(request, str(user.id))
@@ -326,6 +361,91 @@ def edit(photo, request):
 
 
     return {'success' : False, 'html' : html}
+                     
+
+@view_config(route_name="share",
+             permission="share",
+             renderer="json",
+             xhr=True)
+def share_photo(photo, request):
+
+    form = PhotoShareForm(request)
+
+    if form.validate():
+
+        emails = set(item.data.lower() for item in form.emails.entries)
+
+        if request.user.email in emails:
+            emails.remove(request.user.email)
+
+        users = DBSession.query(User).filter(User.email.in_(emails))
+        emails_for_invites = set(emails)
+
+        for user in users:
+
+            user.shared_photos.append(photo)
+            emails_for_invites.remove(user.email)
+            
+            body = """
+            Hi, {first_name}
+            {name} has shared the photo {title} with you!
+            Check your shared photos collection here: {url}
+            """.format(
+                first_name=user.first_name,
+                name=request.user.name,
+                title=photo.title,
+                url='',
+                    )
+           
+            subject = "A photo has been shared with you"
+
+            message = mailer.Message(To=user.email,
+                                     Subject=subject,
+                                     Body=body)
+                                     
+            request.mailer.send(message)
+
+        for email in emails_for_invites:
+
+            invite = Invite(sender=request.user,
+                            photo=photo,
+                            email=email)
+
+
+            DBSession.add(invite)
+            DBSession.flush()
+
+            url = request.route_url('signup', _query={'invite' : invite.key})
+
+            body = """
+            Hi, {name} has shared a photo with you!
+            To see the photo, click here {url} to join 
+            PhotoLocker!
+            """.format(name=request.user.name, url=url)
+
+            subject = "A photo has been shared with you"
+
+            message = mailer.Message(To=email,
+                                     Subject=subject,
+                                     Body=body)
+                                     
+ 
+            request.mailer.send(message)
+
+        if len(emails) == 1:
+            message = "You have shared this photo with one person"
+        else:
+            message = "You have shared this photo with %d people" % len(emails)
+
+        return {'success' : True, 
+                'message' : message}
+
+    html = render('share_photo.jinja2', {
+        'form' : form,
+        'photo' : photo,
+        }, request)
+
+    return {'success' : False, 'html' : html}
 
 
 @view_config(route_name='logout')
@@ -333,5 +453,4 @@ def logout(request):
 
     headers = forget(request)
     return HTTPFound(request.route_url('home'), headers=headers)
-                      
-
+ 

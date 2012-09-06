@@ -20,6 +20,7 @@
         </p>
     </div>
     <div class="modal-footer hide" id="photo-modal-footer">
+        <a href="javascript:void(0);" class="btn share-btn"><i class="icon-share"></i> Share</a>
         <a href="javascript:void(0);" class="btn send-btn"><i class="icon-envelope"></i> Send</a>
         <a href="javascript:void(0);" class="btn edit-btn"><i class="icon-pencil"></i> Edit</a>
         <a href="javascript:void(0);" class="btn delete-btn"><i class="icon-trash"></i> Delete</a>
@@ -44,6 +45,7 @@
     <li class="span4 photo">
         <a data-send-url="{{ request.route_url('send', id=photo.id) }}" 
            {% if has_permission('edit', photo) %}data-edit-url="{{ request.route_url('edit', id=photo.id) }}"{% endif %}
+           {% if has_permission('share', photo) %}data-share-url="{{ request.route_url('share', id=photo.id) }}"{% endif %}
            data-image-url="{{ request.route_url('image', id=photo.id) }}"
            data-thumbnail-url="{{ request.route_url('thumbnail', id=photo.id) }}"
            data-photo-id="{{ photo.id }}"
@@ -65,9 +67,6 @@
 
 {% block scripts %}
 <script>
-new PhotoApp.PhotosPage('{{ request.route_url('tags') }}');
-
+    new PhotoApp.PhotosPage('{{ request.route_url('tags') }}');
 </script>
-
-
 {% endblock %}

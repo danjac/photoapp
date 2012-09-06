@@ -56,6 +56,9 @@ class AuthenticationPolicy(AuthTktAuthenticationPolicy):
             if request.user.is_admin:
                 groups.append(Admins)
 
+            for photo in request.user.shared_photos:
+                groups.append("shared:%d" % photo.id)
+
         return groups
 
 

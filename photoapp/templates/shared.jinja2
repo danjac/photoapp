@@ -1,0 +1,23 @@
+{% extends "layout.jinja2" %}
+{% import "_pagination.jinja2" as pagination with context %}
+
+{% block content %}
+<ul class="thumbnails">
+{% for photo in page.items %}
+    <li class="span4 photo">
+        <a href="{{ request.route_url('image', id=photo.id) }}" target="_blank" class="thumbnail">
+            <img src="{{ request.route_url('thumbnail', id=photo.id) }}" title="{{ photo.title }}" alt="{{ photo.title }}">
+        </a>
+    </li>
+{% endfor %}
+</ul>
+
+{{ pagination.render_page_links(page) }}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    new PhotoApp.SharedPage();
+</script>
+{% endblock %}

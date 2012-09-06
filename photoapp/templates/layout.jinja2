@@ -40,12 +40,11 @@
           <a class="brand" href="{{ request.route_url('home') }}">PhotoLocker</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-              <li class="active"><a href="{{ request.route_url('home') }}">Home</a></li>
-              <li><a href="#about">About</a></li>
-              <li><a href="#contact">Contact</a></li>
-
+               {% set current_route = request.matched_route.name %} 
+              <li{% if current_route == 'home' %} class="active" {% endif %}><a href="{{ request.route_url('home') }}">Home</a></li>
               {% if has_permission('upload') %}
-              <li><a href="{{ request.route_url('upload') }}">Upload</a></li>
+              <li{% if current_route == 'shared' %} class="active" {% endif %}><a href="{{ request.route_url('shared') }}">Shared</a></li>
+              <li{% if current_route == 'upload' %} class="active" {% endif %}><a href="{{ request.route_url('upload') }}">Upload</a></li>
               {% endif %}
 
               {% if request.user %}
@@ -54,6 +53,9 @@
               <li><a href="{{ request.route_url('login') }}">Sign in</a></li>
               <li><a href="{{ request.route_url('signup') }}">Sign up</a></li>
               {% endif %}
+
+              <li><a href="#about">About</a></li>
+              <li><a href="#contact">Contact</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>

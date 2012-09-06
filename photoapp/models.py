@@ -81,6 +81,11 @@ class User(Base):
 
     key = Column(String(30), unique=True)
 
+    shared_photos = relationship("Photo", 
+                                 secondary="photos_users",
+                                 backref="shared_users")
+
+
     def __unicode__(self):
         return self.name or self.email
 
@@ -216,9 +221,30 @@ class Photo(Base):
    
     @property
     def __acl__(self):
-        return [
-            (Allow, str(self.owner_id), ("view", "edit", "delete")),
+        rv = [
+            (Allow, str(self.owner_id), ("view", "edit", "share", "delete")),
+            (Allow, "shared:%d" % self.id, "view")
         ]
+
+        return rv
+
+
+class Invite(Base):
+
+    __tablename__ = "invites"
+
+    id = Column(Integer, primary_key=True)
+    created_on = Column(DateTime, default=func.now())
+    accepted_on = Column(DateTime)
+
+    email = Column(String(180), nullable=False)
+    key = Column(String(30), unique=True, default=random_string)
+
+    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    photo_id = Column(Integer, ForeignKey("photos.id"))
+
+    photo = relationship("Photo")
+    sender = relationship("User")
 
 
 class Tag(Base):
@@ -246,6 +272,14 @@ class Tag(Base):
     @property
     def __acl__(self):
         return [(Allow, str(self.owner_id), "view")]
+
+
+photos_users = Table(
+    "photos_users",
+    Base.metadata,
+    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
+    Column("photo_id", Integer, ForeignKey("photos.id"), primary_key=True),
+)
 
 
 photos_tags = Table(

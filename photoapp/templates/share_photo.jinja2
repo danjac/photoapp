@@ -1,0 +1,32 @@
+{% import "_forms.jinja2" as forms with context %}
+{% call forms.render_form(form, id="share-photo-form") %}
+
+    <legend>Share this photo</legend>
+
+    <p>Enter the email addresses of the people you want to share this 
+    photo with. If they haven't joined this site yet, we'll send them 
+    an invite.</p>
+
+    <dl class="share-email-list">
+
+        {% for item in form.emails.entries %}
+
+        <dd>
+            {{ forms.render_errors(item) }} 
+            {{ item }}
+        </dd>
+        {% endfor %}
+
+        <dd>
+            <button class="share-add-another-btn btn"><i class="icon-plus"></i> Add another</button>
+        </dd>
+
+    </dl>
+
+
+    {{ form.submit(class="btn") }}
+
+    <button class="btn cancel-btn" type="button">Cancel</button>
+    
+{% endcall %}
+

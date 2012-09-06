@@ -34,6 +34,7 @@ class PhotoApp.Photo
         @sendURL = @el.attr 'data-send-url'
         @deleteURL = @el.attr 'data-delete-url'
         @editURL = @el.attr 'data-edit-url'
+        @shareURL = @el.attr 'data-share-url'
 
         @title = @el.attr 'data-title'
         @height = @el.attr 'data-height'
@@ -50,10 +51,20 @@ class PhotoApp.Photo
         )
 
 
+        @doc.on 'click', '#photo-modal .share-add-another-btn', (event) =>
+            event.preventDefault()
+            numItems = $("#share-photo-form input[type='text']").length
+            newItem = "<dd><input type=\"text\" name=\"emails-#{ numItems - 1}\"></dd>"
+            $(event.currentTarget).parent().before(newItem)
+
         @doc.on 'click', '#photo-modal .cancel-btn', (event) =>
             event.preventDefault()
             @showDefaultContent()
-        
+
+        @doc.on 'submit', '#share-photo-form', (event) =>
+            event.preventDefault()
+            @submitForm($('#share-photo-form'))
+       
         @doc.on 'submit', '#send-photo-form', (event) =>
             event.preventDefault()
             @submitForm($('#send-photo-form'))
@@ -75,6 +86,11 @@ class PhotoApp.Photo
                 $('#photo-modal .edit-btn').show().on 'click', => @edit()
             else
                 $('#photo-modal .edit-btn').hide()
+
+            if @shareURL?
+                $('#photo-modal .share-btn').show().on 'click', => @share()
+            else
+                $('#photo-modal .share-btn').hide()
 
  
             if @deleteURL?
@@ -141,6 +157,23 @@ class PhotoApp.Photo
     send: -> @showForm @sendURL
        
     edit: -> @showForm @editURL
+
+    share: -> @showForm @shareURL
+
+
+class PhotoApp.SharedPage
+
+    constructor: ->
+        jQuery => @onload()
+
+    onload: ->
+        $.ias
+            container : '.thumbnails'
+            item: '.photo'
+            pagination: '.pagination'
+            next: '.next a'
+            loader: '<img src="ias/loader.gif">'
+
 
 
 class PhotoApp.PhotosPage

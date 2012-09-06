@@ -12,6 +12,7 @@ def includeme(config):
     config.add_route('upload', '/upload')
     config.add_route('search', '/search')
     config.add_route('tags', '/tags')
+    config.add_route('shared', '/shared')
 
     config.add_route('tag', '/tag/{id}/{name}',
                      traverse='/{id}',
@@ -34,10 +35,8 @@ def includeme(config):
     photo_route('thumbnail', '/thumbnail/{id}.jpg') 
     photo_route('image', '/photo/{id}.jpg') 
     photo_route('send', '/send/{id}') 
+    photo_route('share', '/share/{id}') 
     photo_route('edit', '/edit/{id}') 
     photo_route('delete', '/delete/{id}')
 
-    # API routes
-
-    #config.add_route('api/upload', '/api/upload')
      

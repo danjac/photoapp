@@ -8,6 +8,7 @@ from wtforms import (
     FileField,
     HiddenField,
     SubmitField,
+    FieldList,
         )
 
 from wtforms.validators import (
@@ -72,6 +73,8 @@ class LoginForm(Form):
 
 class SignupForm(Form):
 
+    invite = HiddenField()
+
     first_name = TextField("First name", validators=[Required()])
     last_name = TextField("Last name", validators=[Required()])
 
@@ -123,6 +126,15 @@ class PhotoEditForm(Form):
     title = TextField("Title", validators=[Required()])
     taglist = TextField("Tags")
     submit = SubmitField("Update")
+
+
+class PhotoShareForm(Form):
+
+    emails = FieldList(
+                TextField(validators=[Required(), 
+                                      Email()]), min_entries=1)
+
+    submit = SubmitField("Share")
 
 
 class SendPhotoForm(Form):
