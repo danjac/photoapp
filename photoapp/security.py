@@ -1,7 +1,6 @@
 import binascii
 
 from paste.httpheaders import AUTHORIZATION
-from paste.httpheaders import WWW_AUTHENTICATE
 
 from pyramid.security import (
     unauthenticated_userid, 
