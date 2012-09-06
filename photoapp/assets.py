@@ -69,4 +69,6 @@ def includeme(config):
     jinja2_env = config.get_jinja2_environment()
     jinja2_env.assets_environment = config.get_webassets_env()
 
+    # add static views
+    config.add_static_view('static', 'static')
 

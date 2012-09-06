@@ -19,8 +19,6 @@ def main(global_config, **settings):
     config.include('photoapp.assets')
     config.include('photoapp.routes')
 
-    config.add_static_view('static', 'static')
-   
     config.scan()
 
     return config.make_wsgi_app()

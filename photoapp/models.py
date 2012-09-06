@@ -84,6 +84,16 @@ class User(Base):
     def __unicode__(self):
         return self.name or self.email
 
+    @classmethod
+    def authenticate(cls, email, password):
+
+        user = DBSession.query(cls).filter_by(
+                email=email, 
+                is_active=True).first()
+
+        if user and user.check_password(password):
+            return user
+
     @property
     def name(self):
         if self.first_name and self.last_name:

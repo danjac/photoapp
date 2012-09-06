@@ -16,6 +16,7 @@ requires=[
     'sqlalchemy',
     'zope.sqlalchemy',
     'psycopg2',
+    'paste',
     'wtforms',
     'cryptacular',
     'mailer',

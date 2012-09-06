@@ -102,12 +102,8 @@ def login(request):
 
     if form.validate():
 
-        user = DBSession.query(User).filter(
-                and_(User.is_active==True, 
-                     User.email==form.email.data)).first()
-                                       
-        if user and user.check_password(form.password.data):
-
+        user = User.authenticate(form.email.data, form.password.data)
+        if user:
             user.last_login_at = datetime.datetime.now()
 
             request.session.flash("Welcome back, %s" % user.first_name)
@@ -339,5 +335,27 @@ def logout(request):
     return HTTPFound(request.route_url('home'), headers=headers)
                       
 
+@view_config(route_name="api/upload",
+             renderer="json",
+             request_method="POST",
+             permission="upload")
+def upload(request):
 
+    uploaded_file = request.params.get('uploaded_file')
+    tags = request.params.get('tags')
+    title = request.params.get('title')
 
+    # TBD: validate uploaded file
+
+    photo = Photo(owner=request.user,
+                  title=title or uploaded_file.filename)
+
+    photo.save_image(request.fs,
+                     uploaded_file.file, 
+                     uploaded_file.filename)
+
+    DBSession.add(photo)
+
+    photo.taglist = tags
+
+    return {"success" : True}

@@ -37,3 +37,7 @@ def includeme(config):
     photo_route('edit', '/edit/{id}') 
     photo_route('delete', '/delete/{id}')
 
+    # API routes
+
+    config.add_route('api/upload', '/api/upload')
+     
