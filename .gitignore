@@ -1,4 +1,5 @@
 *.swp
+*.swo
 *.ini
 *.pyc
 *.webassets-cache
