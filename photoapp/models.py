@@ -117,6 +117,7 @@ class User(Base):
 
     def reset_key(self):
         self.key = random_string()
+        return self.key
 
 
 class Photo(Base):

@@ -1,4 +1,5 @@
 import os
+import shutil
 import mock
 import unittest
 import transaction
@@ -9,6 +10,18 @@ from pyramid.paster import get_appsettings
 from sqlalchemy import engine_from_config
 from webob.multidict import MultiDict
 
+
+class DummyMailer(object):
+    """
+    Mock mailer object. Saves message instances
+    instead of sending them.
+    """
+
+    def __init__(self):
+        self.messages = []
+
+    def send(self, message):
+        self.messages.append(message)
 
 
 class TestCase(unittest.TestCase):
@@ -30,19 +43,24 @@ class TestCase(unittest.TestCase):
         DBSession.configure(bind=self.engine)
         Base.metadata.create_all(self.engine)
 
+        try:
+            os.makedirs("test_uploads")
+        except OSError:
+            pass
+
        
     def tearDown(self):
         from .models import DBSession, Base
 
         self.trans.rollback()
 
+        shutil.rmtree("test_uploads")
+
         DBSession.remove()
         testing.tearDown()
 
 
-
 class StorageTests(TestCase):
-
 
     def test_path(self):
 
@@ -61,6 +79,80 @@ class StorageTests(TestCase):
         fs = FileStorage.from_settings(self.config.get_settings())
         fo = fs.file("test.jpg")
         self.assert_(fo.path == fs.path("test.jpg"))
+
+    def test_file_obj_delete_if_not_exists(self):
+
+        from .storage import FileStorage
+
+        fs = FileStorage("test_uploads")
+        fo = fs.file("test.jpg")
+        self.assert_(not fo.exists())
+        fo.delete()
+        self.assert_(not fo.exists())
+
+
+    def test_file_obj_delete(self):
+
+        from .storage import FileStorage
+
+        shutil.copyfile(os.path.join("test_media", "coffee.jpg"), 
+                        os.path.join("test_uploads", "test.jpg"))
+
+        fs = FileStorage("test_uploads")
+        fo = fs.file("test.jpg")
+        self.assert_(fo.exists())
+        fo.delete()
+        self.assert_(not fo.exists())
+
+    def test_file_obj_copy(self):
+
+        from .storage import FileStorage
+
+        fs = FileStorage("test_uploads")
+        fp = open(os.path.join("test_media", "coffee.jpg"))
+        fo = fs.file("test.jpg")
+        self.assert_(not fo.exists())
+        fo.copy(fp)
+        self.assert_(fo.exists())
+
+    def test_file_obj_exists_if_does_exist(self):
+
+        from .storage import FileStorage
+
+        fs = FileStorage("test_media")
+        fo = fs.file("coffee.jpg")
+        self.assert_(fo.exists())
+        
+    def test_file_obj_exists_if_does_not_exist(self):
+
+        from .storage import FileStorage
+
+        fs = FileStorage("test_media")
+        fo = fs.file("foo.jpg")
+        self.assert_(not fo.exists())
+
+    def test_file_storage_read(self):
+        from .storage import FileStorage
+
+        fs = FileStorage("test_media")
+        self.assert_(fs.read("coffee.jpg"))
+ 
+    def test_file_obj_read(self):
+        from .storage import FileStorage
+
+        fs = FileStorage("test_media")
+        fo = fs.file("coffee.jpg")
+        self.assert_(fo.read())
+        
+    def test_file_obj_write(self):
+        from .storage import FileStorage
+
+        fs = FileStorage("test_uploads")
+        fo = fs.file("test.txt")
+        fo.write("testing")
+
+        self.assert_(fo.exists())
+        self.assert_(fo.read() == "testing")
 
 
 class PhotoTests(TestCase):
@@ -104,7 +196,8 @@ class PhotoTests(TestCase):
         photo.taglist = "landscapes norway winter snow"
 
         self.assert_(len(photo.tags) == 4)
-
+        tag = photo.tags[0]
+        self.assert_(tag.frequency == 1)
 
     def test_add_tags_if_dupes(self):
 
@@ -137,10 +230,34 @@ class PhotoTests(TestCase):
         photo.taglist = "norway winter snow skiing"
 
         self.assert_(len(photo.tags) == 4)
-
   
+    def test_save_image(self):
+
+        from .storage import FileStorage
+        from .models import Photo
+
+        fs = FileStorage("test_uploads")
+        fp = open(os.path.join("test_media", "coffee.jpg"), "rb")
+
+        photo = Photo()
+        photo.save_image(fs, fp, "test.jpg")
+
+        self.assert_(photo.get_image(fs).exists())
+        self.assert_(photo.get_thumbnail(fs).exists())
+        self.assert_(photo.image != "test.jpg")
+        self.assert_(photo.image.endswith(".jpg"))
+
+        self.assert_(photo.height)
+        self.assert_(photo.width)
+
 
 class UserTests(TestCase):
+
+    def test_reset_key(self):
+
+        from .models import User
+        u = User()
+        self.assert_(u.reset_key() is not None)
 
     def test_set_password(self):
 
@@ -160,6 +277,59 @@ class UserTests(TestCase):
         u = User(password="test")
         self.assert_(not u.check_password("TEST"))
 
+    def test_authenticate_if_no_user(self):
+
+        from .models import User
+
+        u = User.authenticate("tester@gmail.com", "test")
+        self.assert_(u is None)
+
+    def test_authenticate_if_bad_email(self):
+
+        from .models import User, DBSession
+
+        u = User(email="tester@gmail.com", password="test")
+        DBSession.add(u)
+        DBSession.flush()
+
+        u = User.authenticate("TESTER@gmail.com", "test")
+        self.assert_(u is None)
+
+    def test_authenticate_if_bad_password(self):
+
+        from .models import User, DBSession
+
+        u = User(email="tester@gmail.com", password="test")
+        DBSession.add(u)
+        DBSession.flush()
+
+        u = User.authenticate("tester@gmail.com", "test1")
+        self.assert_(u is None)
+
+    def test_authenticate_if_inactive(self):
+
+        from .models import User, DBSession
+
+        u = User(email="tester@gmail.com", password="test", is_active=False)
+        DBSession.add(u)
+        DBSession.flush()
+
+        u = User.authenticate("tester@gmail.com", "test")
+        self.assert_(u is None)
+
+    def test_authenticate_if_all_ok(self):
+
+        from .models import User, DBSession
+
+        u = User(email="tester@gmail.com", password="test")
+        DBSession.add(u)
+        DBSession.flush()
+
+        u = User.authenticate("tester@gmail.com", "test")
+        self.assert_(u is not None)
+
+
+            
 
 class HomeTests(TestCase):
 

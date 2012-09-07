@@ -44,23 +44,23 @@ def _get_credentials(request):
     return (email, password)
 
 
-class AuthenticationPolicy(AuthTktAuthenticationPolicy):
 
-    def effective_principals(self, request):
+def groupfinder(user_id, request):
 
-        groups = [Everyone]
+    groups = [Everyone]
 
-        if request.user and request.user.is_active:
-            groups.append(Authenticated)
-            groups.append("user:%d" % request.user.id)
+    if request.user and request.user.is_active:
 
-            if request.user.is_admin:
-                groups.append(Admins)
+        groups.append(Authenticated)
+        groups.append("user:%d" % request.user.id)
 
-            for photo in request.user.shared_photos:
-                groups.append("shared:%d" % photo.id)
+        if request.user.is_admin:
+            groups.append(Admins)
 
-        return groups
+        for photo in request.user.shared_photos:
+            groups.append("shared:%d" % photo.id)
+
+    return groups
 
 
 def get_user(request):
@@ -81,7 +81,7 @@ def get_user(request):
 
 def includeme(config):
 
-    authn_policy = AuthenticationPolicy('seekret')
+    authn_policy = AuthTktAuthenticationPolicy('seekret', callback=groupfinder)
     authz_policy = ACLAuthorizationPolicy()
 
     config.set_root_factory(Root)

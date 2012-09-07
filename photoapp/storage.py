@@ -25,7 +25,7 @@ class FileObj(object):
         return self.open("rb").read()
 
     def write(self, contents):
-        self.open("rb").write(contents)
+        self.open("wb").write(contents)
 
     def copy(self, fp):
         shutil.copyfileobj(fp, self.open("wb"))
@@ -35,6 +35,9 @@ class FileObj(object):
             os.remove(self.path)
         except OSError, e:
             logging.exception(e)
+
+    def exists(self):
+        return os.path.exists(self.path)
 
 
 class FileStorage(object):

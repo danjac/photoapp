@@ -4,5 +4,5 @@
 *.webassets-cache
 *.egg-info
 data
+test_uploads
 uploads
-uploads_test
