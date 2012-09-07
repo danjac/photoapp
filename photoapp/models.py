@@ -226,7 +226,7 @@ class Photo(Base):
         from .security import Admins
 
         return [
-            (Allow, Admins, ("edit", "delete")),
+            (Allow, Admins, ("view", "edit", "delete")),
 
             (Allow, "user:%d" % self.owner_id, 
                 ("view", "edit", "share", "delete")),

@@ -6,7 +6,7 @@ import transaction
 
 from pyramid import testing
 from pyramid.paster import get_appsettings
-#from sqlalchemy import create_engine
+from pyramid.security import Allow
 from sqlalchemy import engine_from_config
 from webob.multidict import MultiDict
 
@@ -250,6 +250,20 @@ class PhotoTests(TestCase):
         self.assert_(photo.height)
         self.assert_(photo.width)
 
+    def test_acl(self):
+
+        from .security import Admins
+        from .models import Photo
+
+        photo = Photo(id=1, owner_id=1)
+
+        acl = [
+            (Allow, Admins, ("view", "edit", "delete")),
+            (Allow, "user:1", ("view", "edit", "share", "delete")),
+            (Allow, "shared:1", ("view", "copy", "delete_shared")),
+                ]
+
+        self.assert_(photo.__acl__ == acl)
 
 class UserTests(TestCase):
 
