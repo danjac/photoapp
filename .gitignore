@@ -4,6 +4,7 @@
 *.pyc
 *.webassets-cache
 *.egg-info
+*.coverage
 data
 test_uploads
 uploads
