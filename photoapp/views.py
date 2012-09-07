@@ -9,7 +9,7 @@ from pyramid.response import Response
 from pyramid.renderers import render
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 
-from sqlalchemy import and_, or_, not_
+from sqlalchemy import and_, or_
 
 from webhelpers.paginate import Page
 
@@ -24,6 +24,7 @@ from .models import (
 from .forms import (
     LoginForm, 
     SignupForm,
+    EditAccountForm,
     PhotoUploadForm,
     PhotoEditForm,
     PhotoShareForm,
@@ -185,23 +186,7 @@ def forgot_password(request):
 
             user.reset_key()
 
-            body = """
-            Hi, {first_name}
-
-            Please go here : {url} to change your password.
-
-            Thanks!
-            """.format(
-                first_name=user.first_name, 
-                url=request.route_url('change_pass', 
-                                      _query={'key' : user.key})
-            )
-
-            msg = mailer.Message(To=user.email,
-                                 Subject="Change your password!",
-                                 Body=body)
-
-            request.mailer.send(msg)
+            send_forgot_password_email(request, user)
 
             request.session.flash(
                 "Please check your inbox, we have emailed "
@@ -282,21 +267,12 @@ def send_photo(photo, request):
 
     if form.validate():
 
-        body = """ 
-        Hi {recipient_name},
-        {sender_name} sent you a photo!
-        """.format(sender_name=request.user.first_name,
-                   recipient_name=form.name.data)
-
-        
-        message = mailer.Message(To=form.email.data,
-                                 From=request.user.email,
-                                 Subject=photo.title,
-                                 Body=body)
-
-        message.attach(photo.get_image(request.fs).path)
-
-        request.mailer.send(message)
+        send_photo_attachment_email(
+            request, 
+            photo, 
+            form.name.data, 
+            form.email.data
+                )
 
         message = "You have emailed the photo %s to %s" % (
                 photo.title, 
@@ -385,26 +361,8 @@ def share_photo(photo, request):
 
             user.shared_photos.append(photo)
             emails_for_invites.remove(user.email)
+            send_shared_photo_notification_email(request, photo, user)
             
-            body = """
-            Hi, {first_name}
-            {name} has shared the photo {title} with you!
-            Check your shared photos collection here: {url}
-            """.format(
-                first_name=user.first_name,
-                name=request.user.name,
-                title=photo.title,
-                url='',
-                    )
-           
-            subject = "A photo has been shared with you"
-
-            message = mailer.Message(To=user.email,
-                                     Subject=subject,
-                                     Body=body)
-                                     
-            request.mailer.send(message)
-
         for email in emails_for_invites:
 
             invite = Invite(sender=request.user,
@@ -415,22 +373,7 @@ def share_photo(photo, request):
             DBSession.add(invite)
             DBSession.flush()
 
-            url = request.route_url('signup', _query={'invite' : invite.key})
-
-            body = """
-            Hi, {name} has shared a photo with you!
-            To see the photo, click here {url} to join 
-            PhotoLocker!
-            """.format(name=request.user.name, url=url)
-
-            subject = "A photo has been shared with you"
-
-            message = mailer.Message(To=email,
-                                     Subject=subject,
-                                     Body=body)
-                                     
- 
-            request.mailer.send(message)
+            send_invite_email(request, invite)
 
         if len(emails) == 1:
             message = "You have shared this photo with one person"
@@ -447,6 +390,35 @@ def share_photo(photo, request):
 
     return {'success' : False, 'html' : html}
 
+@view_config(route_name='about',
+             renderer='about.jinja2', 
+             permission=NO_PERMISSION_REQUIRED)
+def about(request):
+    return {}
+
+
+@view_config(route_name='contact',
+             renderer='contact.jinja2', 
+             permission=NO_PERMISSION_REQUIRED)
+def contact(request):
+    return {}
+
+
+@view_config(route_name='settings',
+             renderer='edit_account.jinja2')
+def edit_account(request):
+
+    form = EditAccountForm(request, obj=request.user)
+
+    if form.validate():
+
+        form.populate_obj(request.user)
+        request.session.flash("Your account settings have been saved")
+
+        return HTTPFound(request.route_url('home'))
+
+    return {'form' : form}
+
 
 @view_config(route_name='logout')
 def logout(request):
@@ -454,3 +426,88 @@ def logout(request):
     headers = forget(request)
     return HTTPFound(request.route_url('home'), headers=headers)
  
+# Emails
+
+def send_forgot_password_email(request, user):
+
+    body = """
+    Hi, {first_name}
+
+    Please go here : {url} to change your password.
+
+    Thanks!
+    """.format(
+        first_name=user.first_name, 
+        url=request.route_url('change_pass', 
+                              _query={'key' : user.key})
+    )
+
+    message = mailer.Message(To=user.email,
+                             Subject="Change your password!",
+                             Body=body)
+
+
+    request.mailer.send(message)
+
+
+def send_photo_attachment_email(request, photo, 
+        recipient_name, recipient_email):
+
+    body = """ 
+    Hi {recipient_name},
+    {sender_name} sent you a photo!
+    """.format(sender_name=request.user.first_name,
+               recipient_name=recipient_name)
+
+    message = mailer.Message(To=recipient_email,
+                             From=request.user.email,
+                             Subject=photo.title,
+                             Body=body)
+
+    message.attach(photo.get_image(request.fs).path)
+
+    request.mailer.send(message)
+
+
+def send_shared_photo_notification_email(request, photo, recipient):
+
+    body = """
+    Hi, {first_name}
+    {name} has shared the photo {title} with you!
+    Check your shared photos collection here: {url}
+    """.format(
+        first_name=recipient.first_name,
+        name=request.user.name,
+        title=photo.title,
+        url=request.route_url('shared'),
+            )
+   
+    subject = "A photo has been shared with you"
+
+    message = mailer.Message(To=recipient.email,
+                             Subject=subject,
+                             Body=body)
+                             
+    request.mailer.send(message)
+
+
+def send_invite_email(request, invite):
+
+    url = request.route_url('signup', _query={'invite' : invite.key})
+
+    body = """
+    Hi, {name} has shared a photo with you!
+    To see the photo, click here {url} to join 
+    PhotoLocker!
+    """.format(name=request.user.name, url=url)
+
+    subject = "A photo has been shared with you"
+
+    message = mailer.Message(To=invite.email,
+                             Subject=subject,
+                             Body=body)
+                             
+
+    request.mailer.send(message)
+
+

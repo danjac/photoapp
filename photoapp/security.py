@@ -16,6 +16,7 @@ from .models import User, DBSession
 
 Admins = "system:Admins"
 
+
 def _get_credentials(request):
     """
     Get BASIC HTTP Auth creds for the API views.
@@ -51,7 +52,7 @@ class AuthenticationPolicy(AuthTktAuthenticationPolicy):
 
         if request.user and request.user.is_active:
             groups.append(Authenticated)
-            groups.append(str(request.user.id))
+            groups.append("user:%d" % request.user.id)
 
             if request.user.is_admin:
                 groups.append(Admins)

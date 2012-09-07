@@ -40,22 +40,24 @@
           <a class="brand" href="{{ request.route_url('home') }}">PhotoLocker</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-               {% set current_route = request.matched_route.name %} 
-              <li{% if current_route == 'home' %} class="active" {% endif %}><a href="{{ request.route_url('home') }}">Home</a></li>
+                {% macro active_tab(name) -%} {% if request.matched_route.name == name %} class="active"{% endif %}{%- endmacro %}
+
+              <li {{ active_tab('home') }}><a href="{{ request.route_url('home') }}">Home</a></li>
               {% if has_permission('upload') %}
-              <li{% if current_route == 'shared' %} class="active" {% endif %}><a href="{{ request.route_url('shared') }}">Shared</a></li>
-              <li{% if current_route == 'upload' %} class="active" {% endif %}><a href="{{ request.route_url('upload') }}">Upload</a></li>
+              <li {{ active_tab('shared') }}><a href="{{ request.route_url('shared') }}">Shared</a></li>
+              <li {{ active_tab('upload') }}><a href="{{ request.route_url('upload') }}">Upload</a></li>
               {% endif %}
 
               {% if request.user %}
+              <li {{ active_tab('settings')}}><a href="{{ request.route_url('settings') }}">Settings</a></li>
               <li><a href="{{ request.route_url('logout') }}">Sign out</a></li>
               {% else %}
-              <li><a href="{{ request.route_url('login') }}">Sign in</a></li>
-              <li><a href="{{ request.route_url('signup') }}">Sign up</a></li>
+              <li {{ active_tab('login') }}><a href="{{ request.route_url('login') }}">Sign in</a></li>
+              <li {{ active_tab('signup') }}><a href="{{ request.route_url('signup') }}">Sign up</a></li>
               {% endif %}
 
-              <li><a href="#about">About</a></li>
-              <li><a href="#contact">Contact</a></li>
+              <li {{ active_tab('about') }}><a href="{{ request.route_url('about') }}">About</a></li>
+              <li {{ active_tab('contact') }}><a href="{{ request.route_url('contact') }}">Contact</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>

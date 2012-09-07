@@ -221,12 +221,18 @@ class Photo(Base):
    
     @property
     def __acl__(self):
-        rv = [
-            (Allow, str(self.owner_id), ("view", "edit", "share", "delete")),
-            (Allow, "shared:%d" % self.id, "view")
-        ]
 
-        return rv
+        from .security import Admins
+
+        return [
+            (Allow, Admins, ("edit", "delete")),
+
+            (Allow, "user:%d" % self.owner_id, 
+                ("view", "edit", "share", "delete")),
+
+            (Allow, "shared:%d" % self.id, 
+                ("view", "copy", "delete_shared"))
+        ]
 
 
 class Invite(Base):
@@ -243,8 +249,8 @@ class Invite(Base):
     sender_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     photo_id = Column(Integer, ForeignKey("photos.id"))
 
-    photo = relationship("Photo")
-    sender = relationship("User")
+    photo = relationship("Photo", backref="invites", cascade="delete")
+    sender = relationship("User", backref="invites")
 
 
 class Tag(Base):
@@ -271,7 +277,7 @@ class Tag(Base):
 
     @property
     def __acl__(self):
-        return [(Allow, str(self.owner_id), "view")]
+        return [(Allow, "user:%d" % self.owner_id, "view")]
 
 
 photos_users = Table(

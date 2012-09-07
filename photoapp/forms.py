@@ -20,7 +20,7 @@ from wtforms.validators import (
 
 from wtforms.ext.csrf import SecureForm
 
-from sqlalchemy import exists
+from sqlalchemy import exists, and_, not_
 
 from .models import User, DBSession
 
@@ -55,10 +55,11 @@ class Form(SecureForm):
         
         super(Form, self).__init__(formdata, *args, **kwargs)
 
-    def validate(self):
+    def validate(self, *args, **kwargs):
+
         if self.request.method == "GET":
             return False
-        return super(Form, self).validate()
+        return super(Form, self).validate(*args, **kwargs)
 
     def generate_csrf_token(self, csrf_context=None):
         return self.request.session.get_csrf_token()
@@ -71,7 +72,7 @@ class LoginForm(Form):
     login = SubmitField("Sign in")
 
 
-class SignupForm(Form):
+class AccountForm(Form):
 
     invite = HiddenField()
 
@@ -87,6 +88,34 @@ class SignupForm(Form):
                         validators=[EqualTo('password')])
 
     
+    submit = SubmitField("Save")
+
+
+class EditAccountForm(AccountForm):
+
+    def __init__(self, *args, **kwargs):
+
+        super(EditAccountForm, self).__init__(*args, **kwargs)
+        try:
+            obj = kwargs['obj']
+        except KeyError:
+            raise ValueError("obj is a required argument")
+
+        self.current_email = obj.email
+
+    def validate_email(self, field):
+        """
+        When latest version of wtforms comes out use extra_validators
+        instead to get current user email.
+        """
+        if DBSession.query(exists().where(
+            and_(User.email==field.data,
+                 not_(User.email==self.current_email)))).scalar():
+            raise ValidationError("This email address is already taken")
+
+
+class SignupForm(AccountForm):
+
     submit = SubmitField("Sign up")
 
     def validate_email(self, field):

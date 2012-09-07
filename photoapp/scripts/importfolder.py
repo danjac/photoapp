@@ -1,5 +1,7 @@
 import os
 import sys
+import datetime
+
 import transaction
 
 from sqlalchemy import engine_from_config
@@ -20,8 +22,19 @@ def usage(argv):
 
     sys.exit(1)
 
+def getmtime(filename):
+    return datetime.datetime.fromtimestamp(os.path.getmtime(filename))
 
 def add_new_photos(owner, fs, dir):
+
+    logfile = os.path.expanduser(os.path.join("~", ".photoapp"))
+
+    try:
+        filenames = open(logfile).read().splitlines()
+        logfile_last_modified = getmtime(logfile)
+    except IOError:
+        filenames = []
+        logfile_last_modified = datetime.datetime.now()
 
     for (path, dirs, files) in os.walk(dir):
         for filename in files:
@@ -34,6 +47,10 @@ def add_new_photos(owner, fs, dir):
                 full_path = os.path.join(path, filename)
                 print(full_path)
 
+                if full_path in filenames and getmtime(
+                        full_path) < logfile_last_modified:
+                    continue
+
                 photo = Photo(owner=owner, title=name)
 
                 try:
@@ -44,6 +61,8 @@ def add_new_photos(owner, fs, dir):
 
                 DBSession.add(photo)
                 photo.taglist = tags
+
+    open(logfile, "w").writelines("%s\n" % n for n in filenames)
 
 
 def main(argv=sys.argv):

@@ -18,7 +18,16 @@ class PhotoApp.Message
 PhotoApp.showMessage = (message) ->
     new PhotoApp.Message(message).show()
 
- 
+PhotoApp.paginate = ->
+    # sets up infinite scrolling
+    $.ias
+        container : '.thumbnails'
+        item: '.photo'
+        pagination: '.pagination'
+        next: '.next a'
+        loader: '<img src="ias/loader.gif">'
+
+
 class PhotoApp.Photo
 
     constructor: (@page, @el) ->
@@ -54,8 +63,15 @@ class PhotoApp.Photo
         @doc.on 'click', '#photo-modal .share-add-another-btn', (event) =>
             event.preventDefault()
             numItems = $("#share-photo-form input[type='text']").length
-            newItem = "<dd><input type=\"text\" name=\"emails-#{ numItems - 1}\"></dd>"
+
+            newItem = "<dd><input type=\"text\" name=\"emails-#{ numItems - 1}\">
+                <a href=\"#\" class=\"remove-share-email\"><i class=\"icon-remove\"></i></a>
+                </dd>"
             $(event.currentTarget).parent().before(newItem)
+
+        @doc.on 'click', '#photo-modal .remove-share-email', (event) =>
+            event.preventDefault()
+            $(event.currentTarget).parent().remove()
 
         @doc.on 'click', '#photo-modal .cancel-btn', (event) =>
             event.preventDefault()
@@ -167,13 +183,7 @@ class PhotoApp.SharedPage
         jQuery => @onload()
 
     onload: ->
-        $.ias
-            container : '.thumbnails'
-            item: '.photo'
-            pagination: '.pagination'
-            next: '.next a'
-            loader: '<img src="ias/loader.gif">'
-
+        PhotoApp.paginate()
 
 
 class PhotoApp.PhotosPage
@@ -220,12 +230,5 @@ class PhotoApp.PhotosPage
             false
 
 
-        $.ias
-            container : '.thumbnails'
-            item: '.photo'
-            pagination: '.pagination'
-            next: '.next a'
-            loader: '<img src="ias/loader.gif">'
-
-
+        PhotoApp.paginate()
 
