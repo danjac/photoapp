@@ -426,6 +426,48 @@ def logout(request):
     headers = forget(request)
     return HTTPFound(request.route_url('home'), headers=headers)
  
+
+@view_config(route_name="delete_shared",
+             permission="delete_shared",
+             xhr=True,
+             renderer="json")
+def delete_shared(photo, request):
+    request.user.shared_photos.remove(photo)
+    return {'success' : True}
+
+
+@view_config(route_name="copy",
+             permission="copy",
+             xhr=True,
+             renderer="json")
+def copy_photo(photo, request):
+
+    form = EditPhotoForm(request,
+                         title=photo.title,
+                         taglist=photo.taglist)
+                      
+    if form.validate():
+
+        new_photo = Photo(owner=request.user,
+                          title=form.title.data)
+                          
+        DBSession.add(new_photo)
+        new_photo.taglist = form.taglist.data
+
+        new_photo.save_image(request.fs,
+                             photo.get_image(request.fs).open(),
+                             photo.image)
+
+        return {'success' : True}
+
+    html = render('copy_photo.jinja2', {
+        'photo' : photo,
+        'form' : form,
+        }, request)
+
+    return {'success' : False, 'html' : html}
+
+
 # Emails
 
 def send_forgot_password_email(request, user):

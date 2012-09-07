@@ -25,8 +25,8 @@ def includeme(config):
 
     config.add_route('login', '/login')
     config.add_route('signup', '/signup')
-    config.add_route('forgot_pass', '/forgot_pass')
-    config.add_route('change_pass', '/change_pass')
+    config.add_route('forgot_pass', '/forgotpass')
+    config.add_route('change_pass', '/changepass')
     config.add_route('logout', '/logout')
 
     # photo routes
@@ -41,5 +41,7 @@ def includeme(config):
     photo_route('share', '/share/{id}') 
     photo_route('edit', '/edit/{id}') 
     photo_route('delete', '/delete/{id}')
+    photo_route('copy', '/copy/{id}')
+    photo_route('delete_shared', '/deleteshared/{id}')
 
      

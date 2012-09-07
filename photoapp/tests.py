@@ -373,8 +373,18 @@ class HomeTests(TestCase):
 
     def test_integration(self):
 
+        from .models import User, DBSession
+
+        user = User(id=1, email="danjac354@gmail.com")
+
+        DBSession.add(user)
+        DBSession.flush()
+
+        headers = {}
+
         app = TestApp(self.get_app())
-        res = app.get("/")
+        res = app.get("/", headers)
+
         self.assert_(res.status == '200 OK')
 
 

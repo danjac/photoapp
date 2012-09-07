@@ -42,8 +42,10 @@ class PhotoApp.Photo
 
         @sendURL = @el.attr 'data-send-url'
         @deleteURL = @el.attr 'data-delete-url'
+        @deleteSharedURL = @el.attr 'data-delete-shared-url'
         @editURL = @el.attr 'data-edit-url'
         @shareURL = @el.attr 'data-share-url'
+        @copyURL = @el.attr 'data-copy-url'
 
         @title = @el.attr 'data-title'
         @height = @el.attr 'data-height'
@@ -108,11 +110,26 @@ class PhotoApp.Photo
             else
                 $('#photo-modal .share-btn').hide()
 
- 
+            if @sendURL?
+                $('#photo-modal .send-btn').show().on 'click', => @send()
+            else
+                $('#photo-modal .send-btn').hide()
+
+            if @copyURL?
+                $('#photo-modal .copy-btn').show().on 'click', => @copy()
+            else
+                $('#photo-modal .copy-btn').hide()
+
             if @deleteURL?
                 $('#photo-modal .delete-btn').show().on 'click', => @delete()
             else
                 $('#photo-modal .delete-btn').hide()
+
+            if @deleteSharedURL?
+                $('#photo-modal .delete-shared-btn').show().on 'click', => @deleteShared()
+            else
+                $('#photo-modal .delete-shared-btn').hide()
+
 
             $('#photo-modal .send-btn').on 'click', => @send()
 
