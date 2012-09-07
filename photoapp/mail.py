@@ -1,7 +1,6 @@
 import sys
 import mailer
 
-from pyramid.renderers import render
 
 from .utils import on_commit
 

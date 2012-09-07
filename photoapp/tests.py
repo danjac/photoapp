@@ -7,7 +7,12 @@ import transaction
 from pyramid import testing
 from pyramid.paster import get_appsettings
 from pyramid.security import Allow
+
+from webtest import TestApp
+from webtest.debugapp import debug_app
+
 from sqlalchemy import engine_from_config
+
 from webob.multidict import MultiDict
 
 
@@ -33,10 +38,9 @@ class TestCase(unittest.TestCase):
         root_dir = os.path.dirname(os.path.dirname(__file__))
         config_ini = os.path.join(root_dir, 'test.ini')
         
-        settings = get_appsettings(config_ini)
-
-        self.config = testing.setUp(settings=settings)
-        self.engine = engine_from_config(settings, 'sqlalchemy.')
+        self.settings = get_appsettings(config_ini)
+        self.config = testing.setUp(settings=self.settings)
+        self.engine = engine_from_config(self.settings, 'sqlalchemy.')
         self.dbconn = self.engine.connect()
         self.trans = self.dbconn.begin()
 
@@ -48,6 +52,9 @@ class TestCase(unittest.TestCase):
         except OSError:
             pass
 
+    def get_app(self):
+        from . import main
+        return main(self.config, **self.settings)
        
     def tearDown(self):
         from .models import DBSession, Base
@@ -343,8 +350,6 @@ class UserTests(TestCase):
         self.assert_(u is not None)
 
 
-            
-
 class HomeTests(TestCase):
 
     def test_home_if_logged_in_user(self):
@@ -365,6 +370,12 @@ class HomeTests(TestCase):
         self.assert_(len(response['page'].items) == 1)
 
         self.assert_('login_form' not in response)
+
+    def test_integration(self):
+
+        app = TestApp(self.get_app())
+        res = app.get("/")
+        self.assert_(res.status == '200 OK')
 
 
 class LoginTests(TestCase):

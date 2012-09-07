@@ -27,6 +27,7 @@ requires=[
     'mock',
     'cssmin',
     'requests',
+    'webtest',
     ]
 
 setup(name='photoapp',
