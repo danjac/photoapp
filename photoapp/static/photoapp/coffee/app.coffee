@@ -88,6 +88,7 @@ class PhotoApp.Photo
 
         @doc.on 'submit', '#copy-photo-form', (event) =>
             event.preventDefault()
+            @modal.modal('hide')
             @submitForm($('#copy-photo-form'), (response) =>
                 if response.success?
                     @el.parent().remove()
@@ -204,6 +205,15 @@ class PhotoApp.Photo
     share: -> @showForm @shareURL
 
     copy: -> @showForm @copyURL
+
+    deleteShared: ->
+        if confirm "Are you sure you want to delete this photo?"
+            @modal.modal('hide')
+            $.post @deleteSharedURL, null, (response) =>
+                if response.success?
+                    @el.parent().remove()
+                    PhotoApp.showMessage("Photo '#{@title}' has been deleted")
+
 
 
 class PhotoApp.SharedPage
