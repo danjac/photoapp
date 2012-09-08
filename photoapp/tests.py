@@ -266,10 +266,11 @@ class PhotoTests(TestCase):
 
         acl = [
             (Allow, Admins, ("view", "edit", "delete")),
-            (Allow, "user:1", ("view", "edit", "share", "delete")),
+            (Allow, "user:1", ("view", "send", "edit", "share", "delete")),
             (Allow, "shared:1", ("view", "copy", "delete_shared")),
                 ]
 
+        print photo.__acl__
         self.assert_(photo.__acl__ == acl)
 
 class UserTests(TestCase):
@@ -419,7 +420,7 @@ class LoginTests(TestCase):
 
         response = login(request)
         self.assert_(response.status_code == 302)
-        self.assert_(response.location == "http://example.com/")
+        self.assert_(response.location == "http://example.com/home")
 
     def test_login_invalid_user(self):
 
