@@ -379,6 +379,7 @@ def share_photo(photo, request):
 
             user.shared_photos.append(photo)
             emails_for_invites.remove(user.email)
+
             send_shared_photo_notification_email(request, photo, user, note)
             
         for email in emails_for_invites:
@@ -526,11 +527,10 @@ def send_photo_attachment_email(request, photo,
     body = """ 
     Hi {recipient_name},
     {sender_name} sent you a photo!
+    {note}
     """.format(sender_name=request.user.first_name,
-               recipient_name=recipient_name)
-
-    if note:
-        body += "\r\n" + note
+               recipient_name=recipient_name,
+               note=note or '')
 
     message = mailer.Message(To=recipient_email,
                              Subject=photo.title,
@@ -547,17 +547,15 @@ def send_shared_photo_notification_email(request, photo, recipient, note):
     Hi, {first_name}
     {name} has shared the photo {title} with you!
     Check your shared photos collection here: {url}
+    {note}
     """.format(
         first_name=recipient.first_name,
         name=request.user.name,
         title=photo.title,
         url=request.route_url('shared'),
+        note=note or ''
             )
 
-    if note:
-        body += "\r\n" + note
-
-  
     subject = "A photo has been shared with you"
 
     message = mailer.Message(To=recipient.email,
@@ -575,10 +573,11 @@ def send_invite_email(request, invite, note):
     Hi, {name} has shared a photo with you!
     To see the photo, click here {url} to join 
     MyOwnDamnPhotos!
-    """.format(name=request.user.name, url=url)
+    {note}
+    """.format(name=request.user.name, 
+               note=note or '',
+               url=url)
 
-    if note:
-        body += "\r\n" + note
 
     subject = "A photo has been shared with you"
 
