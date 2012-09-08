@@ -286,7 +286,7 @@ def send_photo(photo, request):
             request, 
             photo, 
             form.name.data, 
-            form.email.data
+            form.email.data,
             form.note.data,
                 )
 
