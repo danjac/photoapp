@@ -286,6 +286,7 @@ def send_photo(photo, request):
             request, 
             photo, 
             form.name.data, 
+            form.note.data,
             form.email.data
                 )
 
@@ -364,6 +365,8 @@ def share_photo(photo, request):
 
     if form.validate():
 
+        note = form.note.data
+
         emails = set(item.data.lower() for item in form.emails.entries)
 
         if request.user.email in emails:
@@ -376,7 +379,7 @@ def share_photo(photo, request):
 
             user.shared_photos.append(photo)
             emails_for_invites.remove(user.email)
-            send_shared_photo_notification_email(request, photo, user)
+            send_shared_photo_notification_email(request, photo, user, note)
             
         for email in emails_for_invites:
 
@@ -388,7 +391,7 @@ def share_photo(photo, request):
             DBSession.add(invite)
             DBSession.flush()
 
-            send_invite_email(request, invite)
+            send_invite_email(request, invite, note)
 
         if len(emails) == 1:
             message = "You have shared this photo with one person"
@@ -518,13 +521,16 @@ def send_forgot_password_email(request, user):
 
 
 def send_photo_attachment_email(request, photo, 
-        recipient_name, recipient_email):
+        recipient_name, recipient_email, note):
 
     body = """ 
     Hi {recipient_name},
     {sender_name} sent you a photo!
     """.format(sender_name=request.user.first_name,
                recipient_name=recipient_name)
+
+    if note:
+        body += "\r\n" + note
 
     message = mailer.Message(To=recipient_email,
                              Subject=photo.title,
@@ -535,7 +541,7 @@ def send_photo_attachment_email(request, photo,
     request.mailer.send(message)
 
 
-def send_shared_photo_notification_email(request, photo, recipient):
+def send_shared_photo_notification_email(request, photo, recipient, note):
 
     body = """
     Hi, {first_name}
@@ -547,7 +553,11 @@ def send_shared_photo_notification_email(request, photo, recipient):
         title=photo.title,
         url=request.route_url('shared'),
             )
-   
+
+    if note:
+        body += "\r\n" + note
+
+  
     subject = "A photo has been shared with you"
 
     message = mailer.Message(To=recipient.email,
@@ -557,7 +567,7 @@ def send_shared_photo_notification_email(request, photo, recipient):
     request.mailer.send(message)
 
 
-def send_invite_email(request, invite):
+def send_invite_email(request, invite, note):
 
     url = request.route_url('signup', _query={'invite' : invite.key})
 
@@ -566,6 +576,9 @@ def send_invite_email(request, invite):
     To see the photo, click here {url} to join 
     MyOwnDamnPhotos!
     """.format(name=request.user.name, url=url)
+
+    if note:
+        body += "\r\n" + note
 
     subject = "A photo has been shared with you"
 

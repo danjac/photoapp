@@ -4,6 +4,7 @@ import string
 
 from wtforms import (
     TextField,
+    TextAreaField,
     PasswordField,
     FileField,
     HiddenField,
@@ -159,6 +160,8 @@ class PhotoEditForm(Form):
 
 class PhotoShareForm(Form):
 
+    note = TextAreaField("Message")
+
     emails = FieldList(
                 TextField(validators=[Required(), 
                                       Email()]), min_entries=1)
@@ -169,5 +172,6 @@ class PhotoShareForm(Form):
 class SendPhotoForm(Form):
 
     name = TextField("Name of person", validators=[Required()])
+    note = TextAreaField("Message")
     email = TextField("Email address", validators=[Required(), Email()])
     submit = SubmitField("Send")

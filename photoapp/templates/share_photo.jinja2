@@ -7,6 +7,8 @@
     photo with. If they haven't joined this site yet, we'll send them 
     an invite.</p>
 
+    <label>Recipients</label>
+
     <dl class="share-email-list">
 
         {% for item in form.emails.entries %}
@@ -27,6 +29,7 @@
     </dl>
 
 
+    {{ forms.render_field(form.note) }}
     {{ form.submit(class="btn") }}
 
     <button class="btn cancel-btn" type="button">Cancel</button>
