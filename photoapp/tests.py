@@ -270,7 +270,6 @@ class PhotoTests(TestCase):
             (Allow, "shared:1", ("view", "copy", "delete_shared")),
                 ]
 
-        print photo.__acl__
         self.assert_(photo.__acl__ == acl)
 
 class UserTests(TestCase):

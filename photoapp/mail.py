@@ -55,7 +55,7 @@ class Mailer(mailer.Mailer):
     def send_to_stdout(self, msg):
         sys.stdout.write(msg.as_string())
 
-    #@on_commit
+    @on_commit
     def send(self, msg):
         
         msg.From = msg.From or self.from_address
