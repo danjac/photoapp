@@ -62,9 +62,7 @@ def home(request):
              renderer='shared.jinja2')
 def shared_photos(request):
 
-    photos = request.user.shared_photos
-
-    page = photos_page(request, page)
+    page = photos_page(request, request.user.shared_photos)
 
     return {'page' : page}
 
