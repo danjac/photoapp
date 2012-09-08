@@ -234,7 +234,7 @@ def image(photo, request):
     Show full-size image
     """
     
-    response = Response(content_type="image/jpeg")
+    response = Response(content_type=photo.content_type)
     response.app_iter = photo.get_image(request.fs).read()
     return response
 
@@ -245,7 +245,7 @@ def download(photo, request):
 
     response = FileResponse(photo.get_image(request.fs).path,
                             request,
-                            content_type="image/jpeg")
+                            content_type=photo.content_type)
 
     response.content_disposition = "attachment;filename=%s" % photo.image
     return response

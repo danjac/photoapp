@@ -5,6 +5,7 @@ import uuid
 import base64
 import datetime
 import logging
+import mimetypes
 
 import Image
 import ImageOps
@@ -152,6 +153,10 @@ class Photo(Base):
     tags = relationship("Tag", 
                         secondary="photos_tags", 
                         backref="photos")
+
+    @property
+    def content_type(self):
+        return mimetypes.guess_type(self.image)[0]
 
     @property
     def taglist(self):

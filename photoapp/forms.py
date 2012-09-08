@@ -26,19 +26,21 @@ from sqlalchemy import exists, and_, not_
 from .models import User, DBSession
 
 
-class JpegRequired(object):
+class ImageRequired(object):
 
     def __init__(self, message=None):
         self.message = message
 
     def __call__(self, form, field):
-        message = self.message or field.gettext("A JPEG file is required")
+        message = self.message or field.gettext(
+                "A PNG or JPEG file is required")
 
         if not isinstance(field.data, cgi.FieldStorage):
             raise ValidationError(message)
 
         type, _ = mimetypes.guess_type(field.data.filename)
-        if type != "image/jpeg":
+
+        if type not in ("image/jpeg", "image/png"):
             raise ValidationError(message)
 
 
@@ -147,7 +149,7 @@ class PhotoUploadForm(Form):
 
     title = TextField("Title", validators=[Required()])
     taglist = TextField("Tags")
-    image = FileField("Image", validators=[JpegRequired()]) 
+    image = FileField("Image", validators=[ImageRequired()]) 
     submit = SubmitField("Upload")
 
 
