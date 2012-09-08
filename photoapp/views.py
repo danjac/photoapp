@@ -556,7 +556,7 @@ def send_invite_email(request, invite):
     body = """
     Hi, {name} has shared a photo with you!
     To see the photo, click here {url} to join 
-    PhotoLocker!
+    MyOwnDamnPhotos!
     """.format(name=request.user.name, url=url)
 
     subject = "A photo has been shared with you"
