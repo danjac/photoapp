@@ -36,7 +36,6 @@ def upload_files(url, auth, base_dir):
                 tags = rel_path.replace(os.path.sep, " ")
 
                 full_path = os.path.join(path, filename)
-                print(full_path)
 
                 if full_path in filenames and getmtime(
                         full_path) < logfile_last_modified:
@@ -46,6 +45,7 @@ def upload_files(url, auth, base_dir):
                 files = {"uploaded_file" : open(full_path, "rb")}
 
                 resp = requests.put(url, data, files=files, auth=auth)
+                print(full_path)
                 filenames.append(full_path)
 
     open(logfile, "w").writelines("%s\n" % n for n in filenames)

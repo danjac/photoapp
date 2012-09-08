@@ -527,7 +527,6 @@ def send_photo_attachment_email(request, photo,
                recipient_name=recipient_name)
 
     message = mailer.Message(To=recipient_email,
-                             From=request.user.email,
                              Subject=photo.title,
                              Body=body)
 
