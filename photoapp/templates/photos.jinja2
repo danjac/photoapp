@@ -34,6 +34,7 @@
 
 
 {% block search %}
+{% if page.item_count or show_search_if_empty %}
 <div class="btn-group">
     <button class="btn btn-large btn-block btn-primary" href="#" type="button" id="search-btn"><i class="icon-search icon-white"></i></button>
 </div>
@@ -45,6 +46,7 @@
         </div>
     </form>
 </div>
+{% endif %}
 {% endblock %}
 
 {% if page.item_count %}

@@ -70,7 +70,7 @@ def shared_photos(request):
 
 
 @view_config(route_name="search",
-             renderer='photos.jinja2')
+             renderer='search.jinja2')
 def search(request):
 
     search_terms = request.params.get('search', '').split()
@@ -92,7 +92,8 @@ def search(request):
 
     page = photos_page(request, photos, item_count=num_photos)
 
-    return {'page' : page}
+    return {'page' : page, 
+            'show_search_if_empty' : True}
 
 
 @view_config(route_name='tags',

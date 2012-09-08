@@ -1,0 +1,9 @@
+{% extends "layout.jinja2" %}
+
+{% block content %}
+<div class="hero-unit">
+    <h1>Keep your photos safe.</h1>
+    <p>Share photos with trusted friends and family</p>
+    <a class="btn btn-primary btn-large" href="{{ request.route_url('signup') }}">Join today!</a>
+</div>
+{% endblock %}
