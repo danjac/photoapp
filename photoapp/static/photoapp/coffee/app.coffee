@@ -38,7 +38,7 @@ class PhotoApp.Photo
         @photoID = @el.attr 'data-photo-id'
 
         @imageURL = @el.attr 'data-image-url'
-        @thumbURL = @el.attr 'data-thumbnail-url'
+        @thumbnailURL = @el.attr 'data-thumbnail-url'
         @downloadURL = @el.attr 'data-download-url'
         @sendURL = @el.attr 'data-send-url'
         @deleteURL = @el.attr 'data-delete-url'
@@ -54,16 +54,7 @@ class PhotoApp.Photo
 
         @tmpl = $('#photo-modal-template').html()
 
-        @content = _.template(@tmpl,
-            image_url: @imageURL
-            thumbnail_url: @thumbURL
-            download_url: @downloadURL
-            title: @title
-            height: @height
-            width: @width
-            owner: @owner
-        )
-
+        @content = _.template @tmpl, @
 
 
         @doc.on 'click', '#photo-modal .share-add-another-btn', (event) =>
@@ -156,7 +147,7 @@ class PhotoApp.Photo
             progress = setInterval setProgressWidth, 300
 
             image = new Image()
-            image.src = @thumbURL
+            image.src = @thumbnailURL
         
             image.onload = =>
 
