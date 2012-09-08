@@ -50,16 +50,18 @@
               <li {{ active_tab('upload') }}><a href="{{ request.route_url('upload') }}">Upload</a></li>
               {% endif %}
 
+              <li {{ active_tab('about') }}><a href="{{ request.route_url('about') }}">About</a></li>
+              <li {{ active_tab('contact') }}><a href="{{ request.route_url('contact') }}">Contact</a></li>
+
+            </ul>
+            <ul class="nav pull-right">
               {% if request.user %}
-              <li {{ active_tab('settings')}}><a href="{{ request.route_url('settings') }}">Settings</a></li>
+              <li {{ active_tab('settings')}}><a href="{{ request.route_url('settings') }}"><img src="{{ request.user.gravatar_url(20) }}"> {{ request.user.name }}</a></li>
               <li><a href="{{ request.route_url('logout') }}">Sign out</a></li>
               {% else %}
               <li {{ active_tab('login') }}><a href="{{ request.route_url('login') }}">Sign in</a></li>
               <li {{ active_tab('signup') }}><a href="{{ request.route_url('signup') }}">Sign up</a></li>
               {% endif %}
-
-              <li {{ active_tab('about') }}><a href="{{ request.route_url('about') }}">About</a></li>
-              <li {{ active_tab('contact') }}><a href="{{ request.route_url('contact') }}">Contact</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>

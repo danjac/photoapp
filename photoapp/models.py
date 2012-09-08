@@ -1,4 +1,6 @@
 import os
+import hashlib
+import urllib
 import uuid
 import base64
 import datetime
@@ -118,6 +120,13 @@ class User(Base):
     def reset_key(self):
         self.key = random_string()
         return self.key
+
+    def gravatar_url(self, size):
+
+        hashed = hashlib.md5(self.email.lower()).hexdigest()
+        params = urllib.urlencode({'s' : str(size)})
+
+        return "http://www.gravatar.com/avatar/%s?%s" % (hashed, params)
 
 
 class Photo(Base):
