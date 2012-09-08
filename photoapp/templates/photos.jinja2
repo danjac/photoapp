@@ -10,7 +10,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h3><%= title %></h3>
         <% if (owner) { %>
-        <h4>owned by<%= owner %></h4>
+        <h4>owned by <%= owner %></h4>
         <% } %>
     </div>
     <div class="modal-body" id="photo-modal-body">
@@ -64,7 +64,7 @@
            {% if has_permission('send', photo) %}data-send-url="{{ request.route_url('send', id=photo.id) }}"{% endif %}
            {% if has_permission('delete', photo) %}data-delete-url="{{ request.route_url('delete', id=photo.id) }}"{% endif %}
            {% if has_permission('delete_shared', photo) %}data-delete-shared-url="{{ request.route_url('delete', id=photo.id) }}"{% endif %}
-           {% if has_permission('copy', photo) %}data-copy-url="{{ request.route_url('delete', id=photo.id) }}"{% endif %}
+           {% if has_permission('copy', photo) %}data-copy-url="{{ request.route_url('copy', id=photo.id) }}"{% endif %}
  href="#" class="thumbnail">
             <img src="{{ request.route_url('thumbnail', id=photo.id) }}" title="{{ photo.title }}" alt="{{ photo.title }}">
         </a>

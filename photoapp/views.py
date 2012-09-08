@@ -442,7 +442,7 @@ def delete_shared(photo, request):
              renderer="json")
 def copy_photo(photo, request):
 
-    form = EditPhotoForm(request,
+    form = PhotoEditForm(request,
                          title=photo.title,
                          taglist=photo.taglist)
                       
@@ -455,10 +455,14 @@ def copy_photo(photo, request):
         new_photo.taglist = form.taglist.data
 
         new_photo.save_image(request.fs,
-                             photo.get_image(request.fs).open(),
+                             photo.get_image(request.fs).open('rb'),
                              photo.image)
 
-        return {'success' : True}
+        request.user.shared_photos.remove(photo)
+        
+        message = "Photo has been added to your collection"
+
+        return {'success' : True, 'message' : message}
 
     html = render('copy_photo.jinja2', {
         'photo' : photo,

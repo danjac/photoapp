@@ -85,7 +85,15 @@ class PhotoApp.Photo
         @doc.on 'submit', '#share-photo-form', (event) =>
             event.preventDefault()
             @submitForm($('#share-photo-form'))
-       
+
+        @doc.on 'submit', '#copy-photo-form', (event) =>
+            event.preventDefault()
+            @submitForm($('#copy-photo-form'), (response) =>
+                if response.success?
+                    @el.parent().remove()
+                    PhotoApp.showMessage(response.message)
+            )
+      
         @doc.on 'submit', '#send-photo-form', (event) =>
             event.preventDefault()
             @submitForm($('#send-photo-form'))
@@ -194,6 +202,8 @@ class PhotoApp.Photo
     edit: -> @showForm @editURL
 
     share: -> @showForm @shareURL
+
+    copy: -> @showForm @copyURL
 
 
 class PhotoApp.SharedPage
