@@ -365,7 +365,7 @@ def share_photo(photo, request):
 
     if form.validate():
 
-        note = form.note.data
+        note = (form.note.data or '').strip()
 
         emails = set(item.data.lower() for item in form.emails.entries)
 
@@ -530,7 +530,7 @@ def send_photo_attachment_email(request, photo,
     {note}
     """.format(sender_name=request.user.first_name,
                recipient_name=recipient_name,
-               note=note or '')
+               note=note)
 
     message = mailer.Message(To=recipient_email,
                              Subject=photo.title,
@@ -553,8 +553,7 @@ def send_shared_photo_notification_email(request, photo, recipient, note):
         name=request.user.name,
         title=photo.title,
         url=request.route_url('shared'),
-        note=note or ''
-            )
+        note=note)
 
     subject = "A photo has been shared with you"
 
@@ -575,7 +574,7 @@ def send_invite_email(request, invite, note):
     MyOwnDamnPhotos!
     {note}
     """.format(name=request.user.name, 
-               note=note or '',
+               note=note,
                url=url)
 
 
