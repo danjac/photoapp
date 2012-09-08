@@ -139,7 +139,7 @@ class Photo(Base):
 
     created_at = Column(DateTime, default=func.now())
 
-    owner = relationship("User")
+    owner = relationship("User", innerjoin=True, lazy="joined")
 
     tags = relationship("Tag", 
                         secondary="photos_tags", 

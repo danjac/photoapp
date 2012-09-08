@@ -47,6 +47,7 @@ class PhotoApp.Photo
         @shareURL = @el.attr 'data-share-url'
         @copyURL = @el.attr 'data-copy-url'
 
+        @owner = @el.attr 'data-owner'
         @title = @el.attr 'data-title'
         @height = @el.attr 'data-height'
         @width = @el.attr 'data-width'
@@ -59,7 +60,9 @@ class PhotoApp.Photo
             title: @title
             height: @height
             width: @width
+            owner: @owner
         )
+
 
 
         @doc.on 'click', '#photo-modal .share-add-another-btn', (event) =>
@@ -96,7 +99,6 @@ class PhotoApp.Photo
                 $("#photo-modal h3").text(response.title)
             )
 
-           
         @modal.on 'show', =>
             @modal.html(@content)
 
