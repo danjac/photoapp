@@ -236,11 +236,13 @@ class PhotoApp.PhotosPage
 
         $.get(@tagsURL, null, (response) =>
 
-            if response.tags
+            if response.tags.length > 0
                 html = '<div class="well" id="tag-cloud" style="height:250px;"></div>'
                 @searchBox.append(html)
 
                 $('#tag-cloud').jQCloud(response.tags)
+            else
+                
         )
 
     onload: ->

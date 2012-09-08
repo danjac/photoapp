@@ -8,7 +8,8 @@ PhotoResource = ModelResource.for_model(Photo)
 
 def includeme(config):
 
-    config.add_route('home', '/')
+    config.add_route('welcome', '/')
+    config.add_route('home', '/home')
     config.add_route('about', '/about')
     config.add_route('contact', '/contact')
     config.add_route('settings', '/settings')

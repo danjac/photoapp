@@ -34,6 +34,17 @@ from .forms import (
     )
 
 
+@view_config(route_name='welcome',
+             permission=NO_PERMISSION_REQUIRED,
+             renderer='welcome.jinja2')
+def welcome(request):
+    
+    if request.user:
+        return HTTPFound(request.route_url('home'))
+
+    return {}
+
+
 @view_config(route_name='home',
              renderer='photos.jinja2')
 def home(request):
@@ -42,7 +53,7 @@ def home(request):
                 Photo.owner_id==request.user.id).order_by(
                 Photo.created_at.desc())
     
-    page = Page(photos, int(request.params.get('page', 0)), items_per_page=18)
+    page = photos_page(request, photos)
 
     return {'page' : page}
 
@@ -53,7 +64,7 @@ def shared_photos(request):
 
     photos = request.user.shared_photos
 
-    page = Page(photos, int(request.params.get('page', 0)), items_per_page=18)
+    page = photos_page(request, page)
 
     return {'page' : page}
 
@@ -79,10 +90,7 @@ def search(request):
         photos = []
         num_photos = 0
 
-    page = Page(photos, 
-                int(request.params.get('page', 0)), 
-                item_count=num_photos,
-                items_per_page=18)
+    page = photos_page(request, photos, item_count=num_photos)
 
     return {'page' : page}
 
@@ -104,10 +112,7 @@ def tags(request):
              renderer='photos.jinja2')
 def tagged_photos(tag, request):
 
-    page = Page(tag.photos, 
-                int(request.params.get('page', 0)), 
-                items_per_page=18)
-
+    page = photos_page(request, tag.photos)
     return {'page' : page}
 
 
@@ -471,6 +476,12 @@ def copy_photo(photo, request):
 
     return {'success' : False, 'html' : html}
 
+
+def photos_page(request, photos, items_per_page=18, **kwargs):
+
+    return Page(photos, 
+                int(request.params.get('page', 0)), 
+                items_per_page=items_per_page, **kwargs)
 
 # Emails
 

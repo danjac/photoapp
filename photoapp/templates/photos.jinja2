@@ -47,6 +47,7 @@
 </div>
 {% endblock %}
 
+{% if page.item_count %}
 <ul class="thumbnails">
 {% for photo in page.items %}
     <li class="span4 photo">
@@ -71,6 +72,15 @@
     </li>
 {% endfor %}
 </ul>
+{% else %}
+{% block empty_list %}
+
+<div class="row">
+    <div class="span12">You don't appear to have any photos at the moment. Go <a href="{{ request.route_url('upload') }}">here</a> to upload some photos!</div>
+</div>
+
+{% endblock %}
+{% endif %}
 
 
 {{ pagination.render_page_links(page) }}
