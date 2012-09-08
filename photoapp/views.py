@@ -409,6 +409,7 @@ def share_photo(photo, request):
 
     return {'success' : False, 'html' : html}
 
+
 @view_config(route_name='about',
              renderer='about.jinja2', 
              permission=NO_PERMISSION_REQUIRED)

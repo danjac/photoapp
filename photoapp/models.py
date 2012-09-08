@@ -9,7 +9,6 @@ import logging
 import Image
 import ImageOps
 
-import cryptacular.bcrypt
 
 from cryptacular.bcrypt import BCRYPTPasswordManager
 from pyramid.security import Allow, Authenticated
