@@ -39,7 +39,7 @@ class PhotoApp.Photo
 
         @imageURL = @el.attr 'data-image-url'
         @thumbURL = @el.attr 'data-thumbnail-url'
-
+        @downloadURL = @el.attr 'data-download-url'
         @sendURL = @el.attr 'data-send-url'
         @deleteURL = @el.attr 'data-delete-url'
         @deleteSharedURL = @el.attr 'data-delete-shared-url'
@@ -57,6 +57,7 @@ class PhotoApp.Photo
         @content = _.template(@tmpl,
             image_url: @imageURL
             thumbnail_url: @thumbURL
+            download_url: @downloadURL
             title: @title
             height: @height
             width: @width

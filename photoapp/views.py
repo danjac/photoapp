@@ -5,7 +5,7 @@ import mailer
 
 from pyramid.view import view_config, forbidden_view_config
 from pyramid.security import remember, forget, NO_PERMISSION_REQUIRED
-from pyramid.response import Response
+from pyramid.response import Response, FileResponse
 from pyramid.renderers import render
 from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 
@@ -240,6 +240,17 @@ def image(photo, request):
     response.app_iter = photo.get_image(request.fs).read()
     return response
 
+
+@view_config(route_name="download",
+             permission="view")
+def download(photo, request):
+
+    response = FileResponse(photo.get_image(request.fs).path,
+                            request,
+                            content_type="image/jpeg")
+
+    response.content_disposition = "attachment;filename=%s" % photo.image
+    return response
 
 
 @view_config(route_name="thumbnail",

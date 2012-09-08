@@ -23,6 +23,7 @@
         </p>
     </div>
     <div class="modal-footer hide" id="photo-modal-footer">
+        <a href="<%= download_url %>" class="btn download-btn"><i class="icon-download"></i> Download</a>
         <a href="javascript:void(0);" class="btn share-btn"><i class="icon-share"></i> Share</a>
         <a href="javascript:void(0);" class="btn send-btn"><i class="icon-envelope"></i> Send</a>
         <a href="javascript:void(0);" class="btn edit-btn"><i class="icon-pencil"></i> Edit</a>
@@ -55,6 +56,7 @@
     <li class="span4 photo">
         <a data-image-url="{{ request.route_url('image', id=photo.id) }}"
            data-thumbnail-url="{{ request.route_url('thumbnail', id=photo.id) }}"
+           data-download-url="{{ request.route_url('download', id=photo.id) }}"
            data-photo-id="{{ photo.id }}"
            data-width="{{ photo.width }}"
            data-height="{{ photo.height }}"
