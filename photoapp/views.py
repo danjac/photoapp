@@ -526,8 +526,7 @@ def send_photo_attachment_email(request, photo,
 
     body = """ 
     Hi {recipient_name},
-    {sender_name} sent you a photo!
-    {note}
+    {sender_name} sent you a photo! {note}
     """.format(sender_name=request.user.first_name,
                recipient_name=recipient_name,
                note=note)
