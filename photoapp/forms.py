@@ -10,7 +10,8 @@ from wtforms import (
     HiddenField,
     SubmitField,
     FieldList,
-        )
+)
+
 
 from wtforms.validators import (
     ValidationError,
@@ -33,7 +34,7 @@ class ImageRequired(object):
 
     def __call__(self, form, field):
         message = self.message or field.gettext(
-                "A PNG or JPEG file is required")
+            "A PNG or JPEG file is required")
 
         if not isinstance(field.data, cgi.FieldStorage):
             raise ValidationError(message)
@@ -55,7 +56,7 @@ class Form(SecureForm):
 
         else:
             formdata = None
-        
+
         super(Form, self).__init__(formdata, *args, **kwargs)
 
     def validate(self, *args, **kwargs):
@@ -84,15 +85,16 @@ class AccountForm(Form):
     first_name = TextField("First name", validators=[Required()])
     last_name = TextField("Last name", validators=[Required()])
 
-    email = TextField("Email address", 
+    email = TextField("Email address",
                       validators=[Required(), Email()])
 
     password = PasswordField("New password", validators=[Required()])
 
-    password_again = PasswordField("Repeat password", 
-                        validators=[EqualTo('password')])
+    password_again = PasswordField(
+        "Repeat password",
+        validators=[EqualTo('password')]
+    )
 
-    
     submit = SubmitField("Save")
 
 
@@ -114,8 +116,8 @@ class EditAccountForm(AccountForm):
         instead to get current user email.
         """
         if DBSession.query(exists().where(
-            and_(User.email==field.data,
-                 not_(User.email==self.current_email)))).scalar():
+            and_(User.email == field.data,
+                 not_(User.email == self.current_email)))).scalar():
             raise ValidationError("This email address is already taken")
 
 
@@ -125,7 +127,7 @@ class SignupForm(AccountForm):
 
     def validate_email(self, field):
 
-        if DBSession.query(exists().where(User.email==field.data)).scalar():
+        if DBSession.query(exists().where(User.email == field.data)).scalar():
             raise ValidationError("This email address is already taken")
 
 
@@ -141,8 +143,10 @@ class ChangePasswordForm(Form):
 
     password = PasswordField("New password", validators=[Required()])
 
-    password_again = PasswordField("Repeat password", 
-                        validators=[EqualTo('password')])
+    password_again = PasswordField(
+        "Repeat password",
+        validators=[EqualTo('password')]
+    )
 
     submit = SubmitField("Change")
 
@@ -153,8 +157,10 @@ class PhotoUploadForm(Form):
     taglist = TextField("Tags")
 
     images = FieldList(
-                FileField(validators=[ImageRequired()]),
-                min_entries=1, max_entries=3)
+        FileField(validators=[ImageRequired()]),
+        min_entries=1,
+        max_entries=3
+    )
 
     submit = SubmitField("Upload")
 
@@ -171,8 +177,9 @@ class PhotoShareForm(Form):
     note = TextAreaField("Message")
 
     emails = FieldList(
-                TextField(validators=[Required(), 
-                                      Email()]), min_entries=1)
+        TextField(validators=[Required(), Email()]),
+        min_entries=1
+    )
 
     submit = SubmitField("Share")
 

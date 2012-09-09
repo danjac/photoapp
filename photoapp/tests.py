@@ -40,7 +40,7 @@ class TestCase(unittest.TestCase):
 
         root_dir = os.path.dirname(os.path.dirname(__file__))
         config_ini = os.path.join(root_dir, 'test.ini')
-        
+
         self.settings = get_appsettings(config_ini)
         self.config = testing.setUp(settings=self.settings)
         self.engine = engine_from_config(self.settings, 'sqlalchemy.')
@@ -71,7 +71,7 @@ class TestCase(unittest.TestCase):
         data.setdefault('csrf_token', request.session.get_csrf_token())
         request.POST = MultiDict(data)
         return request
-      
+
     def tearDown(self):
         from .models import DBSession, Base
 
@@ -94,7 +94,7 @@ class StorageTests(TestCase):
 
         fs = FileStorage.from_settings(settings)
         self.assert_(fs.path("test.jpg") == path)
-    
+
     def test_file_obj(self):
 
         from .storage import FileStorage
@@ -113,12 +113,11 @@ class StorageTests(TestCase):
         fo.delete()
         self.assert_(not fo.exists())
 
-
     def test_file_obj_delete(self):
 
         from .storage import FileStorage
 
-        shutil.copyfile(os.path.join("test_media", "coffee.jpg"), 
+        shutil.copyfile(os.path.join("test_media", "coffee.jpg"),
                         os.path.join("test_uploads", "test.jpg"))
 
         fs = FileStorage("test_uploads")
@@ -145,7 +144,7 @@ class StorageTests(TestCase):
         fs = FileStorage("test_media")
         fo = fs.file("coffee.jpg")
         self.assert_(fo.exists())
-        
+
     def test_file_obj_exists_if_does_not_exist(self):
 
         from .storage import FileStorage
@@ -159,14 +158,14 @@ class StorageTests(TestCase):
 
         fs = FileStorage("test_media")
         self.assert_(fs.read("coffee.jpg"))
- 
+
     def test_file_obj_read(self):
         from .storage import FileStorage
 
         fs = FileStorage("test_media")
         fo = fs.file("coffee.jpg")
         self.assert_(fo.read())
-        
+
     def test_file_obj_write(self):
         from .storage import FileStorage
 
@@ -253,7 +252,7 @@ class PhotoTests(TestCase):
         photo.taglist = "norway winter snow skiing"
 
         self.assert_(len(photo.tags) == 4)
-  
+
     def test_save_image(self):
 
         from .storage import FileStorage
@@ -284,9 +283,10 @@ class PhotoTests(TestCase):
             (Allow, Admins, ("view", "edit", "delete")),
             (Allow, "user:1", ("view", "send", "edit", "share", "delete")),
             (Allow, "shared:1", ("view", "copy", "delete_shared")),
-                ]
+        ]
 
         self.assert_(photo.__acl__ == acl)
+
 
 class UserTests(TestCase):
 
@@ -378,7 +378,7 @@ class HomeTests(TestCase):
 
         DBSession.add_all([user, photo])
         DBSession.flush()
-    
+
         request = testing.DummyRequest()
         request.user = user
 
@@ -398,11 +398,10 @@ class LoginTests(TestCase):
         from .views import login
         from .models import User, DBSession
 
-
         u = User(email="danjac354@gmail.com", password="test")
         DBSession.add(u)
         DBSession.flush()
-        
+
         request = self.get_POST_req(email="danjac354@gmail.com",
                                     password="test")
 
@@ -440,7 +439,7 @@ class LoginTests(TestCase):
         u = User(email="danjac354@gmail.com", password="test")
         DBSession.add(u)
         DBSession.flush()
-        
+
         redirect = "http://example.com/login"
 
         request = self.get_POST_req(email="danjac354@gmail.com",
@@ -450,7 +449,7 @@ class LoginTests(TestCase):
         request.matched_route = mock.Mock()
         request.matched_route.name = "login"
         request.url = redirect
-    
+
         self.load_routes()
 
         response = login(request)
@@ -462,11 +461,10 @@ class LoginTests(TestCase):
         from .views import login
         from .models import User, DBSession
 
-
         u = User(email="danjac354@gmail.com", password="test")
         DBSession.add(u)
         DBSession.flush()
-        
+
         redirect = "http://example.com/upload"
 
         request = self.get_POST_req(email="danjac354@gmail.com",
@@ -476,13 +474,12 @@ class LoginTests(TestCase):
         request.matched_route = mock.Mock()
         request.matched_route.name = "upload"
         request.url = redirect
-    
+
         self.load_routes()
 
         response = login(request)
         self.assert_(response.status_code == 302)
         self.assert_(response.location == "http://example.com/upload")
-
 
 
 class WelcomeTests(TestCase):
@@ -509,7 +506,7 @@ class WelcomeTests(TestCase):
         self.assert_(res.status_int == 302)
         self.assert_(res.location == 'http://example.com/home')
 
-    
+
 class ForgotPasswordTests(TestCase):
 
     def test_if_user_found(self):
@@ -530,7 +527,6 @@ class ForgotPasswordTests(TestCase):
         res = forgot_password(req)
         self.assert_(res.status_int == 302)
         self.assert_(len(req.mailer.messages), 1)
-
 
 
 class ImageRequiredTests(TestCase):
@@ -620,7 +616,7 @@ class SignupFormTests(TestCase):
         form = SignupForm(req)
         self.assert_(not form.validate())
 
- 
+
 class EditAccountFormTests(TestCase):
 
     def test_with_no_obj_passed(self):
@@ -646,7 +642,7 @@ class EditAccountFormTests(TestCase):
 
         form = EditAccountForm(req, obj=user)
         self.assert_(form.validate())
-        
+
     def test_with_another_user_email(self):
 
         from .forms import EditAccountForm
@@ -662,7 +658,6 @@ class EditAccountFormTests(TestCase):
         DBSession.add(user2)
         DBSession.flush()
 
-
         req = self.get_POST_req(email="tester2@gmail.com",
                                 first_name="Dan",
                                 last_name="Tester",
@@ -671,5 +666,3 @@ class EditAccountFormTests(TestCase):
 
         form = EditAccountForm(req, obj=user)
         self.assert_(not form.validate())
- 
-
