@@ -59,6 +59,10 @@ class TestCase(unittest.TestCase):
         from . import main
         return main(self.config, **self.settings)
 
+    def load_routes(self):
+        # add this so we can redirect
+        self.config.include('photoapp.routes')
+
     def get_POST_req(self, **data):
 
         request = testing.DummyRequest()
@@ -394,8 +398,6 @@ class LoginTests(TestCase):
         from .views import login
         from .models import User, DBSession
 
-        # add this so we can redirect
-        self.config.include('photoapp.routes')
 
         u = User(email="danjac354@gmail.com", password="test")
         DBSession.add(u)
@@ -403,6 +405,8 @@ class LoginTests(TestCase):
         
         request = self.get_POST_req(email="danjac354@gmail.com",
                                     password="test")
+
+        self.load_routes()
 
         response = login(request)
         self.assert_(response.status_code == 302)
@@ -418,6 +422,55 @@ class LoginTests(TestCase):
         response = login(request)
         self.assert_('form' in response)
  
+
+
+class WelcomeTests(TestCase):
+
+    def test_welcome_if_no_user(self):
+
+        from .views import welcome
+
+        req = testing.DummyRequest()
+        req.user = None
+        res = welcome(req)
+        self.assert_(res == {})
+
+    def test_welcome_if_user(self):
+
+        from .views import welcome
+        from .models import User
+
+        self.load_routes()
+
+        req = testing.DummyRequest()
+        req.user = User()
+        res = welcome(req)
+        self.assert_(res.status_int == 302)
+        self.assert_(res.location == 'http://example.com/home')
+
+    
+class ForgotPasswordTests(TestCase):
+
+    def test_if_user_found(self):
+
+        from .models import User, DBSession
+        from .views import forgot_password
+
+        user = User(email="tester@gmail.com", password="test")
+
+        DBSession.add(user)
+        DBSession.flush()
+
+        req = self.get_POST_req(email="tester@gmail.com")
+        req.mailer = DummyMailer()
+
+        self.load_routes()
+
+        res = forgot_password(req)
+        self.assert_(res.status_int == 302)
+        self.assert_(len(req.mailer.messages), 1)
+
+
 
 class ImageRequiredTests(TestCase):
 

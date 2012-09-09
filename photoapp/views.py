@@ -30,7 +30,7 @@ from .forms import (
     PhotoShareForm,
     SendPhotoForm,
     ForgotPasswordForm,
-    ChangePasswordForm
+    ChangePasswordForm,
     )
 
 
@@ -134,7 +134,6 @@ def login(request):
             headers = remember(request, str(user.id))
             return HTTPFound(request.route_url('home'), headers=headers)
 
-        print form.errors
 
     return {'form' : form}
 
