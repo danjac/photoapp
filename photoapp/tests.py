@@ -1,4 +1,5 @@
 import os
+import cgi
 import shutil
 import mock
 import unittest
@@ -10,6 +11,8 @@ from pyramid.security import Allow
 
 from webtest import TestApp
 from webtest.debugapp import debug_app
+
+from wtforms.validators import ValidationError
 
 from sqlalchemy import engine_from_config
 
@@ -55,7 +58,16 @@ class TestCase(unittest.TestCase):
     def get_app(self):
         from . import main
         return main(self.config, **self.settings)
-       
+
+    def get_POST_req(self, **data):
+
+        request = testing.DummyRequest()
+        request.method = "POST"
+        request.session = mock.Mock()
+        data.setdefault('csrf_token', request.session.get_csrf_token())
+        request.POST = MultiDict(data)
+        return request
+      
     def tearDown(self):
         from .models import DBSession, Base
 
@@ -371,36 +383,11 @@ class HomeTests(TestCase):
 
         self.assert_('login_form' not in response)
 
-    def test_integration(self):
-
-        from .models import User, DBSession
-
-        user = User(id=1, email="danjac354@gmail.com")
-
-        DBSession.add(user)
-        DBSession.flush()
-
-        headers = {}
-
-        app = TestApp(self.get_app())
-        res = app.get("/", headers)
-
-        self.assert_(res.status == '200 OK')
-
 
 class LoginTests(TestCase):
 
     def setUp(self):
         super(LoginTests, self).setUp()
-
-    def get_POST_req(self, **data):
-
-        request = testing.DummyRequest()
-        request.method = "POST"
-        request.session = mock.Mock()
-        data.setdefault('csrf_token', request.session.get_csrf_token())
-        request.POST = MultiDict(data)
-        return request
 
     def test_login_valid_user(self):
 
@@ -431,3 +418,144 @@ class LoginTests(TestCase):
         response = login(request)
         self.assert_('form' in response)
  
+
+class ImageRequiredTests(TestCase):
+
+    def test_with_non_image(self):
+
+        from .forms import ImageRequired
+
+        form = mock.Mock()
+        field = mock.Mock()
+        field.data = "test"
+
+        self.assertRaises(ValidationError, ImageRequired(), form, field)
+
+    def test_with_non_image_file(self):
+
+        from .forms import ImageRequired
+
+        form = mock.Mock()
+        field = mock.Mock()
+
+        fs = cgi.FieldStorage()
+        fs.filename = "test.txt"
+        field.data = fs
+
+        self.assertRaises(ValidationError, ImageRequired(), form, field)
+
+    def test_with_png(self):
+
+        from .forms import ImageRequired
+
+        form = mock.Mock()
+        field = mock.Mock()
+
+        fs = cgi.FieldStorage()
+        fs.filename = "test.png"
+        field.data = fs
+
+        ImageRequired()(form, field)
+
+    def test_with_jpeg(self):
+
+        from .forms import ImageRequired
+
+        form = mock.Mock()
+        field = mock.Mock()
+
+        fs = cgi.FieldStorage()
+        fs.filename = "test.jpg"
+        field.data = fs
+
+        ImageRequired()(form, field)
+
+
+class SignupFormTests(TestCase):
+
+    def test_signup_with_unused_email(self):
+
+        from .forms import SignupForm
+        from .models import User, DBSession
+
+        req = self.get_POST_req(email="tester@gmail.com",
+                                first_name="Dan",
+                                last_name="Tester",
+                                password="test",
+                                password_again="test")
+
+        form = SignupForm(req)
+        self.assert_(form.validate())
+
+    def test_signup_with_used_email(self):
+
+        from .forms import SignupForm
+        from .models import User, DBSession
+
+        user = User(email="tester@gmail.com", password="test")
+
+        DBSession.add(user)
+        DBSession.flush()
+
+        req = self.get_POST_req(email="tester@gmail.com",
+                                first_name="Dan",
+                                last_name="Tester",
+                                password="test",
+                                password_again="test")
+
+        form = SignupForm(req)
+        self.assert_(not form.validate())
+
+ 
+class EditAccountFormTests(TestCase):
+
+    def test_with_no_obj_passed(self):
+
+        from .forms import EditAccountForm
+        self.assertRaises(ValueError, EditAccountForm, testing.DummyRequest())
+
+    def test_with_same_user_email(self):
+
+        from .forms import EditAccountForm
+        from .models import User, DBSession
+
+        user = User(email="tester@gmail.com", password="test")
+
+        DBSession.add(user)
+        DBSession.flush()
+
+        req = self.get_POST_req(email="tester@gmail.com",
+                                first_name="Dan",
+                                last_name="Tester",
+                                password="test",
+                                password_again="test")
+
+        form = EditAccountForm(req, obj=user)
+        self.assert_(form.validate())
+        
+    def test_with_another_user_email(self):
+
+        from .forms import EditAccountForm
+        from .models import User, DBSession
+
+        user = User(email="tester@gmail.com", password="test")
+
+        DBSession.add(user)
+        DBSession.flush()
+
+        user2 = User(email="tester2@gmail.com", password="test")
+
+        DBSession.add(user2)
+        DBSession.flush()
+
+
+        req = self.get_POST_req(email="tester2@gmail.com",
+                                first_name="Dan",
+                                last_name="Tester",
+                                password="test",
+                                password_again="test")
+
+        form = EditAccountForm(req, obj=user)
+        self.assert_(not form.validate())
+ 
+        
