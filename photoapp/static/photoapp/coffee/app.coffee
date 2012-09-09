@@ -217,6 +217,39 @@ class PhotoApp.SharedPage
         PhotoApp.paginate()
 
 
+class PhotoApp.UploadPage
+
+    constructor: ->
+
+        jQuery => @onload()
+
+    onload: ->
+        @doc = $(document)
+        maxUploads = 6
+
+        $('.upload-add-another-btn').click (event) =>
+            event.preventDefault()
+            btn = $(event.currentTarget)
+            numItems = $("form input[type='file']").length
+            if numItems < maxUploads
+                newItem = "<dd><input type=\"file\" name=\"images-#{ numItems - 1}\">
+                    <a href=\"#\" class=\"remove-upload-field\"><i class=\"icon-remove\"></i></a>
+                    </dd>"
+                btn.parent().before(newItem)
+                if (numItems + 1) >= maxUploads
+                    btn.parent().hide()
+
+        @doc.on 'click', '.remove-upload-field', (event) =>
+            event.preventDefault()
+            $(event.currentTarget).parent().remove()
+            numItems = $("form input[type='file']").length
+            if numItems < maxUploads
+                $('.upload-add-another-btn').parent().show()
+            
+
+
+
+
 class PhotoApp.PhotosPage
 
     constructor: (@tagsURL) ->

@@ -149,7 +149,11 @@ class PhotoUploadForm(Form):
 
     title = TextField("Title", validators=[Required()])
     taglist = TextField("Tags")
-    image = FileField("Image", validators=[ImageRequired()]) 
+
+    images = FieldList(
+                FileField(validators=[ImageRequired()]),
+                min_entries=1, max_entries=3)
+
     submit = SubmitField("Upload")
 
 

@@ -313,16 +313,18 @@ def upload(request):
     form = PhotoUploadForm(request)
     if form.validate():
 
-        photo = Photo(owner=request.user,
-                      title=form.title.data)
+        for image in form.images.entries:
 
-        photo.save_image(request.fs,
-                         form.image.data.file, 
-                         form.image.data.filename)
-        
-        DBSession.add(photo)
+            photo = Photo(owner=request.user,
+                          title=form.title.data)
 
-        photo.taglist = form.taglist.data
+            photo.save_image(request.fs,
+                             image.data.file, 
+                             image.data.filename)
+            
+            DBSession.add(photo)
+
+            photo.taglist = form.taglist.data
 
         request.session.flash("Your photo has been uploaded")
         return HTTPFound(request.route_url('home'))
