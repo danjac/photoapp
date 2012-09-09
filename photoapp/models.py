@@ -26,7 +26,7 @@ from sqlalchemy import (
     func,
     event,
     select,
-        )
+)
 
 
 from sqlalchemy.ext.declarative import declarative_base
@@ -36,7 +36,7 @@ from sqlalchemy.orm import (
     scoped_session,
     sessionmaker,
     relationship,
-    )
+)
 
 from zope.sqlalchemy import ZopeTransactionExtension
 
@@ -54,13 +54,14 @@ def includeme(config):
     engine = engine_from_config(config.get_settings(), 'sqlalchemy.')
     DBSession.configure(bind=engine)
 
+
 def random_string():
     s = base64.urlsafe_b64encode(uuid.uuid4().bytes)
     for c in ('-', '_', '='):
         s = s.replace(c, '')
-    return s 
+    return s
 
-    
+
 class User(Base):
 
     __tablename__ = "users"
@@ -81,10 +82,9 @@ class User(Base):
 
     key = Column(String(30), unique=True)
 
-    shared_photos = relationship("Photo", 
+    shared_photos = relationship("Photo",
                                  secondary="photos_users",
                                  backref="shared_users")
-
 
     def __unicode__(self):
         return self.name or self.email
@@ -93,8 +93,8 @@ class User(Base):
     def authenticate(cls, email, password):
 
         user = DBSession.query(cls).filter_by(
-                email=email, 
-                is_active=True).first()
+            email=email,
+            is_active=True).first()
 
         if user and user.check_password(password):
             return user
@@ -111,7 +111,7 @@ class User(Base):
     @password.setter
     def set_password(self, password):
         self._password = _passwd_mgr.encode(password)
-    
+
     def check_password(self, password):
         return _passwd_mgr.check(self.password, password)
 
@@ -122,20 +122,20 @@ class User(Base):
     def gravatar_url(self, size):
 
         hashed = hashlib.md5(self.email.lower()).hexdigest()
-        params = urllib.urlencode({'s' : str(size)})
+        params = urllib.urlencode({'s': str(size)})
 
         return "http://www.gravatar.com/avatar/%s?%s" % (hashed, params)
 
 
 class Photo(Base):
-    
+
     __tablename__ = "photos"
 
     id = Column(Integer, primary_key=True)
 
-    owner_id = Column(Integer, 
-                      ForeignKey("users.id"), 
-                      nullable=False, 
+    owner_id = Column(Integer,
+                      ForeignKey("users.id"),
+                      nullable=False,
                       index=True)
 
     title = Column(Unicode(100), index=True)
@@ -148,8 +148,8 @@ class Photo(Base):
 
     owner = relationship("User", innerjoin=True, lazy="joined")
 
-    tags = relationship("Tag", 
-                        secondary="photos_tags", 
+    tags = relationship("Tag",
+                        secondary="photos_tags",
                         backref="photos")
 
     @property
@@ -192,7 +192,6 @@ class Photo(Base):
         for name in taglist:
             self.tags.append(Tag(name=name, owner=self.owner))
 
-
     @property
     def thumbnail(self):
         return "tn-" + self.image
@@ -230,7 +229,7 @@ class Photo(Base):
         self.get_thumbnail(fs).delete()
 
     delete_image_on_commit = on_commit(delete_image)
-   
+
     @property
     def __acl__(self):
 
@@ -239,10 +238,10 @@ class Photo(Base):
         return [
             (Allow, Admins, ("view", "edit", "delete")),
 
-            (Allow, "user:%d" % self.owner_id, 
+            (Allow, "user:%d" % self.owner_id,
                 ("view", "send", "edit", "share", "delete")),
 
-            (Allow, "shared:%d" % self.id, 
+            (Allow, "shared:%d" % self.id,
                 ("view", "copy", "delete_shared"))
         ]
 
@@ -270,8 +269,8 @@ class Tag(Base):
     __tablename__ = "tags"
 
     id = Column(Integer, primary_key=True)
-    owner_id = Column(Integer, 
-                      ForeignKey("users.id"), 
+    owner_id = Column(Integer,
+                      ForeignKey("users.id"),
                       nullable=False,
                       index=True)
 
@@ -301,7 +300,7 @@ photos_users = Table(
 
 
 photos_tags = Table(
-    "photos_tags", 
+    "photos_tags",
     Base.metadata,
     Column("tag_id", Integer, ForeignKey("tags.id"), primary_key=True),
     Column("photo_id", Integer, ForeignKey("photos.id"), primary_key=True),
@@ -343,14 +342,13 @@ def photo_delete_listener(mapper, connection, target):
     photos_tags = Base.metadata.tables['photos_tags']
 
     freq = select([func.count(photos_tags.c.tag_id)]).where(
-        photos_tags.c.tag_id==tags.c.id
-        )
+        photos_tags.c.tag_id == tags.c.id
+    )
 
     connection.execute(tags.update().values(frequency=freq))
 
     # remove any tags with frequency 0
-    connection.execute(tags.delete().where(tags.c.frequency==0))
+    connection.execute(tags.delete().where(tags.c.frequency == 0))
 
 
 event.listen(Photo, 'after_delete', photo_delete_listener)
-
