@@ -1,6 +1,7 @@
 import functools
 import transaction
 
+
 class DataManager(object):
     """
     Basic transactional manager
@@ -22,7 +23,7 @@ class DataManager(object):
 
     def tpc_begin(self, transaction):
         pass
-    
+
     def tpc_vote(self, transaction):
         pass
 

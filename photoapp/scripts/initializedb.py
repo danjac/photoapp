@@ -7,17 +7,17 @@ from sqlalchemy import engine_from_config
 from pyramid.paster import (
     get_appsettings,
     setup_logging,
-    )
+)
 
 from ..models import DBSession, Base, User
+
 
 def usage(argv):
     cmd = os.path.basename(argv[0])
     print('usage: %s <config_uri>\n'
-          '(example: "%s development.ini")' % (cmd, cmd)) 
+          '(example: "%s development.ini")' % (cmd, cmd))
     sys.exit(1)
 
-       
 
 def main(argv=sys.argv):
     if len(argv) != 2:
@@ -30,15 +30,17 @@ def main(argv=sys.argv):
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
     Base.metadata.create_all(engine)
- 
+
     with transaction.manager:
-        
+
         user = DBSession.query(User).first()
         if not user:
-            user = User(is_admin=True,
-                        email='danjac354@gmail.com',
-                        password='testpass',
-                        first_name='Dan',
-                        last_name='Jacob')
+            user = User(
+                is_admin=True,
+                email='danjac354@gmail.com',
+                password='testpass',
+                first_name='Dan',
+                last_name='Jacob'
+            )
 
             DBSession.add(user)

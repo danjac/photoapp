@@ -3,10 +3,11 @@ from cornice import Service
 from .resources import Root
 from .models import Photo, DBSession
 
-upload = Service(name="upload", 
-                 path="/api/upload", 
+upload = Service(name="upload",
+                 path="/api/upload",
                  description="PhotoApp API",
                  factory=Root)
+
 
 @upload.put()
 def upload_photo(request):
@@ -21,14 +22,11 @@ def upload_photo(request):
                   title=title or uploaded_file.filename)
 
     photo.save_image(request.fs,
-                     uploaded_file.file, 
+                     uploaded_file.file,
                      uploaded_file.filename)
 
     DBSession.add(photo)
 
     photo.taglist = tags
 
-    return {"success" : True}
-
-
-
+    return {"success": True}

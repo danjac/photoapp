@@ -3,14 +3,13 @@ import cgi
 import shutil
 import mock
 import unittest
-import transaction
 
 from pyramid import testing
 from pyramid.paster import get_appsettings
 from pyramid.security import Allow
 
-from webtest import TestApp
-from webtest.debugapp import debug_app
+#from webtest import TestApp
+#from webtest.debugapp import debug_app
 
 from wtforms.validators import ValidationError
 
@@ -73,7 +72,7 @@ class TestCase(unittest.TestCase):
         return request
 
     def tearDown(self):
-        from .models import DBSession, Base
+        from .models import DBSession
 
         self.trans.rollback()
 
@@ -201,7 +200,7 @@ class PhotoTests(TestCase):
 
     def test_add_tags_if_none(self):
 
-        from .models import User, Photo, DBSession, Tag
+        from .models import User, Photo
 
         user = User(email="tester@gmail.com")
         photo = Photo(owner=user)
@@ -211,7 +210,7 @@ class PhotoTests(TestCase):
 
     def test_add_tags_if_all_new(self):
 
-        from .models import User, Photo, DBSession, Tag
+        from .models import User, Photo
 
         user = User(email="tester@gmail.com")
         photo = Photo(owner=user)
@@ -223,7 +222,7 @@ class PhotoTests(TestCase):
 
     def test_add_tags_if_dupes(self):
 
-        from .models import User, Photo, DBSession, Tag
+        from .models import User, Photo
 
         user = User(email="tester@gmail.com")
         photo = Photo(owner=user)
@@ -233,7 +232,7 @@ class PhotoTests(TestCase):
 
     def test_add_tags_if_exist(self):
 
-        from .models import User, Photo, DBSession, Tag
+        from .models import User, Photo, DBSession
 
         user = User(email="tester@gmail.com")
         DBSession.add(user)
@@ -586,7 +585,6 @@ class SignupFormTests(TestCase):
     def test_signup_with_unused_email(self):
 
         from .forms import SignupForm
-        from .models import User, DBSession
 
         req = self.get_POST_req(email="tester@gmail.com",
                                 first_name="Dan",

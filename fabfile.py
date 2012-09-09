@@ -1,6 +1,7 @@
 from fabric import api
 
-api.env.hosts=['178.79.185.15']
+api.env.hosts = ['178.79.185.15']
+
 
 def deploy():
 
@@ -11,6 +12,3 @@ def deploy():
         api.run("%s/python setup.py test" % api.env.python_path)
         #api.run("%s/alembic upgrade head" % api.env.python_path)
         api.sudo("supervisorctl restart photoapp")
-        
-
-

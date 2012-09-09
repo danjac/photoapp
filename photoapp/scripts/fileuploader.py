@@ -5,6 +5,7 @@ import datetime
 
 import requests
 
+
 def usage(argv):
     cmd = os.path.basename(argv[0])
     print('usage:%s <url> <folder>\n' % cmd)
@@ -15,8 +16,9 @@ def usage(argv):
 def getmtime(filename):
     return datetime.datetime.fromtimestamp(os.path.getmtime(filename))
 
+
 def upload_files(url, auth, base_dir):
-    
+
     logfile = os.path.expanduser(os.path.join("~", ".photoapp"))
 
     try:
@@ -41,10 +43,10 @@ def upload_files(url, auth, base_dir):
                         full_path) < logfile_last_modified:
                     continue
 
-                data = {'title' : name, 'tags' : tags}
-                files = {"uploaded_file" : open(full_path, "rb")}
+                data = {'title': name, 'tags': tags}
+                files = {"uploaded_file": open(full_path, "rb")}
 
-                resp = requests.put(url, data, files=files, auth=auth)
+                requests.put(url, data, files=files, auth=auth)
                 print(full_path)
                 filenames.append(full_path)
 
@@ -71,5 +73,3 @@ def main(argv=sys.argv):
     url = url + "/api/upload"
 
     upload_files(url, auth, base_dir)
-
-

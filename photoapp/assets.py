@@ -52,6 +52,7 @@ app_coffee = Bundle(
     debug=False,
 )
 
+
 def includeme(config):
 
     config.include('pyramid_webassets')
@@ -71,4 +72,3 @@ def includeme(config):
 
     # add static views
     config.add_static_view('static', 'static')
-

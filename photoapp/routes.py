@@ -6,6 +6,7 @@ from .models import Photo, Tag
 TagResource = ModelResource.for_model(Tag)
 PhotoResource = ModelResource.for_model(Photo)
 
+
 def includeme(config):
 
     config.add_route('welcome', '/')
@@ -32,18 +33,16 @@ def includeme(config):
 
     # photo routes
 
-    photo_route = functools.partial(config.add_route, 
-                                    traverse='/{id}', 
+    photo_route = functools.partial(config.add_route,
+                                    traverse='/{id}',
                                     factory=PhotoResource)
-    
-    photo_route('thumbnail', '/thumbnail/{id}.jpg') 
-    photo_route('image', '/photo/{id}.jpg') 
-    photo_route('download', '/download/{id}.jpg') 
-    photo_route('send', '/send/{id}') 
-    photo_route('share', '/share/{id}') 
-    photo_route('edit', '/edit/{id}') 
+
+    photo_route('thumbnail', '/thumbnail/{id}.jpg')
+    photo_route('image', '/photo/{id}.jpg')
+    photo_route('download', '/download/{id}.jpg')
+    photo_route('send', '/send/{id}')
+    photo_route('share', '/share/{id}')
+    photo_route('edit', '/edit/{id}')
     photo_route('delete', '/delete/{id}')
     photo_route('copy', '/copy/{id}')
     photo_route('delete_shared', '/deleteshared/{id}')
-
-     

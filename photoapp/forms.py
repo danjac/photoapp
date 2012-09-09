@@ -1,6 +1,5 @@
 import cgi
 import mimetypes
-import string
 
 from wtforms import (
     TextField,

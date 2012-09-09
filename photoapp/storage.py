@@ -29,7 +29,7 @@ class FileObj(object):
 
     def copy(self, fp):
         shutil.copyfileobj(fp, self.open("wb"))
-        
+
     def delete(self):
         try:
             os.remove(self.path)
@@ -57,5 +57,3 @@ class FileStorage(object):
 
     def __init__(self, base_dir):
         self.base_dir = base_dir
-
-

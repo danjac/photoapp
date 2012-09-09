@@ -4,11 +4,9 @@ import urllib
 import uuid
 import base64
 import mimetypes
-import datetime
 
 import Image
 import ImageOps
-
 
 from cryptacular.bcrypt import BCRYPTPasswordManager
 from pyramid.security import Allow

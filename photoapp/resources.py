@@ -3,6 +3,7 @@ from pyramid.exceptions import NotFound
 
 from .models import DBSession
 
+
 class Root(object):
 
     def __init__(self, request):
@@ -34,9 +35,7 @@ class ModelResource(object):
             raise NotFound()
 
         obj.__name___ = key
-        return obj 
-        
+        return obj
+
     def get_object(self, id):
         return DBSession.query(self.model).get(id)
-    
-

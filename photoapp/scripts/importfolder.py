@@ -9,21 +9,28 @@ from sqlalchemy import engine_from_config
 from pyramid.paster import (
     get_appsettings,
     setup_logging,
-    )
+)
 
 from ..models import DBSession, Base, User, Photo
 from ..storage import FileStorage
 
+
 def usage(argv):
     cmd = os.path.basename(argv[0])
-    print('usage: %s <config_uri> <email> <folder>\n'
-          '(example %s development.ini danjac354@gmail.com ~/wallpaper)' % (
-                  cmd, cmd))
+    print(
+        'usage: %s <config_uri> <email> <folder>\n'
+        '(example %s development.ini danjac354@gmail.com ~/wallpaper)' % (
+            cmd,
+            cmd
+        )
+    )
 
     sys.exit(1)
 
+
 def getmtime(filename):
     return datetime.datetime.fromtimestamp(os.path.getmtime(filename))
+
 
 def add_new_photos(owner, fs, dir):
 
@@ -86,15 +93,8 @@ def main(argv=sys.argv):
     user = DBSession.query(User).filter_by(email=email).first()
 
     if user is None:
-        print("No user found for email %s" % email) 
+        print("No user found for email %s" % email)
         sys.exit(1)
 
     with transaction.manager:
         add_new_photos(user, storage, base_dir)
-    
-
-        
-        
-
-
-

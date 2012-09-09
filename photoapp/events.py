@@ -7,6 +7,7 @@ from webhelpers.paginate import PageURL_WebOb
 
 from .resources import Root
 
+
 @subscriber(BeforeRender)
 def add_renderer_globals(event):
     """
@@ -25,5 +26,3 @@ def add_renderer_globals(event):
 
     event['has_permission'] = _has_permission
     event['page_url'] = PageURL_WebOb(request)
-
-

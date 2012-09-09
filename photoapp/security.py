@@ -3,8 +3,8 @@ import binascii
 from paste.httpheaders import AUTHORIZATION
 
 from pyramid.security import (
-    unauthenticated_userid, 
-    Everyone, 
+    unauthenticated_userid,
+    Everyone,
     Authenticated,
 )
 
@@ -27,7 +27,7 @@ def _get_credentials(request):
     try:
         method, auth = auth.split(' ', 1)
     except ValueError:
-        return 
+        return
 
     if method.lower() == 'basic':
 
@@ -42,7 +42,6 @@ def _get_credentials(request):
         return
 
     return (email, password)
-
 
 
 def groupfinder(user_id, request):
@@ -91,4 +90,3 @@ def includeme(config):
     config.set_default_permission('view')
 
     config.set_request_property(get_user, 'user', reify=True)
-
