@@ -672,4 +672,4 @@ class EditAccountFormTests(TestCase):
         form = EditAccountForm(req, obj=user)
         self.assert_(not form.validate())
  
-        
+
