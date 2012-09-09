@@ -327,7 +327,12 @@ def upload(request):
 
             photo.taglist = form.taglist.data
 
-        request.session.flash("Your photo has been uploaded")
+        if len(form.images.entries) == 1:
+            message = "Your photo has been uploaded"
+        else:
+            message = "Your photos have been uploaded"
+
+        request.session.flash(message)
         return HTTPFound(request.route_url('home'))
 
     return {'form' : form}
