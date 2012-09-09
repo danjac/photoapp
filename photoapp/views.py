@@ -33,10 +33,14 @@ from .forms import (
     )
 
 
-@view_config(route_name='welcome',
-             permission=NO_PERMISSION_REQUIRED,
-             renderer='welcome.jinja2')
+@view_config(route_name = 'welcome',
+             permission = NO_PERMISSION_REQUIRED,
+             renderer = 'welcome.jinja2')
 def welcome(request):
+    """
+    Splash page. If user signed in redirects to 
+    home page.
+    """
     
     if request.user:
         return HTTPFound(request.route_url('home'))
@@ -44,9 +48,12 @@ def welcome(request):
     return {}
 
 
-@view_config(route_name='home',
-             renderer='photos.jinja2')
+@view_config(route_name = 'home',
+             renderer = 'photos.jinja2')
 def home(request):
+    """
+    All the user's photos shown here.
+    """
 
     photos = DBSession.query(Photo).filter(
                 Photo.owner_id==request.user.id).order_by(
@@ -57,29 +64,35 @@ def home(request):
     return {'page' : page}
 
 
-@view_config(route_name='shared',
-             renderer='shared.jinja2')
+@view_config(route_name = 'shared',
+             renderer = 'shared.jinja2')
 def shared_photos(request):
+    """
+    Photos shared with the user.
+    """
 
     page = photos_page(request, request.user.shared_photos)
 
     return {'page' : page}
 
 
-@view_config(route_name="search",
-             renderer='search.jinja2')
+@view_config(route_name = "search",
+             renderer = 'search.jinja2')
 def search(request):
+    """
+    Search photos by title/tags
+    """
 
     search_terms = request.params.get('search', '').split()
     search_terms = set(s for s in search_terms if len(s) > 3)
 
     if search_terms:
-        q = [(or_(Photo.title.ilike("%%%s%%" % q), 
-                  Tag.name.ilike(q))) for q in search_terms]
+        query = [(or_(Photo.title.ilike("%%%s%%" % t), 
+                  Tag.name.ilike(t))) for t in search_terms]
 
-        q = reduce(and_, q)
+        query = reduce(and_, query)
 
-        photos = DBSession.query(Photo).filter(q).join(
+        photos = DBSession.query(Photo).filter(query).join(
                     Photo.tags).distinct().all()
 
         num_photos = len(photos)
@@ -93,10 +106,13 @@ def search(request):
             'show_search_if_empty' : True}
 
 
-@view_config(route_name='tags',
-             renderer='json',
-             xhr=True)
-def tags(request):
+@view_config(route_name = 'tags',
+             renderer = 'json',
+             xhr = True)
+def get_tags(request):
+    """
+    Renders JSON for tagclouds.
+    """
 
     tags = [{'text' : tag.name,
              'link' : request.route_url('tag', id=tag.id, name=tag.name),
@@ -106,25 +122,33 @@ def tags(request):
     return {'tags' : tags}
 
 
-@view_config(route_name='tag',
-             renderer='photos.jinja2')
+@view_config(route_name = 'tag',
+             renderer = 'photos.jinja2')
 def tagged_photos(tag, request):
-
+    """
+    Show all photos matching the given tag.
+    """
     page = photos_page(request, tag.photos)
     return {'page' : page}
 
 
-@forbidden_view_config(xhr=True,
-                       renderer='json')
+@forbidden_view_config(xhr = True,
+                       renderer = 'json')
 def forbidden_ajax(request):
+    """
+    Forbidden view for AJAX requests.
+    """
     return {'success' : False}
 
 
-@view_config(route_name='login',
-             permission=NO_PERMISSION_REQUIRED,
-             renderer='login.jinja2')
-@forbidden_view_config(renderer='login.jinja2')
+@view_config(route_name = 'login',
+             permission = NO_PERMISSION_REQUIRED,
+             renderer = 'login.jinja2')
+@forbidden_view_config(renderer = 'login.jinja2')
 def login(request):
+    """
+    Allows user to sign in 
+    """
     
     form = LoginForm(request, next=request.url)
 
@@ -150,10 +174,13 @@ def login(request):
     return {'form' : form}
 
 
-@view_config(route_name='signup',
-             permission=NO_PERMISSION_REQUIRED,
-             renderer='signup.jinja2')
+@view_config(route_name = 'signup',
+             permission = NO_PERMISSION_REQUIRED,
+             renderer = 'signup.jinja2')
 def signup(request):
+    """
+    Sign up a new user.
+    """
 
     invite_key = request.params.get('invite')
 
@@ -190,10 +217,14 @@ def signup(request):
     return {'form' : form}
 
 
-@view_config(route_name='forgot_pass',
-             permission=NO_PERMISSION_REQUIRED,
-             renderer='forgot_password.jinja2')
+@view_config(route_name = 'forgot_pass',
+             permission = NO_PERMISSION_REQUIRED,
+             renderer = 'forgot_password.jinja2')
 def forgot_password(request):
+    """
+    Resets and emails recovery key for a user so 
+    they can change their password.
+    """
 
     form = ForgotPasswordForm(request)
 
@@ -214,10 +245,16 @@ def forgot_password(request):
     return {'form' : form}
 
 
-@view_config(route_name='change_pass',
-             permission=NO_PERMISSION_REQUIRED,
-             renderer='change_password.jinja2')
+@view_config(route_name = 'change_pass',
+             permission = NO_PERMISSION_REQUIRED,
+             renderer = 'change_password.jinja2')
 def change_password(request):
+    """
+    Allows a user to change their password. If
+    no user signed in, checks the key value so 
+    they can recover their account if password
+    forgotten.
+    """
 
     user = request.user
     key = None
@@ -240,8 +277,8 @@ def change_password(request):
     return {'form' : form}
 
 
-@view_config(route_name="image",
-             permission="view")
+@view_config(route_name = "image",
+             permission = "view")
 def image(photo, request):
     """
     Show full-size image
@@ -252,9 +289,11 @@ def image(photo, request):
     return response
 
 
-@view_config(route_name="download",
-             permission="view")
+@view_config(route_name = "download")
 def download(photo, request):
+    """
+    Downloads photo as attachment.
+    """
 
     response = FileResponse(photo.get_image(request.fs).path,
                             request,
@@ -264,32 +303,42 @@ def download(photo, request):
     return response
 
 
-@view_config(route_name="thumbnail",
-             permission="view")
+@view_config(route_name = "thumbnail")
 def thumbnail(photo, request):
+    """
+    Renders the thumbnailed image of the photo.
+    """
     
     response = Response(content_type="image/jpeg")
     response.app_iter = photo.get_thumbnail(request.fs).read()
     return response
 
 
-@view_config(route_name="delete",
-             permission="delete",
-             request_method="POST",
-             renderer='json',
-             xhr=True)
+@view_config(route_name = "delete",
+             permission = "delete",
+             request_method = "POST",
+             renderer = 'json',
+             xhr = True)
 def delete_photo(photo, request):
+    """
+    Deletes the photo.
+    """
 
     DBSession.delete(photo)
     photo.delete_image_on_commit(request.fs)
     return {'success' : True}
 
              
-@view_config(route_name="send",
-             permission="view",
-             renderer="json",
-             xhr=True)
+@view_config(route_name = "send",
+             permission = "view",
+             renderer = "json",
+             xhr = True)
 def send_photo(photo, request):
+    """
+    Sends an email to an address with photo attachment.
+
+    Does not invite the recipient to join.
+    """
 
     form = SendPhotoForm(request)
 
@@ -318,10 +367,13 @@ def send_photo(photo, request):
     return {'success' : False, 'html' : html}
 
 
-@view_config(route_name="upload",
-             permission="upload",
-             renderer="upload.jinja2")
+@view_config(route_name = "upload",
+             permission = "upload",
+             renderer = "upload.jinja2")
 def upload(request):
+    """
+    Upload one or more photos to the user's collection.
+    """
 
     form = PhotoUploadForm(request)
     if form.validate():
@@ -350,11 +402,14 @@ def upload(request):
     return {'form' : form}
 
 
-@view_config(route_name="edit",
-             permission="edit",
-             renderer="json",
-             xhr=True)
+@view_config(route_name = "edit",
+             permission = "edit",
+             renderer = "json",
+             xhr = True)
 def edit(photo, request):
+    """
+    Edit title and other photo details.
+    """
 
     form = PhotoEditForm(request, obj=photo)
 
@@ -375,11 +430,14 @@ def edit(photo, request):
     return {'success' : False, 'html' : html}
                      
 
-@view_config(route_name="share",
-             permission="share",
-             renderer="json",
-             xhr=True)
+@view_config(route_name = "share",
+             permission = "share",
+             renderer = "json",
+             xhr = True)
 def share_photo(photo, request):
+    """
+    Share photo with another user.
+    """
 
     form = PhotoShareForm(request)
 
@@ -400,7 +458,7 @@ def share_photo(photo, request):
             user.shared_photos.append(photo)
             emails_for_invites.remove(user.email)
 
-            send_shared_photo_notification_email(request, photo, user, note)
+            send_shared_photo_email(request, photo, user, note)
             
         for email in emails_for_invites:
 
@@ -430,23 +488,32 @@ def share_photo(photo, request):
     return {'success' : False, 'html' : html}
 
 
-@view_config(route_name='about',
-             renderer='about.jinja2', 
-             permission=NO_PERMISSION_REQUIRED)
+@view_config(route_name = 'about',
+             renderer = 'about.jinja2', 
+             permission = NO_PERMISSION_REQUIRED)
 def about(request):
+    """
+    About page
+    """
     return {}
 
 
-@view_config(route_name='contact',
-             renderer='contact.jinja2', 
-             permission=NO_PERMISSION_REQUIRED)
+@view_config(route_name = 'contact',
+             renderer = 'contact.jinja2', 
+             permission = NO_PERMISSION_REQUIRED)
 def contact(request):
+    """
+    Contact details page
+    """
     return {}
 
 
-@view_config(route_name='settings',
-             renderer='edit_account.jinja2')
+@view_config(route_name = 'settings',
+             renderer = 'edit_account.jinja2')
 def edit_account(request):
+    """
+    Edit user account details.
+    """
 
     form = EditAccountForm(request, obj=request.user)
 
@@ -460,27 +527,41 @@ def edit_account(request):
     return {'form' : form}
 
 
-@view_config(route_name='logout')
+@view_config(route_name = 'logout')
 def logout(request):
+    """
+    Ends the current session.
+    """
 
     headers = forget(request)
     return HTTPFound(request.route_url('home'), headers=headers)
  
 
-@view_config(route_name="delete_shared",
-             permission="delete_shared",
-             xhr=True,
-             renderer="json")
+@view_config(route_name = "delete_shared",
+             permission = "delete_shared",
+             xhr = True,
+             renderer = "json")
 def delete_shared(photo, request):
+    """
+    Removes a photo from a user's shared collection. 
+    Does not delete the photo itself.
+    """
+
     request.user.shared_photos.remove(photo)
     return {'success' : True}
 
 
-@view_config(route_name="copy",
-             permission="copy",
-             xhr=True,
-             renderer="json")
+@view_config(route_name = "copy",
+             permission = "copy",
+             xhr = True,
+             renderer = "json")
 def copy_photo(photo, request):
+    """
+    Copies a shared photo over to the user's own
+    collection by making a direct copy of that photo.
+
+    The user can edit the photo before it's copied.
+    """
 
     form = PhotoEditForm(request,
                          title=photo.title,
@@ -514,6 +595,9 @@ def copy_photo(photo, request):
 
 
 def photos_page(request, photos, items_per_page=18, **kwargs):
+    """
+    Returns paginated photos
+    """
 
     return Page(photos, 
                 int(request.params.get('page', 0)), 
@@ -522,6 +606,9 @@ def photos_page(request, photos, items_per_page=18, **kwargs):
 # Emails
 
 def send_forgot_password_email(request, user):
+    """
+    Send email with link to recover/change password.
+    """
 
     body = """
     Hi, {first_name}
@@ -546,6 +633,10 @@ def send_forgot_password_email(request, user):
 def send_photo_attachment_email(request, photo, 
         recipient_name, recipient_email, note):
 
+    """
+    Sends a photo attachment to specified recipient.
+    """
+
     body = """ 
     Hi {recipient_name},
     {sender_name} sent you a photo! 
@@ -563,7 +654,10 @@ def send_photo_attachment_email(request, photo,
     request.mailer.send(message)
 
 
-def send_shared_photo_notification_email(request, photo, recipient, note):
+def send_shared_photo_email(request, photo, recipient, note):
+    """
+    Sends an email notifying an existing member of a photo share.
+    """
 
     body = """
     Hi, {first_name}
@@ -587,6 +681,9 @@ def send_shared_photo_notification_email(request, photo, recipient, note):
 
 
 def send_invite_email(request, invite, note):
+    """
+    Sends an email to someone who is not yet a member.
+    """
 
     url = request.route_url('signup', _query={'invite' : invite.key})
 

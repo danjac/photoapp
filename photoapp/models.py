@@ -3,8 +3,6 @@ import hashlib
 import urllib
 import uuid
 import base64
-import datetime
-import logging
 import mimetypes
 
 import Image
@@ -12,7 +10,7 @@ import ImageOps
 
 
 from cryptacular.bcrypt import BCRYPTPasswordManager
-from pyramid.security import Allow, Authenticated
+from pyramid.security import Allow
 
 from sqlalchemy import (
     Table,
@@ -27,7 +25,6 @@ from sqlalchemy import (
     func,
     event,
     select,
-    and_,
         )
 
 
@@ -313,6 +310,9 @@ photos_tags = Table(
 # Events
 
 def photo_tags_append_listener(target, value, initiator):
+    """
+    Increment tag frequency.
+    """
     if value.frequency:
         value.frequency += 1
     else:
@@ -322,6 +322,9 @@ event.listen(Photo.tags, 'append', photo_tags_append_listener)
 
 
 def photo_tags_remove_listener(target, value, initiator):
+    """
+    Decrement tag frequency. If freq == 0 then delete the tag.
+    """
     value.frequency -= 1
     if value.frequency == 0:
         DBSession.delete(value)
@@ -331,6 +334,9 @@ event.listen(Photo.tags, 'remove', photo_tags_remove_listener)
 
 
 def photo_delete_listener(mapper, connection, target):
+    """
+    Update tag frequency. If freq == 0 then delete the tag.
+    """
 
     tags = Base.metadata.tables['tags']
     photos_tags = Base.metadata.tables['photos_tags']
@@ -339,14 +345,10 @@ def photo_delete_listener(mapper, connection, target):
         photos_tags.c.tag_id==tags.c.id
         )
 
-    u = tags.update().values(frequency=freq)
-
-    connection.execute(u)
+    connection.execute(tags.update().values(frequency=freq))
 
     # remove any tags with frequency 0
-
-    d = tags.delete().where(tags.c.frequency==0)
-    connection.execute(d)
+    connection.execute(tags.delete().where(tags.c.frequency==0))
 
 
 event.listen(Photo, 'after_delete', photo_delete_listener)
