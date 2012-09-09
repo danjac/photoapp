@@ -115,13 +115,19 @@ def tagged_photos(tag, request):
     return {'page' : page}
 
 
+@forbidden_view_config(xhr=True,
+                       renderer='json')
+def forbidden_ajax(request):
+    return {'success' : False}
+
+
 @view_config(route_name='login',
              permission=NO_PERMISSION_REQUIRED,
              renderer='login.jinja2')
 @forbidden_view_config(renderer='login.jinja2')
 def login(request):
     
-    form = LoginForm(request)
+    form = LoginForm(request, next=request.url)
 
     if form.validate():
 
@@ -132,7 +138,14 @@ def login(request):
             request.session.flash("Welcome back, %s" % user.first_name)
 
             headers = remember(request, str(user.id))
-            return HTTPFound(request.route_url('home'), headers=headers)
+            default_redirect = request.route_url('home')
+
+            if request.matched_route.name == "login":
+                redirect = default_redirect
+            else:
+                redirect = form.next.data or default_redirect
+
+            return HTTPFound(redirect, headers=headers)
 
 
     return {'form' : form}
@@ -323,9 +336,9 @@ def upload(request):
                              image.data.file, 
                              image.data.filename)
             
-            DBSession.add(photo)
-
             photo.taglist = form.taglist.data
+
+            DBSession.add(photo)
 
         if len(form.images.entries) == 1:
             message = "Your photo has been uploaded"
@@ -479,12 +492,13 @@ def copy_photo(photo, request):
         new_photo = Photo(owner=request.user,
                           title=form.title.data)
                           
-        DBSession.add(new_photo)
         new_photo.taglist = form.taglist.data
 
         new_photo.save_image(request.fs,
                              photo.get_image(request.fs).open('rb'),
                              photo.image)
+
+        DBSession.add(new_photo)
 
         request.user.shared_photos.remove(photo)
         

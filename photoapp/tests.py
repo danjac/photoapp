@@ -406,6 +406,9 @@ class LoginTests(TestCase):
         request = self.get_POST_req(email="danjac354@gmail.com",
                                     password="test")
 
+        request.matched_route = mock.Mock()
+        request.matched_route.name = "home"
+
         self.load_routes()
 
         response = login(request)
@@ -419,9 +422,67 @@ class LoginTests(TestCase):
         request = self.get_POST_req(email="danjac354@gmail.com",
                                     password="test")
 
+        request.matched_route = mock.Mock()
+        request.matched_route.name = "home"
+
         response = login(request)
         self.assert_('form' in response)
- 
+
+    def test_login_to_login_page(self):
+        """
+        If current page is "login" we should redirect
+        to the home page instead.
+        """
+
+        from .views import login
+        from .models import User, DBSession
+
+        u = User(email="danjac354@gmail.com", password="test")
+        DBSession.add(u)
+        DBSession.flush()
+        
+        redirect = "http://example.com/login"
+
+        request = self.get_POST_req(email="danjac354@gmail.com",
+                                    next=redirect,
+                                    password="test")
+
+        request.matched_route = mock.Mock()
+        request.matched_route.name = "login"
+        request.url = redirect
+    
+        self.load_routes()
+
+        response = login(request)
+        self.assert_(response.status_code == 302)
+        self.assert_(response.location == "http://example.com/home")
+
+    def test_login_to_another_page(self):
+
+        from .views import login
+        from .models import User, DBSession
+
+
+        u = User(email="danjac354@gmail.com", password="test")
+        DBSession.add(u)
+        DBSession.flush()
+        
+        redirect = "http://example.com/upload"
+
+        request = self.get_POST_req(email="danjac354@gmail.com",
+                                    next=redirect,
+                                    password="test")
+
+        request.matched_route = mock.Mock()
+        request.matched_route.name = "upload"
+        request.url = redirect
+    
+        self.load_routes()
+
+        response = login(request)
+        self.assert_(response.status_code == 302)
+        self.assert_(response.location == "http://example.com/upload")
+
 
 
 class WelcomeTests(TestCase):

@@ -175,9 +175,12 @@ class PhotoApp.Photo
     showDefaultContent: ->
         $('#photo-modal-load').hide()
         $('#photo-modal-content').show()
+        $('#photo-modal-footer .buttons').show()
 
     showForm: (url) ->
         $('#photo-modal-content').hide()
+        $('#photo-modal-footer .buttons').hide()
+
         $.get url, null, (response) =>
             $('#photo-modal-load').show().html(response.html)
             #$('#photo-modal-footer a').addClass('disabled')

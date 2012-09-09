@@ -70,6 +70,8 @@ class Form(SecureForm):
 
 class LoginForm(Form):
 
+    next = HiddenField()
+
     email = TextField("Email address")
     password = PasswordField("Password")
     login = SubmitField("Sign in")
