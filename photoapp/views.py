@@ -81,6 +81,8 @@ def search(request):
     Search photos by title/tags
     """
 
+    # TBD: for Admins, include a) all photos and b) search by user name/email
+
     search_terms = request.params.get('search', '').split()
     search_terms = set(s for s in search_terms if len(s) > 3)
 

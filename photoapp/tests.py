@@ -66,7 +66,7 @@ class TestCase(unittest.TestCase):
         # add this so we can redirect
         self.config.include('photoapp.routes')
 
-    def get_POST_req(self, **data):
+    def make_POST_request(self, **data):
 
         request = testing.DummyRequest()
         request.method = "POST"
@@ -410,11 +410,13 @@ class SignupTests(TestCase):
 
         self.load_routes()
 
-        req = self.get_POST_req(email="tester@gmail.com",
-                                password="test",
-                                password_again="test",
-                                first_name="Tester",
-                                last_name="Tester",)
+        req = self.make_POST_request(
+            email="tester@gmail.com",
+            password="test",
+            password_again="test",
+            first_name="Tester",
+            last_name="Tester",
+        )
 
         res = signup(req)
 
@@ -439,12 +441,14 @@ class SignupTests(TestCase):
 
         self.load_routes()
 
-        req = self.get_POST_req(email="friend@gmail.com",
-                                password="test",
-                                password_again="test",
-                                first_name="Tester",
-                                last_name="Tester",
-                                invite=invite.key)
+        req = self.make_POST_request(
+            email="friend@gmail.com",
+            password="test",
+            password_again="test",
+            first_name="Tester",
+            last_name="Tester",
+            invite=invite.key
+        )
 
         res = signup(req)
 
@@ -467,12 +471,14 @@ class SignupTests(TestCase):
 
         self.load_routes()
 
-        req = self.get_POST_req(email="friend@gmail.com",
-                                password="test",
-                                password_again="test",
-                                first_name="Tester",
-                                last_name="Tester",
-                                invite=invite.key)
+        req = self.make_POST_request(
+            email="friend@gmail.com",
+            password="test",
+            password_again="test",
+            first_name="Tester",
+            last_name="Tester",
+            invite=invite.key
+        )
 
         res = signup(req)
 
@@ -518,8 +524,10 @@ class LoginTests(TestCase):
         DBSession.add(u)
         DBSession.flush()
 
-        request = self.get_POST_req(email="danjac354@gmail.com",
-                                    password="test")
+        request = self.make_POST_request(
+            email="danjac354@gmail.com",
+            password="test"
+        )
 
         request.matched_route = mock.Mock()
         request.matched_route.name = "home"
@@ -534,8 +542,10 @@ class LoginTests(TestCase):
 
         from .views import login
 
-        request = self.get_POST_req(email="danjac354@gmail.com",
-                                    password="test")
+        request = self.make_POST_request(
+            email="danjac354@gmail.com",
+            password="test"
+        )
 
         request.matched_route = mock.Mock()
         request.matched_route.name = "home"
@@ -558,9 +568,11 @@ class LoginTests(TestCase):
 
         redirect = "http://example.com/login"
 
-        request = self.get_POST_req(email="danjac354@gmail.com",
-                                    next=redirect,
-                                    password="test")
+        request = self.make_POST_request(
+            email="danjac354@gmail.com",
+            next=redirect,
+            password="test"
+        )
 
         request.matched_route = mock.Mock()
         request.matched_route.name = "login"
@@ -583,9 +595,11 @@ class LoginTests(TestCase):
 
         redirect = "http://example.com/upload"
 
-        request = self.get_POST_req(email="danjac354@gmail.com",
-                                    next=redirect,
-                                    password="test")
+        request = self.make_POST_request(
+            email="danjac354@gmail.com",
+            next=redirect,
+            password="test"
+        )
 
         request.matched_route = mock.Mock()
         request.matched_route.name = "upload"
@@ -635,7 +649,7 @@ class ForgotPasswordTests(TestCase):
         DBSession.add(user)
         DBSession.flush()
 
-        req = self.get_POST_req(email="tester@gmail.com")
+        req = self.make_POST_request(email="tester@gmail.com")
         req.mailer = DummyMailer()
 
         self.load_routes()
@@ -703,11 +717,13 @@ class SignupFormTests(TestCase):
 
         from .forms import SignupForm
 
-        req = self.get_POST_req(email="tester@gmail.com",
-                                first_name="Dan",
-                                last_name="Tester",
-                                password="test",
-                                password_again="test")
+        req = self.make_POST_request(
+            email="tester@gmail.com",
+            first_name="Dan",
+            last_name="Tester",
+            password="test",
+            password_again="test"
+        )
 
         form = SignupForm(req)
         self.assert_(form.validate())
@@ -722,11 +738,12 @@ class SignupFormTests(TestCase):
         DBSession.add(user)
         DBSession.flush()
 
-        req = self.get_POST_req(email="tester@gmail.com",
-                                first_name="Dan",
-                                last_name="Tester",
-                                password="test",
-                                password_again="test")
+        req = self.make_POST_request(
+            email="tester@gmail.com",
+            first_name="Dan", last_name="Tester",
+            password="test",
+            password_again="test"
+        )
 
         form = SignupForm(req)
         self.assert_(not form.validate())
@@ -749,11 +766,13 @@ class EditAccountFormTests(TestCase):
         DBSession.add(user)
         DBSession.flush()
 
-        req = self.get_POST_req(email="tester@gmail.com",
-                                first_name="Dan",
-                                last_name="Tester",
-                                password="test",
-                                password_again="test")
+        req = self.make_POST_request(
+            email="tester@gmail.com",
+            first_name="Dan",
+            last_name="Tester",
+            password="test",
+            password_again="test"
+        )
 
         form = EditAccountForm(req, obj=user)
         self.assert_(form.validate())
@@ -773,11 +792,13 @@ class EditAccountFormTests(TestCase):
         DBSession.add(user2)
         DBSession.flush()
 
-        req = self.get_POST_req(email="tester2@gmail.com",
-                                first_name="Dan",
-                                last_name="Tester",
-                                password="test",
-                                password_again="test")
+        req = self.make_POST_request(
+            email="tester2@gmail.com",
+            first_name="Dan",
+            last_name="Tester",
+            password="test",
+            password_again="test"
+        )
 
         form = EditAccountForm(req, obj=user)
         self.assert_(not form.validate())
