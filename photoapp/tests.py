@@ -33,16 +33,19 @@ class DummyMailer(object):
 
 class TestCase(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+
+        root_dir = os.path.dirname(os.path.dirname(__file__))
+        config_ini = os.path.join(root_dir, 'test.ini')
+        cls.settings = get_appsettings(config_ini)
+        cls.engine = engine_from_config(cls.settings, 'sqlalchemy.')
+
     def setUp(self):
 
         from .models import DBSession, Base
 
-        root_dir = os.path.dirname(os.path.dirname(__file__))
-        config_ini = os.path.join(root_dir, 'test.ini')
-
-        self.settings = get_appsettings(config_ini)
         self.config = testing.setUp(settings=self.settings)
-        self.engine = engine_from_config(self.settings, 'sqlalchemy.')
         self.dbconn = self.engine.connect()
         self.trans = self.dbconn.begin()
 
@@ -69,6 +72,7 @@ class TestCase(unittest.TestCase):
         request.session = mock.Mock()
         data.setdefault('csrf_token', request.session.get_csrf_token())
         request.POST = MultiDict(data)
+        request.params.update(request.POST)
         return request
 
     def tearDown(self):
@@ -363,6 +367,87 @@ class UserTests(TestCase):
 
         u = User.authenticate("tester@gmail.com", "test")
         self.assert_(u is not None)
+
+
+class SignupTests(TestCase):
+
+    def test_get_signup_without_invite(self):
+        """
+        Email should be blank.
+        """
+
+        from .views import signup
+
+        res = signup(testing.DummyRequest())
+        self.assert_(res['form'].email.data is None)
+
+    def test_get_signup_with_invite(self):
+        """
+        We should have email == invite email.
+        """
+
+        from .models import User, Photo, Invite, DBSession
+        from .views import signup
+
+        user = User(email="tester@gmail.com")
+        photo = Photo(title="test", image="test.jpg", owner=user)
+        invite = Invite(email="friend@gmail.com", sender=user, photo=photo)
+
+        DBSession.add_all((user, photo, invite))
+        DBSession.flush()
+
+        req = testing.DummyRequest()
+        req.params['invite'] = invite.key
+
+        res = signup(req)
+        self.assert_(res['form'].email.data == 'friend@gmail.com')
+
+    def test_post_signup_without_invite(self):
+
+        from .views import signup
+        from .models import User, DBSession
+
+        self.load_routes()
+
+        req = self.get_POST_req(email="tester@gmail.com",
+                                password="test",
+                                password_again="test",
+                                first_name="Tester",
+                                last_name="Tester",)
+
+        res = signup(req)
+
+        self.assert_(res.status_int == 302)
+        self.assert_(res.location == 'http://example.com/home')
+        self.assert_(DBSession.query(User).count() == 1)
+
+    def test_post_signup_with_invite(self):
+
+        from .views import signup
+        from .models import User, Photo, Invite, DBSession
+
+        user = User(email="tester@gmail.com")
+        photo = Photo(title="test", image="test.jpg", owner=user)
+        invite = Invite(email="friend@gmail.com", sender=user, photo=photo)
+
+        DBSession.add_all((user, photo, invite))
+        DBSession.flush()
+
+        self.load_routes()
+
+        req = self.get_POST_req(email="friend@gmail.com",
+                                password="test",
+                                password_again="test",
+                                first_name="Tester",
+                                last_name="Tester",
+                                invite=invite.key)
+
+        res = signup(req)
+
+        self.assert_(res.status_int == 302)
+        self.assert_(res.location == 'http://example.com/shared')
+        self.assert_(DBSession.query(User).count() == 2)
+        self.assert_(invite.accepted_on is not None)
 
 
 class HomeTests(TestCase):

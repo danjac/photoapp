@@ -180,17 +180,21 @@ def signup(request):
     """
 
     invite_key = request.params.get('invite')
+    invite = None
 
     if invite_key:
         invite = DBSession.query(Invite).filter_by(
             accepted_on=None,
             key=invite_key).first()
 
+    if invite:
+
         form = SignupForm(request,
                           invite=invite_key,
                           email=invite.email)
 
     else:
+
         form = SignupForm(request)
         invite = None
 
