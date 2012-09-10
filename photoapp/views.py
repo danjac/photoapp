@@ -88,6 +88,8 @@ def search(request):
         query = [(or_(Photo.title.ilike("%%%s%%" % t),
                   Tag.name.ilike(t))) for t in search_terms]
 
+        query += [Photo.owner_id == request.user.id]
+
         query = reduce(and_, query)
 
         photos = DBSession.query(Photo).filter(query).join(
