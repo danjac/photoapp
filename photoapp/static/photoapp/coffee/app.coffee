@@ -1,10 +1,10 @@
-    
+
 PhotoApp = {} unless PhotoApp?
 
 class PhotoApp.Message
 
     constructor: (@message) ->
-    
+
     show: () ->
 
         html = "
@@ -54,9 +54,6 @@ class PhotoApp.Photo
 
         @tmpl = $('#photo-modal-template').html()
 
-        @content = _.template @tmpl, @
-
-
         @doc.on 'click', '#photo-modal .share-add-another-btn', (event) =>
             event.preventDefault()
             numItems = $("#share-photo-form input[type='text']").length
@@ -86,7 +83,7 @@ class PhotoApp.Photo
                     @el.parent().remove()
                     PhotoApp.showMessage(response.message)
             )
-      
+
         @doc.on 'submit', '#send-photo-form', (event) =>
             event.preventDefault()
             @submitForm($('#send-photo-form'))
@@ -94,14 +91,15 @@ class PhotoApp.Photo
         @doc.on 'submit', '#edit-photo-form', (event) =>
             event.preventDefault()
             @submitForm($('#edit-photo-form'), (response) =>
-                el = $("[data-photo-id='#{@photoID}']")
-                el.attr('data-title', response.title)
-                el.find('img').attr('title', response.title)
-                $("#photo-modal h3").text(response.title)
+                @title = response.title
+                @el.attr 'data-title', @title
+                @el.find('img').attr 'alt', @title
+                @modal.modal('show')
+
             )
 
         @modal.on 'show', =>
-            @modal.html(@content)
+            @render()
 
             if @editURL?
                 $('#photo-modal .edit-btn').show().on 'click', => @edit()
@@ -148,15 +146,18 @@ class PhotoApp.Photo
 
             image = new Image()
             image.src = @thumbnailURL
-        
+
             image.onload = =>
 
                 clearInterval progress
                 $('#photo-modal .photo-image').show()
                 $('#photo-modal .photo-load-progress').hide()
                 $('#photo-modal-footer').show()
-        
+
         @modal.modal('show')
+
+    render: ->
+        @modal.html(_.template @tmpl, @)
 
     submitForm: (form, callback) ->
 
@@ -194,7 +195,7 @@ class PhotoApp.Photo
                     PhotoApp.showMessage("Photo '#{@title}' has been deleted")
 
     send: -> @showForm @sendURL
-       
+
     edit: -> @showForm @editURL
 
     share: -> @showForm @shareURL
@@ -248,7 +249,7 @@ class PhotoApp.UploadPage
             numItems = $("form input[type='file']").length
             if numItems < maxUploads
                 $('.upload-add-another-btn').parent().show()
-            
+
 
 
 
@@ -270,7 +271,7 @@ class PhotoApp.PhotosPage
 
                 $('#tag-cloud').jQCloud(response.tags)
             else
-                
+
         )
 
     onload: ->
@@ -284,7 +285,7 @@ class PhotoApp.PhotosPage
 
         @doc.on 'click', '.thumbnails a', (event) =>
             new PhotoApp.Photo(@, $(event.currentTarget))
-        
+
         @doc.on 'click', '#search-btn', (event) =>
 
             @searchBox.slideToggle 'slow'
