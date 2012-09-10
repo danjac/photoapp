@@ -3,6 +3,7 @@ import cgi
 import shutil
 import mock
 import unittest
+import datetime
 
 from pyramid import testing
 from pyramid.paster import get_appsettings
@@ -420,6 +421,37 @@ class SignupTests(TestCase):
         self.assert_(res.status_int == 302)
         self.assert_(res.location == 'http://example.com/home')
         self.assert_(DBSession.query(User).count() == 1)
+
+    def test_post_signup_with_accepted_invite(self):
+
+        from .views import signup
+        from .models import User, Photo, Invite, DBSession
+
+        user = User(email="tester@gmail.com")
+        photo = Photo(title="test", image="test.jpg", owner=user)
+        invite = Invite(email="friend@gmail.com",
+                        sender=user,
+                        accepted_on=datetime.datetime.now(),
+                        photo=photo)
+
+        DBSession.add_all((user, photo, invite))
+        DBSession.flush()
+
+        self.load_routes()
+
+        req = self.get_POST_req(email="friend@gmail.com",
+                                password="test",
+                                password_again="test",
+                                first_name="Tester",
+                                last_name="Tester",
+                                invite=invite.key)
+
+        res = signup(req)
+
+        self.assert_(res.status_int == 302)
+        self.assert_(res.location == 'http://example.com/home')
+        self.assert_(DBSession.query(User).count() == 2)
+        self.assert_(invite.accepted_on is not None)
 
     def test_post_signup_with_invite(self):
 
