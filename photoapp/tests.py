@@ -5,9 +5,12 @@ import mock
 import unittest
 import datetime
 
+import requests
+
 from pyramid import testing
 from pyramid.paster import get_appsettings
 from pyramid.security import Allow
+from pyramid.authorization import ACLAuthorizationPolicy
 
 #from webtest import TestApp
 #from webtest.debugapp import debug_app
@@ -85,6 +88,17 @@ class TestCase(unittest.TestCase):
 
         DBSession.remove()
         testing.tearDown()
+
+
+class ConfiguratorTests(TestCase):
+
+    def test_main(self):
+        """
+        Test load whole app
+        """
+
+        from . import main
+        self.assert_(main(self.config, **self.settings))
 
 
 class StorageTests(TestCase):
@@ -711,6 +725,27 @@ class ImageRequiredTests(TestCase):
         ImageRequired()(form, field)
 
 
+class SharedPhotosTests(TestCase):
+
+    def test_shared_photos(self):
+
+        from .models import User, Photo, DBSession
+        from .views import shared_photos
+
+        user = User(email="danjac354@gmail.com")
+        photo = Photo(owner=user, title="test", image="test.jpg")
+        user2 = User(email="user2@gmail.com")
+        user2.shared_photos.append(photo)
+
+        DBSession.add_all([user, photo, user2])
+
+        req = testing.DummyRequest()
+        req.user = user2
+
+        res = shared_photos(req)
+        self.assert_(res['page'].item_count == 1)
+
+
 class SignupFormTests(TestCase):
 
     def test_signup_with_unused_email(self):
@@ -802,3 +837,127 @@ class EditAccountFormTests(TestCase):
 
         form = EditAccountForm(req, obj=user)
         self.assert_(not form.validate())
+
+
+class EmailTests(TestCase):
+
+    def test_send_shared_photo_email(self):
+
+        from .models import User, Photo
+        from .views import send_shared_photo_email
+        from .storage import FileStorage
+
+        request = testing.DummyRequest()
+        request.mailer = DummyMailer()
+        request.route_url = mock.Mock()
+
+        request.user = User(first_name="Dan",
+                            last_name="Jacob",)
+
+        request.fs = FileStorage("test_media")
+        note = "testing"
+
+        photo = Photo(owner=request.user, title="test", image="test.jpg")
+
+        note = "testing"
+
+        recipient = User(email="tester@gmail.com",
+                         first_name="Tester")
+
+        send_shared_photo_email(request, photo, recipient, note)
+
+        msg = request.mailer.messages[0]
+        self.assert_(msg.To == recipient.email)
+        self.assert_(note in msg.Body)
+
+    def test_send_invite_email(self):
+
+        from .models import User, Invite, Photo
+        from .views import send_invite_email
+        from .storage import FileStorage
+
+        request = testing.DummyRequest()
+        request.mailer = DummyMailer()
+        request.route_url = mock.Mock()
+
+        request.user = User(first_name="Dan",
+                            last_name="Jacob",)
+
+        request.fs = FileStorage("test_media")
+        note = "testing"
+
+        photo = Photo(owner=request.user, image="test.jpg")
+
+        invite = Invite(sender=request.user,
+                        photo=photo,
+                        email="tester@gmail.com")
+
+        send_invite_email(request, invite, note)
+
+        msg = request.mailer.messages[0]
+        self.assert_(msg.To == invite.email)
+        self.assert_(note in msg.Body)
+
+
+class SecurityTests(TestCase):
+
+    def test_get_user_if_none(self):
+
+        from .security import get_user
+
+        self.config.set_authorization_policy(ACLAuthorizationPolicy())
+
+        authn_policy = testing.DummySecurityPolicy()
+        self.config.set_authentication_policy(authn_policy)
+
+        request = testing.DummyRequest()
+        request.user = None
+        request.environ['wsgi.version'] = '1.0'
+
+        self.assert_(get_user(request) is None)
+
+    def test_get_user_if_invalid(self):
+
+        from .security import get_user
+
+        self.config.set_authorization_policy(ACLAuthorizationPolicy())
+
+        authn_policy = testing.DummySecurityPolicy(userid="1")
+        self.config.set_authentication_policy(authn_policy)
+
+        request = testing.DummyRequest()
+        request.user = None
+        request.environ['wsgi.version'] = '1.0'
+
+        self.assert_(get_user(request) is None)
+
+    def test_get_user_if_valid(self):
+
+        from .security import get_user
+        from .models import User, DBSession
+
+        user = User(email="danjac354@gmail.com")
+        DBSession.add(user)
+        DBSession.flush()
+
+        self.config.set_authorization_policy(ACLAuthorizationPolicy())
+
+        authn_policy = testing.DummySecurityPolicy(userid=str(user.id))
+        self.config.set_authentication_policy(authn_policy)
+
+        request = testing.DummyRequest()
+        request.user = None
+        request.environ['wsgi.version'] = '1.0'
+
+        self.assert_(get_user(request) == user)
+
+    def test_get_user_if_basic_auth_and_valid(self):
+
+        from .security import get_user
+        from .models import User, DBSession
+
+        user = User(email="danjac354@gmail.com")
+        DBSession.add(user)
+        DBSession.flush()
+
+        request = testing.DummyRequest()
