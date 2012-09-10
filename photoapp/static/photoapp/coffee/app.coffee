@@ -91,6 +91,7 @@ class PhotoApp.Photo
                 img = @el.find 'img'
                 img.attr 'alt', @title
                 img.attr 'title', @title
+                @modal.find('h3').text @title
                 @modal.modal('show')
 
             )
