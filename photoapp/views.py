@@ -26,7 +26,6 @@ from .forms import (
     PhotoUploadForm,
     PhotoEditForm,
     PhotoShareForm,
-    SendPhotoForm,
     ForgotPasswordForm,
     ChangePasswordForm,
 )
@@ -325,7 +324,6 @@ def delete_photo(photo, request):
     DBSession.delete(photo)
     photo.delete_image_on_commit(request.fs)
     return {'success': True}
-
 
 
 @view_config(route_name="upload",
@@ -640,7 +638,6 @@ def send_invite_email(request, invite, note):
                              Subject=subject,
                              Body=body)
 
-
-    message.attach(photo.get_image(request.fs).path)
+    message.attach(invite.photo.get_image(request.fs).path)
 
     request.mailer.send(message)

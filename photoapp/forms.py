@@ -181,11 +181,3 @@ class PhotoShareForm(Form):
     )
 
     submit = SubmitField("Share")
-
-
-class SendPhotoForm(Form):
-
-    name = TextField("Name of person", validators=[Required()])
-    note = TextAreaField("Message")
-    email = TextField("Email address", validators=[Required(), Email()])
-    submit = SubmitField("Send")
