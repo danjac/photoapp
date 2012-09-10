@@ -93,7 +93,9 @@ class PhotoApp.Photo
             @submitForm($('#edit-photo-form'), (response) =>
                 @title = response.title
                 @el.attr 'data-title', @title
-                @el.find('img').attr 'alt', @title
+                img = @el.find 'img'
+                img.attr 'alt', @title
+                img.attr 'title', @title
                 @modal.modal('show')
 
             )
