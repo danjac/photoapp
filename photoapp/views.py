@@ -205,11 +205,14 @@ def signup(request):
         if invite:
             user.shared_photos.append(invite.photo)
             invite.accepted_on = datetime.datetime.now()
+            redirect = request.route_url('shared')
+        else:
+            redirect = request.route_url('home')
 
         request.session.flash("Welcome, %s" % user.first_name)
         headers = remember(request, str(user.id))
 
-        return HTTPFound(request.route_url('home'), headers=headers)
+        return HTTPFound(redirect, headers=headers)
 
     return {'form': form}
 
