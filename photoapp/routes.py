@@ -40,7 +40,6 @@ def includeme(config):
     photo_route('thumbnail', '/thumbnail/{id}.jpg')
     photo_route('image', '/photo/{id}.jpg')
     photo_route('download', '/download/{id}.jpg')
-    photo_route('send', '/send/{id}')
     photo_route('share', '/share/{id}')
     photo_route('edit', '/edit/{id}')
     photo_route('delete', '/delete/{id}')

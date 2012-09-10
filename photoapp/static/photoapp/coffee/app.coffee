@@ -40,7 +40,6 @@ class PhotoApp.Photo
         @imageURL = @el.attr 'data-image-url'
         @thumbnailURL = @el.attr 'data-thumbnail-url'
         @downloadURL = @el.attr 'data-download-url'
-        @sendURL = @el.attr 'data-send-url'
         @deleteURL = @el.attr 'data-delete-url'
         @deleteSharedURL = @el.attr 'data-delete-shared-url'
         @editURL = @el.attr 'data-edit-url'
@@ -84,10 +83,6 @@ class PhotoApp.Photo
                     PhotoApp.showMessage(response.message)
             )
 
-        @doc.on 'submit', '#send-photo-form', (event) =>
-            event.preventDefault()
-            @submitForm($('#send-photo-form'))
-
         @doc.on 'submit', '#edit-photo-form', (event) =>
             event.preventDefault()
             @submitForm($('#edit-photo-form'), (response) =>
@@ -100,8 +95,9 @@ class PhotoApp.Photo
 
             )
 
+        @render()
+
         @modal.on 'show', =>
-            @render()
 
             if @editURL?
                 $('#photo-modal .edit-btn').show().on 'click', => @edit()
@@ -113,12 +109,7 @@ class PhotoApp.Photo
             else
                 $('#photo-modal .share-btn').hide()
 
-            if @sendURL?
-                $('#photo-modal .send-btn').show().on 'click', => @send()
-            else
-                $('#photo-modal .send-btn').hide()
-
-            if @copyURL?
+           if @copyURL?
                 $('#photo-modal .copy-btn').show().on 'click', => @copy()
             else
                 $('#photo-modal .copy-btn').hide()
@@ -132,9 +123,6 @@ class PhotoApp.Photo
                 $('#photo-modal .delete-shared-btn').show().on 'click', => @deleteShared()
             else
                 $('#photo-modal .delete-shared-btn').hide()
-
-
-            $('#photo-modal .send-btn').on 'click', => @send()
 
             progressBar = $('#photo-modal .photo-load-progress .bar')
             progressWidth = 0
@@ -195,8 +183,6 @@ class PhotoApp.Photo
                 if response.success?
                     @el.parent().remove()
                     PhotoApp.showMessage("Photo '#{@title}' has been deleted")
-
-    send: -> @showForm @sendURL
 
     edit: -> @showForm @editURL
 

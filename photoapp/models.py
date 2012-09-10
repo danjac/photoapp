@@ -237,7 +237,7 @@ class Photo(Base):
             (Allow, Admins, ("view", "edit", "delete")),
 
             (Allow, "user:%d" % self.owner_id,
-                ("view", "send", "edit", "share", "delete")),
+                ("view", "edit", "share", "delete")),
 
             (Allow, "shared:%d" % self.id,
                 ("view", "copy", "delete_shared"))

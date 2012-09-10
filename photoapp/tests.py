@@ -280,7 +280,7 @@ class PhotoTests(TestCase):
 
         acl = [
             (Allow, Admins, ("view", "edit", "delete")),
-            (Allow, "user:1", ("view", "send", "edit", "share", "delete")),
+            (Allow, "user:1", ("view", "edit", "share", "delete")),
             (Allow, "shared:1", ("view", "copy", "delete_shared")),
         ]
 

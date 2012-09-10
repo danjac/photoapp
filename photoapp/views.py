@@ -327,44 +327,6 @@ def delete_photo(photo, request):
     return {'success': True}
 
 
-@view_config(route_name="send",
-             permission="view",
-             renderer="json",
-             xhr=True)
-def send_photo(photo, request):
-    """
-    Sends an email to an address with photo attachment.
-
-    Does not invite the recipient to join.
-    """
-
-    form = SendPhotoForm(request)
-
-    if form.validate():
-
-        send_photo_attachment_email(
-            request,
-            photo,
-            form.name.data,
-            form.email.data,
-            form.note.data,
-        )
-
-        message = "You have emailed the photo %s to %s" % (
-            photo.title,
-            form.email.data
-        )
-
-        return {'success': True, 'message': message}
-
-    html = render(
-        'send_photo.jinja2', {
-        'photo': photo,
-        'form': form,
-        }, request)
-
-    return {'success': False, 'html': html}
-
 
 @view_config(route_name="upload",
              permission="upload",
@@ -628,30 +590,6 @@ def send_forgot_password_email(request, user):
     request.mailer.send(message)
 
 
-def send_photo_attachment_email(request, photo,
-                                recipient_name, recipient_email, note):
-
-    """
-    Sends a photo attachment to specified recipient.
-    """
-
-    body = """
-    Hi {recipient_name},
-    {sender_name} sent you a photo!
-    {note}
-    """.format(sender_name=request.user.first_name,
-               recipient_name=recipient_name,
-               note=note)
-
-    message = mailer.Message(To=recipient_email,
-                             Subject=photo.title,
-                             Body=body)
-
-    message.attach(photo.get_image(request.fs).path)
-
-    request.mailer.send(message)
-
-
 def send_shared_photo_email(request, photo, recipient, note):
     """
     Sends an email notifying an existing member of a photo share.
@@ -674,6 +612,8 @@ def send_shared_photo_email(request, photo, recipient, note):
     message = mailer.Message(To=recipient.email,
                              Subject=subject,
                              Body=body)
+
+    message.attach(photo.get_image(request.fs).path)
 
     request.mailer.send(message)
 
@@ -699,5 +639,8 @@ def send_invite_email(request, invite, note):
     message = mailer.Message(To=invite.email,
                              Subject=subject,
                              Body=body)
+
+
+    message.attach(photo.get_image(request.fs).path)
 
     request.mailer.send(message)
