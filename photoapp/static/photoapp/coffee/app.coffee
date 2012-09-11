@@ -4,7 +4,7 @@ PhotoApp = {} unless PhotoApp?
 
 class PhotoApp.Message
 
-    constructor: (@message) ->
+    constructor: (@message, @target="#messages") ->
 
     show: () ->
 
@@ -13,11 +13,11 @@ class PhotoApp.Message
             <button type=\"button\" class=\"close\" data-dismiss=\"alert\">&times;</button>
             #{@message}
         </div>"
-        $('#messages').html(html).show()
+        $(@target).html(html).show()
 
 
-PhotoApp.showMessage = (message) ->
-    new PhotoApp.Message(message).show()
+PhotoApp.showMessage = (message, target) ->
+    new PhotoApp.Message(message, target).show()
 
 PhotoApp.paginate = ->
     # sets up infinite scrolling
@@ -154,12 +154,7 @@ class PhotoApp.Photo
         @modal.html(_.template @tmpl, @)
 
     showMessage: (message) ->
-        html = "
-        <div class=\"alert alert-success\">
-            <button type=\"button\" class=\"close\" data-dismiss=\"alert\">&times;</button>
-            #{message}
-        </div>"
-        $('#photo-modal .messages').html(html).show()
+        PhotoApp.showMessage message, "#photo-modal .messages"
 
     submitForm: (form, callback) ->
 
