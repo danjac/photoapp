@@ -17,7 +17,7 @@ def getmtime(filename):
     return datetime.datetime.fromtimestamp(os.path.getmtime(filename))
 
 
-def upload_files(url, auth, base_dir):
+def upload_files(url, auth, base_dir, default_tags):
 
     logfile = os.path.expanduser(os.path.join("~", ".photoapp"))
 
@@ -28,6 +28,8 @@ def upload_files(url, auth, base_dir):
         filenames = []
         logfile_last_modified = datetime.datetime.now()
 
+    log = open(logfile, "a")
+
     for path, dirs, files in os.walk(base_dir):
 
         for filename in files:
@@ -35,7 +37,7 @@ def upload_files(url, auth, base_dir):
                 filename = os.path.basename(filename)
                 name, ext = os.path.splitext(filename)
                 rel_path = path[len(base_dir):]
-                tags = rel_path.replace(os.path.sep, " ")
+                tags = default_tags + rel_path.replace(os.path.sep, " ")
 
                 full_path = os.path.join(path, filename)
 
@@ -45,12 +47,12 @@ def upload_files(url, auth, base_dir):
 
                 data = {'title': name, 'tags': tags}
                 files = {"uploaded_file": open(full_path, "rb")}
-
-                requests.put(url, data, files=files, auth=auth)
-                print(full_path)
-                filenames.append(full_path)
-
-    open(logfile, "w").writelines("%s\n" % n for n in filenames)
+                try:
+                    requests.put(url, data, files=files, auth=auth)
+                    print(full_path)
+                finally:
+                    filenames.append(full_path)
+                    log.write("%s\n" % full_path)
 
 
 def main(argv=sys.argv):
@@ -68,8 +70,10 @@ def main(argv=sys.argv):
     if not password:
         usage(argv)
 
+    default_tags = raw_input("Default tags:").strip()
+
     auth = requests.auth.HTTPBasicAuth(email, password)
 
     url = url + "/api/upload"
 
-    upload_files(url, auth, base_dir)
+    upload_files(url, auth, base_dir, default_tags)
