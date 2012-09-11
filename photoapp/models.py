@@ -309,16 +309,32 @@ class Tag(Base):
 photos_users = Table(
     "photos_users",
     Base.metadata,
-    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
-    Column("photo_id", Integer, ForeignKey("photos.id"), primary_key=True),
+
+    Column("user_id",
+           Integer,
+           ForeignKey("users.id", ondelete="CASCADE"),
+           primary_key=True),
+
+    Column("photo_id",
+           Integer,
+           ForeignKey("photos.id", ondelete="CASCADE"),
+           primary_key=True),
 )
 
 
 photos_tags = Table(
     "photos_tags",
     Base.metadata,
-    Column("tag_id", Integer, ForeignKey("tags.id"), primary_key=True),
-    Column("photo_id", Integer, ForeignKey("photos.id"), primary_key=True),
+
+    Column("tag_id",
+           Integer,
+           ForeignKey("tags.id", ondelete="CASCADE"),
+           primary_key=True),
+
+    Column("photo_id",
+           Integer,
+           ForeignKey("photos.id", ondelete="CASCADE"),
+           primary_key=True),
 )
 
 
