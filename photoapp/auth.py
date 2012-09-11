@@ -89,7 +89,7 @@ def get_user(request):
 
     if isinstance(userid, tuple):
 
-        return User.authenticate(**userid)
+        return User.authenticate(*userid)
 
     if userid:
 
