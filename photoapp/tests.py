@@ -300,7 +300,7 @@ class PhotoTests(TestCase):
         acl = [
             (Allow, Admins, ("view", "edit", "delete")),
             (Allow, "user:1", ("view", "edit", "share", "delete")),
-            (Allow, "shared:1", ("view", "copy", "delete_shared")),
+            (Allow, "photo:1", ("view", "copy", "delete_shared")),
         ]
 
         self.assert_(photo.__acl__ == acl)
@@ -899,11 +899,11 @@ class EmailTests(TestCase):
         self.assert_(note in msg.Body)
 
 
-class SecurityTests(TestCase):
+class AuthenticationTests(TestCase):
 
     def test_get_user_if_none(self):
 
-        from .security import get_user
+        from .auth import get_user
 
         self.config.set_authorization_policy(ACLAuthorizationPolicy())
 
@@ -918,7 +918,7 @@ class SecurityTests(TestCase):
 
     def test_get_user_if_invalid(self):
 
-        from .security import get_user
+        from .auth import get_user
 
         self.config.set_authorization_policy(ACLAuthorizationPolicy())
 
@@ -933,7 +933,7 @@ class SecurityTests(TestCase):
 
     def test_get_user_if_valid(self):
 
-        from .security import get_user
+        from .auth import get_user
         from .models import User, DBSession
 
         user = User(email="danjac354@gmail.com")
@@ -953,7 +953,7 @@ class SecurityTests(TestCase):
 
     def test_get_user_if_basic_auth_and_valid(self):
 
-        from .security import get_user
+        from .auth import get_user
         from .models import User, DBSession
 
         user = User(email="danjac354@gmail.com")

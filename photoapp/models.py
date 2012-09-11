@@ -39,6 +39,7 @@ from sqlalchemy.orm import (
 from zope.sqlalchemy import ZopeTransactionExtension
 
 from .utils import on_commit
+from .security import Admins, UserID, PhotoID
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
@@ -231,15 +232,13 @@ class Photo(Base):
     @property
     def __acl__(self):
 
-        from .security import Admins
-
         return [
             (Allow, Admins, ("view", "edit", "delete")),
 
-            (Allow, "user:%d" % self.owner_id,
+            (Allow, UserID(self.owner_id),
                 ("view", "edit", "share", "delete")),
 
-            (Allow, "shared:%d" % self.id,
+            (Allow, PhotoID(self.id),
                 ("view", "copy", "delete_shared"))
         ]
 
@@ -286,7 +285,7 @@ class Tag(Base):
 
     @property
     def __acl__(self):
-        return [(Allow, "user:%d" % self.owner_id, "view")]
+        return [(Allow, UserID(self.owner_id), "view")]
 
 
 photos_users = Table(
