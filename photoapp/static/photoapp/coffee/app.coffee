@@ -1,4 +1,5 @@
 
+
 PhotoApp = {} unless PhotoApp?
 
 class PhotoApp.Message
@@ -53,13 +54,15 @@ class PhotoApp.Photo
 
         @tmpl = $('#photo-modal-template').html()
 
+        @doc.unbind 'click', '#photo-modal .share-add-another-btn'
+
         @doc.on 'click', '#photo-modal .share-add-another-btn', (event) =>
             event.preventDefault()
             numItems = $("#share-photo-form input[type='text']").length
-
-            newItem = "<dd><input type=\"text\" name=\"emails-#{ numItems - 1}\">
+            newItem = "<dd><input type=\"text\" name=\"emails-#{ numItems }\">
                 <a href=\"#\" class=\"remove-share-email\"><i class=\"icon-remove\"></i></a>
                 </dd>"
+
             $(event.currentTarget).parent().before(newItem)
 
         @doc.on 'click', '#photo-modal .remove-share-email', (event) =>
@@ -218,14 +221,15 @@ class PhotoApp.UploadPage
 
     onload: ->
         @doc = $(document)
-        maxUploads = 6
+        maxUploads = 3
 
         $('.upload-add-another-btn').click (event) =>
             event.preventDefault()
             btn = $(event.currentTarget)
             numItems = $("form input[type='file']").length
+
             if numItems < maxUploads
-                newItem = "<dd><input type=\"file\" name=\"images-#{ numItems - 1}\">
+                newItem = "<dd><input type=\"file\" name=\"images-#{ numItems }\">
                     <a href=\"#\" class=\"remove-upload-field\"><i class=\"icon-remove\"></i></a>
                     </dd>"
                 btn.parent().before(newItem)
@@ -238,9 +242,6 @@ class PhotoApp.UploadPage
             numItems = $("form input[type='file']").length
             if numItems < maxUploads
                 $('.upload-add-another-btn').parent().show()
-
-
-
 
 
 class PhotoApp.PhotosPage

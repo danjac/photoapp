@@ -14,17 +14,22 @@
     <dl>
         {% for image in form.images.entries %}
         {{ forms.render_errors(image) }}
-        <dd>{{ image }}</dd>
+        <dd>{{ image }}
+        {% if loop.index > 1 %}
+        <a href="#" class="remove-upload-field"><i class="icon-remove"></i></a>
+        {% endif %}
+        </dd>
+
         {% endfor %}
         {% if form.images.entries|length < 6 %}
         <dd>
-            <button class="upload-add-another-btn btn"><i class="icon-plus"></i> Add another</button>
+            <button type="button" class="upload-add-another-btn btn"><i class="icon-plus"></i> Add another</button>
         </dd>
         {% endif %}
 
 
     </dl>
-    
+
 
 
     {{ form.submit(class="btn")}}

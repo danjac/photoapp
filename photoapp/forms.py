@@ -158,7 +158,7 @@ class PhotoUploadForm(Form):
     images = FieldList(
         FileField(validators=[ImageRequired()]),
         min_entries=1,
-        max_entries=3
+        max_entries=6
     )
 
     submit = SubmitField("Upload")

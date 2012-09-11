@@ -349,6 +349,7 @@ def upload(request):
     if form.validate():
 
         for image in form.images.entries:
+            print image.name, image.data
 
             photo = Photo(owner=request.user,
                           title=form.title.data)
