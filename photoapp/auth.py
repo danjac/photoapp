@@ -54,7 +54,7 @@ class AuthenticationPolicy(AuthTktAuthenticationPolicy):
         Basic Auth, otherwise plain string or None.
         """
 
-        userid = self.get_basic_credentials()
+        userid = self.get_basic_credentials(request)
 
         if userid:
             return userid
@@ -62,7 +62,7 @@ class AuthenticationPolicy(AuthTktAuthenticationPolicy):
         return super(AuthenticationPolicy,
                      self).unauthenticated_userid(request)
 
-    def effective_principals(self, user_id, request):
+    def effective_principals(self, request):
 
         groups = [Everyone]
 
