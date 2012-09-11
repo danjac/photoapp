@@ -385,7 +385,6 @@ class UserTests(TestCase):
         self.assert_(u is not None)
 
 
-
 class SignupTests(TestCase):
 
     def test_get_signup_without_invite(self):

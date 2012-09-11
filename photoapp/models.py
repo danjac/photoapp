@@ -24,6 +24,7 @@ from sqlalchemy import (
     func,
     event,
     select,
+    and_,
 )
 
 
@@ -278,7 +279,6 @@ class Invite(TimestampedMixin, Base):
                           backref=backref("sender", cascade="delete"))
 
 
-
 class Tag(Base):
 
     __tablename__ = "tags"
@@ -294,8 +294,6 @@ class Tag(Base):
 
     owner = relationship("User",
                          backref=backref("tags", cascade="delete"))
-
-
 
     def __unicode__(self):
         return self.name or ''
@@ -355,11 +353,11 @@ def photo_delete_listener(mapper, connection, target):
     Update tag frequency. If freq == 0 then delete the tag.
     """
 
-    tags = Base.metadata.tables['tags']
-    photos_tags = Base.metadata.tables['photos_tags']
+    tags = Base.metadata.tables[Tag.__tablename__]
 
     freq = select([func.count(photos_tags.c.tag_id)]).where(
-        photos_tags.c.tag_id == tags.c.id
+        and_(photos_tags.c.tag_id == tags.c.id,
+             tags.c.owner_id == target.owner_id)
     )
 
     connection.execute(tags.update().values(frequency=freq))
