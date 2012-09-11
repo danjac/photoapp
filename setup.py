@@ -57,6 +57,7 @@ setup(
     main = photoapp:main
     [console_scripts]
     initialize_photoapp_db = photoapp.scripts.initializedb:main
+    drop_test_db = photoapp.scripts.drop_test_db:main
     upload_photos = photoapp.scripts.fileuploader:main
     """,
     paster_plugins=['pyramid'],
