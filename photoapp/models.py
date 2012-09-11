@@ -158,7 +158,7 @@ class Photo(TimestampedMixin, Base):
 
     tags = relationship("Tag",
                         secondary="photos_tags",
-                        backref="photos")
+                        backref=backref("photos", cascade="delete"))
 
     owner = relationship("User",
                          innerjoin=True,
