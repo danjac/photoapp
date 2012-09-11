@@ -28,7 +28,6 @@
       </head>
 
   <body>
-
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
@@ -69,6 +68,10 @@
     </div>
 
     <div class="container">
+    <noscript>
+        <div class="alert alert-error">You must enable JavaScript in your browser to use this application!</div>
+    </noscript>
+
     <div id="messages">
         {% for message in request.session.pop_flash() %}
         <div class="alert alert-success">
