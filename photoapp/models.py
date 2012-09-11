@@ -34,6 +34,7 @@ from sqlalchemy.orm import (
     scoped_session,
     sessionmaker,
     relationship,
+    backref,
 )
 
 from zope.sqlalchemy import ZopeTransactionExtension
@@ -93,24 +94,6 @@ class User(TimestampedMixin, Base):
     last_login_at = Column(DateTime)
 
     key = Column(String(30), unique=True)
-
-    photos = relationship("Photo",
-                          innerjoin=True,
-                          lazy="joined",
-                          passive_deletes=True,
-                          cascade="all,delete",
-                          backref="owner")
-
-
-    tags = relationship("Tag",
-                        backref="owner",
-                        cascade="all,delete",
-                        passive_deletes=True)
-
-    invites = relationship("Invite",
-                           cascade="all,delete",
-                           passive_deletes=True,
-                           backref="sender")
 
     shared_photos = relationship("Photo",
                                  secondary="photos_users",
@@ -175,6 +158,11 @@ class Photo(TimestampedMixin, Base):
     tags = relationship("Tag",
                         secondary="photos_tags",
                         backref="photos")
+
+    owner = relationship("User",
+                         innerjoin=True,
+                         lazy="joined",
+                         backref=backref("photos", cascade="delete"))
 
     @property
     def content_type(self):
@@ -285,6 +273,11 @@ class Invite(TimestampedMixin, Base):
 
     photo = relationship("Photo", backref="invites", cascade="delete")
 
+    sender = relationship("User",
+                          cascade="all,delete",
+                          backref=backref("sender", cascade="delete"))
+
+
 
 class Tag(Base):
 
@@ -298,6 +291,10 @@ class Tag(Base):
     name = Column(String(100), nullable=False, index=True)
 
     frequency = Column(Integer, default=1)
+
+    owner = relationship("User",
+                         backref=backref("tags", cascade="delete"))
+
 
 
     def __unicode__(self):

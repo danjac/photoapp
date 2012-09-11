@@ -5,6 +5,7 @@ import mock
 import unittest
 import datetime
 
+import transaction
 import requests
 
 from pyramid import testing
@@ -382,6 +383,7 @@ class UserTests(TestCase):
 
         u = User.authenticate("tester@gmail.com", "test")
         self.assert_(u is not None)
+
 
 
 class SignupTests(TestCase):
@@ -936,20 +938,24 @@ class AuthenticationTests(TestCase):
         from .auth import get_user
         from .models import User, DBSession
 
-        user = User(email="danjac354@gmail.com")
-        DBSession.add(user)
-        DBSession.flush()
+        with transaction.manager:
 
-        self.config.set_authorization_policy(ACLAuthorizationPolicy())
+            user = User(email="danjac354@gmail.com")
+            DBSession.add(user)
+            DBSession.flush()
 
-        authn_policy = testing.DummySecurityPolicy(userid=str(user.id))
-        self.config.set_authentication_policy(authn_policy)
+            self.config.set_authorization_policy(ACLAuthorizationPolicy())
 
-        request = testing.DummyRequest()
-        request.user = None
-        request.environ['wsgi.version'] = '1.0'
+            authn_policy = testing.DummySecurityPolicy(userid=str(user.id))
+            self.config.set_authentication_policy(authn_policy)
 
-        self.assert_(get_user(request) == user)
+            request = testing.DummyRequest()
+            request.user = None
+            request.environ['wsgi.version'] = '1.0'
+
+            self.assert_(get_user(request) == user)
+
+            DBSession.delete(user)
 
     def test_get_user_if_basic_auth_and_valid(self):
 
