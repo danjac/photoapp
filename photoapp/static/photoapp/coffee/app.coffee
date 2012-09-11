@@ -83,7 +83,7 @@ class PhotoApp.Photo
             @submitForm($('#copy-photo-form'), (response) =>
                 if response.success?
                     @el.parent().remove()
-                    PhotoApp.showMessage(response.message)
+                    @showMessage(response.message)
             )
 
         @doc.on 'submit', '#edit-photo-form', (event) =>
@@ -153,12 +153,20 @@ class PhotoApp.Photo
     render: ->
         @modal.html(_.template @tmpl, @)
 
+    showMessage: (message) ->
+        html = "
+        <div class=\"alert alert-success\">
+            <button type=\"button\" class=\"close\" data-dismiss=\"alert\">&times;</button>
+            #{message}
+        </div>"
+        $('#photo-modal .messages').html(html).show()
+
     submitForm: (form, callback) ->
 
         $.post(form.attr('action'), form.serialize(), (response) =>
             if response.success
                 if response.message?
-                    PhotoApp.showMessage response.message
+                    @showMessage response.message
                 @showDefaultContent()
                 if callback?
                     callback(response)
