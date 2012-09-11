@@ -27,7 +27,7 @@ from sqlalchemy import (
 )
 
 
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from sqlalchemy.orm import (
@@ -43,7 +43,23 @@ from .security import Admins, UserID, PhotoID
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
 
-Base = declarative_base()
+
+class Base(object):
+
+    id = Column(Integer, primary_key=True)
+
+
+class TimestampedMixin(object):
+
+    @declared_attr
+    def __ordering__(cls):
+        return cls.created_at.desc()
+
+    created_at = Column(DateTime, default=func.now())
+
+
+Base = declarative_base(cls=Base)
+
 
 _passwd_mgr = BCRYPTPasswordManager()
 
@@ -61,11 +77,9 @@ def random_string():
     return s
 
 
-class User(Base):
+class User(TimestampedMixin, Base):
 
     __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True)
 
     email = Column(String(150), unique=True, nullable=False)
     first_name = Column(Unicode(40))
@@ -76,7 +90,6 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
 
-    created_at = Column(DateTime, default=func.now())
     last_login_at = Column(DateTime)
 
     key = Column(String(30), unique=True)
@@ -126,11 +139,9 @@ class User(Base):
         return "http://www.gravatar.com/avatar/%s?%s" % (hashed, params)
 
 
-class Photo(Base):
+class Photo(TimestampedMixin, Base):
 
     __tablename__ = "photos"
-
-    id = Column(Integer, primary_key=True)
 
     owner_id = Column(Integer,
                       ForeignKey("users.id"),
@@ -243,12 +254,10 @@ class Photo(Base):
         ]
 
 
-class Invite(Base):
+class Invite(TimestampedMixin, Base):
 
     __tablename__ = "invites"
 
-    id = Column(Integer, primary_key=True)
-    created_on = Column(DateTime, default=func.now())
     accepted_on = Column(DateTime)
 
     email = Column(String(180), nullable=False)
@@ -265,7 +274,6 @@ class Tag(Base):
 
     __tablename__ = "tags"
 
-    id = Column(Integer, primary_key=True)
     owner_id = Column(Integer,
                       ForeignKey("users.id"),
                       nullable=False,
