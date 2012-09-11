@@ -154,8 +154,6 @@ class Photo(TimestampedMixin, Base):
     height = Column(Integer)
     width = Column(Integer)
 
-    created_at = Column(DateTime, default=func.now())
-
     owner = relationship("User", innerjoin=True, lazy="joined")
 
     tags = relationship("Tag",
