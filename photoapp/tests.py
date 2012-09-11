@@ -40,10 +40,15 @@ class TestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
+        from .models import Base
+
         root_dir = os.path.dirname(os.path.dirname(__file__))
         config_ini = os.path.join(root_dir, 'test.ini')
         cls.settings = get_appsettings(config_ini)
         cls.engine = engine_from_config(cls.settings, 'sqlalchemy.')
+
+        # ensure we have a clean DB to run tests if schema changed
+        Base.metadata.drop_all(cls.engine)
 
     def setUp(self):
 
