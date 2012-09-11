@@ -94,6 +94,24 @@ class User(TimestampedMixin, Base):
 
     key = Column(String(30), unique=True)
 
+    photos = relationship("Photo",
+                          innerjoin=True,
+                          lazy="joined",
+                          passive_deletes=True,
+                          cascade="all,delete",
+                          backref="owner")
+
+
+    tags = relationship("Tag",
+                        backref="owner",
+                        cascade="all,delete",
+                        passive_deletes=True)
+
+    invites = relationship("Invite",
+                           cascade="all,delete",
+                           passive_deletes=True,
+                           backref="sender")
+
     shared_photos = relationship("Photo",
                                  secondary="photos_users",
                                  backref="shared_users")
@@ -144,7 +162,7 @@ class Photo(TimestampedMixin, Base):
     __tablename__ = "photos"
 
     owner_id = Column(Integer,
-                      ForeignKey("users.id"),
+                      ForeignKey("users.id", ondelete="CASCADE"),
                       nullable=False,
                       index=True)
 
@@ -153,8 +171,6 @@ class Photo(TimestampedMixin, Base):
 
     height = Column(Integer)
     width = Column(Integer)
-
-    owner = relationship("User", innerjoin=True, lazy="joined")
 
     tags = relationship("Tag",
                         secondary="photos_tags",
@@ -261,11 +277,13 @@ class Invite(TimestampedMixin, Base):
     email = Column(String(180), nullable=False)
     key = Column(String(30), unique=True, default=random_string)
 
-    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    sender_id = Column(Integer,
+                       ForeignKey("users.id", ondelete="CASCADE"),
+                       nullable=False)
+
     photo_id = Column(Integer, ForeignKey("photos.id"))
 
     photo = relationship("Photo", backref="invites", cascade="delete")
-    sender = relationship("User", backref="invites")
 
 
 class Tag(Base):
@@ -273,7 +291,7 @@ class Tag(Base):
     __tablename__ = "tags"
 
     owner_id = Column(Integer,
-                      ForeignKey("users.id"),
+                      ForeignKey("users.id", ondelete="CASCADE"),
                       nullable=False,
                       index=True)
 
@@ -281,7 +299,6 @@ class Tag(Base):
 
     frequency = Column(Integer, default=1)
 
-    owner = relationship("User", backref="tags")
 
     def __unicode__(self):
         return self.name or ''

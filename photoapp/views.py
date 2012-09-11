@@ -566,6 +566,22 @@ def copy_photo(photo, request):
     return {'success': False, 'html': html}
 
 
+@view_config(route_name="delete_account",
+             renderer="delete_account.jinja2")
+def delete_account(request):
+    if request.method == "POST":
+
+        DBSession.delete(request.user)
+
+        for photo in request.user.photos:
+            photo.delete_image_on_commit(request.fs)
+
+        request.session.flash("Your account has been deleted")
+        return HTTPFound(request.route_url("welcome"))
+
+    return {}
+
+
 def photos_page(request, photos, items_per_page=18, **kwargs):
     """
     Returns paginated photos

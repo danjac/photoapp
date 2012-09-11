@@ -27,6 +27,7 @@ def includeme(config):
 
     config.add_route('login', '/login')
     config.add_route('signup', '/signup')
+    config.add_route('delete_account', '/delete_account'),
     config.add_route('forgot_pass', '/forgotpass')
     config.add_route('change_pass', '/changepass')
     config.add_route('logout', '/logout')

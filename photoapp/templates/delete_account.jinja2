@@ -1,0 +1,10 @@
+{% extends "layout.jinja2" %}
+
+{% block content %}
+<form method="POST" action="{{ request.route_url('delete_account') }}">
+    <p>
+        Are you sure you want to delete your account? You will lost <b>ALL</b> your photos!
+    </p>
+    <input type="submit" value="Go ahead">
+</form>
+{% endblock %}
