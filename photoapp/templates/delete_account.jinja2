@@ -5,6 +5,7 @@
     <p>
         Are you sure you want to delete your account? You will lost <b>ALL</b> your photos!
     </p>
-    <input type="submit" value="Go ahead">
+    <input type="submit" onclick="return confirm('Sure???')" class="btn" value="Go ahead">
+    <a href="{{ request.route_url('settings') }}" class="btn">Cancel</a>
 </form>
 {% endblock %}
