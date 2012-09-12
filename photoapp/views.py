@@ -5,7 +5,7 @@ from pyramid.view import view_config, forbidden_view_config
 from pyramid.security import remember, forget, NO_PERMISSION_REQUIRED
 from pyramid.response import Response, FileResponse
 from pyramid.renderers import render
-from pyramid.httpexceptions import HTTPFound, HTTPForbidden
+from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPNotFound
 
 from sqlalchemy import and_, or_
 
@@ -29,6 +29,13 @@ from .forms import (
     ForgotPasswordForm,
     ChangePasswordForm,
 )
+
+
+@view_config(permission=NO_PERMISSION_REQUIRED,
+             renderer="not_found.jinja2",
+             context=HTTPNotFound)
+def not_found(context, request):
+    return {}
 
 
 @view_config(route_name='welcome',
