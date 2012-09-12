@@ -6,6 +6,7 @@ from wtforms import (
     TextAreaField,
     PasswordField,
     FileField,
+    BooleanField,
     HiddenField,
     SubmitField,
     FieldList,
@@ -154,6 +155,7 @@ class PhotoUploadForm(Form):
 
     title = TextField("Title", validators=[Required()])
     taglist = TextField("Tags")
+    is_public = BooleanField("Make this photo public")
 
     images = FieldList(
         FileField(validators=[ImageRequired()]),
@@ -168,6 +170,7 @@ class PhotoEditForm(Form):
 
     title = TextField("Title", validators=[Required()])
     taglist = TextField("Tags")
+    is_public = BooleanField("Make this photo public")
     submit = SubmitField("Update")
 
 

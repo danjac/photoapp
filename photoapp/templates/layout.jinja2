@@ -43,9 +43,10 @@
 
               {% if request.user %}
               <li {{ active_tab('home') }}><a href="{{ request.route_url('home') }}">Home</a></li>
+              <li {{ active_tab('shared') }}><a href="{{ request.route_url('shared') }}">Shared</a></li>
+              <li {{ active_tab('public') }}><a href="{{ request.route_url('public', id=request.user.id) }}">Public</a></li>
               {% endif %}
               {% if has_permission('upload') %}
-              <li {{ active_tab('shared') }}><a href="{{ request.route_url('shared') }}">Shared</a></li>
               <li {{ active_tab('upload') }}><a href="{{ request.route_url('upload') }}">Upload</a></li>
               {% endif %}
 

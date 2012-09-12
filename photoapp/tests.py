@@ -10,7 +10,7 @@ import requests
 
 from pyramid import testing
 from pyramid.paster import get_appsettings
-from pyramid.security import Allow
+from pyramid.security import Allow, Everyone
 from pyramid.authorization import ACLAuthorizationPolicy
 
 #from webtest import TestApp
@@ -305,6 +305,23 @@ class PhotoTests(TestCase):
         ]
 
         self.assert_(photo.__acl__ == acl)
+
+    def test_acl_if_public(self):
+
+        from .security import Admins
+        from .models import Photo
+
+        photo = Photo(id=1, owner_id=1, is_public=True)
+
+        acl = [
+            (Allow, Admins, ("view", "edit", "delete")),
+            (Allow, "user:1", ("view", "edit", "share", "delete")),
+            (Allow, "photo:1", ("view", "copy", "delete_shared")),
+            (Allow, Everyone, "view"),
+        ]
+
+        self.assert_(photo.__acl__ == acl)
+
 
 
 class UserTests(TestCase):
@@ -783,6 +800,24 @@ class SignupFormTests(TestCase):
 
         form = SignupForm(req)
         self.assert_(not form.validate())
+
+
+class PublicPhotoTests(TestCase):
+
+    def test_public_photos(self):
+
+        from .models import User, Photo, DBSession
+        from .views import public_photos
+
+        user = User(email="tester@gmail.com", password="test")
+        photo = Photo(title="test", owner=user, is_public=True)
+
+        DBSession.add_all((user, photo))
+        DBSession.flush()
+
+        res = public_photos(user, testing.DummyRequest())
+        self.assert_(res['page'].item_count == 1)
+
 
 
 class EditAccountFormTests(TestCase):

@@ -9,7 +9,7 @@ import Image
 import ImageOps
 
 from cryptacular.bcrypt import BCRYPTPasswordManager
-from pyramid.security import Allow
+from pyramid.security import Allow, Everyone
 
 from sqlalchemy import (
     Table,
@@ -156,6 +156,8 @@ class Photo(TimestampedMixin, Base):
     height = Column(Integer)
     width = Column(Integer)
 
+    is_public = Column(Boolean, default=False)
+
     tags = relationship("Tag",
                         secondary="photos_tags",
                         backref=backref("photos", cascade="delete"))
@@ -164,6 +166,7 @@ class Photo(TimestampedMixin, Base):
                          innerjoin=True,
                          lazy="joined",
                          backref=backref("photos", cascade="delete"))
+
 
     @property
     def content_type(self):
@@ -246,7 +249,8 @@ class Photo(TimestampedMixin, Base):
     @property
     def __acl__(self):
 
-        return [
+       acl = [
+
             (Allow, Admins, ("view", "edit", "delete")),
 
             (Allow, UserID(self.owner_id),
@@ -255,6 +259,11 @@ class Photo(TimestampedMixin, Base):
             (Allow, PhotoID(self.id),
                 ("view", "copy", "delete_shared"))
         ]
+
+       if self.is_public:
+           acl.append((Allow, Everyone, "view"))
+
+       return acl
 
 
 class Invite(TimestampedMixin, Base):

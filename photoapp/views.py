@@ -351,7 +351,8 @@ def upload(request):
         for image in form.images.entries:
 
             photo = Photo(owner=request.user,
-                          title=form.title.data)
+                          title=form.title.data,
+                          is_public=form.is_public.data)
 
             photo.save_image(request.fs,
                              image.data.file,
@@ -398,6 +399,19 @@ def edit(photo, request):
         }, request)
 
     return {'success': False, 'html': html}
+
+
+@view_config(route_name="public",
+             permission=NO_PERMISSION_REQUIRED,
+             renderer="shared.jinja2")
+def public_photos(user, request):
+
+    photos = DBSession.query(Photo).filter_by(
+        owner_id=user.id,
+        is_public=True
+    )
+
+    return {'page' : photos_page(request, photos)}
 
 
 @view_config(route_name="share",

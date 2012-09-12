@@ -1,10 +1,11 @@
 import functools
 
 from .resources import ModelResource
-from .models import Photo, Tag
+from .models import Photo, Tag, User
 
 TagResource = ModelResource.for_model(Tag)
 PhotoResource = ModelResource.for_model(Photo)
+UserResource = ModelResource.for_model(User)
 
 
 def includeme(config):
@@ -18,6 +19,10 @@ def includeme(config):
     config.add_route('search', '/search')
     config.add_route('tags', '/tags')
     config.add_route('shared', '/shared')
+
+    config.add_route('public', '/user/{id}',
+                     traverse='/{id}',
+                     factory=UserResource)
 
     config.add_route('tag', '/tag/{id}/{name}',
                      traverse='/{id}',
