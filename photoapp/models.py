@@ -167,7 +167,6 @@ class Photo(TimestampedMixin, Base):
                          lazy="joined",
                          backref=backref("photos", cascade="delete"))
 
-
     @property
     def content_type(self):
         return mimetypes.guess_type(self.image)[0]
@@ -249,7 +248,7 @@ class Photo(TimestampedMixin, Base):
     @property
     def __acl__(self):
 
-       acl = [
+        acl = [
 
             (Allow, Admins, ("view", "edit", "delete")),
 
@@ -260,10 +259,10 @@ class Photo(TimestampedMixin, Base):
                 ("view", "copy", "delete_shared"))
         ]
 
-       if self.is_public:
-           acl.append((Allow, Everyone, "view"))
+        if self.is_public:
+            acl.append((Allow, Everyone, "view"))
 
-       return acl
+        return acl
 
 
 class Invite(TimestampedMixin, Base):

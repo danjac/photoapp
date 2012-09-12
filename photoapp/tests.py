@@ -323,7 +323,6 @@ class PhotoTests(TestCase):
         self.assert_(photo.__acl__ == acl)
 
 
-
 class UserTests(TestCase):
 
     def test_reset_key(self):
@@ -817,7 +816,6 @@ class PublicPhotoTests(TestCase):
 
         res = public_photos(user, testing.DummyRequest())
         self.assert_(res['page'].item_count == 1)
-
 
 
 class EditAccountFormTests(TestCase):

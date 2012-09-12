@@ -411,7 +411,7 @@ def public_photos(user, request):
         is_public=True
     )
 
-    return {'page' : photos_page(request, photos)}
+    return {'page': photos_page(request, photos)}
 
 
 @view_config(route_name="share",
