@@ -53,8 +53,7 @@ class PhotoApp.Photo
         @width = @el.attr 'data-width'
 
         @tmpl = $('#photo-modal-template').html()
-
-        @doc.unbind 'click', '#photo-modal .share-add-another-btn'
+        @render()
 
         @doc.on 'click', '#photo-modal .share-add-another-btn', (event) =>
             event.preventDefault()
@@ -99,34 +98,32 @@ class PhotoApp.Photo
 
             )
 
-        @render()
+        if @editURL?
+            $('#photo-modal .edit-btn').show().on 'click', => @edit()
+        else
+            $('#photo-modal .edit-btn').hide()
+
+        if @shareURL?
+            $('#photo-modal .share-btn').show().on 'click', => @share()
+        else
+            $('#photo-modal .share-btn').hide()
+
+        if @copyURL?
+            $('#photo-modal .copy-btn').show().on 'click', => @copy()
+        else
+            $('#photo-modal .copy-btn').hide()
+
+        if @deleteURL?
+            $('#photo-modal .delete-btn').show().on 'click', => @delete()
+        else
+            $('#photo-modal .delete-btn').hide()
+
+        if @deleteSharedURL?
+            $('#photo-modal .delete-shared-btn').show().on 'click', => @deleteShared()
+        else
+            $('#photo-modal .delete-shared-btn').hide()
 
         @modal.on 'show', =>
-
-            if @editURL?
-                $('#photo-modal .edit-btn').show().on 'click', => @edit()
-            else
-                $('#photo-modal .edit-btn').hide()
-
-            if @shareURL?
-                $('#photo-modal .share-btn').show().on 'click', => @share()
-            else
-                $('#photo-modal .share-btn').hide()
-
-           if @copyURL?
-                $('#photo-modal .copy-btn').show().on 'click', => @copy()
-            else
-                $('#photo-modal .copy-btn').hide()
-
-            if @deleteURL?
-                $('#photo-modal .delete-btn').show().on 'click', => @delete()
-            else
-                $('#photo-modal .delete-btn').hide()
-
-            if @deleteSharedURL?
-                $('#photo-modal .delete-shared-btn').show().on 'click', => @deleteShared()
-            else
-                $('#photo-modal .delete-shared-btn').hide()
 
             progressBar = $('#photo-modal .photo-load-progress .bar')
             progressWidth = 0
@@ -263,7 +260,6 @@ class PhotoApp.PhotosPage
                 @searchBox.append(html)
 
                 $('#tag-cloud').jQCloud(response.tags)
-            else
 
         )
 
