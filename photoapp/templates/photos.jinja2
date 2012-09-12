@@ -78,6 +78,7 @@
     </li>
 {% endfor %}
 </ul>
+<div id="loader" class="hide"><img src="{{ request.static_url('photoapp:static/ias/loader.gif') }}"></div>
 {% else %}
 {% block empty_list %}
 

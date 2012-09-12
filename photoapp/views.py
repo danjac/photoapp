@@ -589,7 +589,9 @@ def copy_photo(photo, request):
 @view_config(route_name="delete_account",
              renderer="delete_account.jinja2")
 def delete_account(request):
-    if request.method == "POST":
+
+    form = DeleteAccountForm(request)
+    if form.validate():
 
         DBSession.delete(request.user)
 

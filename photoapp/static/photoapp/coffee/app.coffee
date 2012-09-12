@@ -306,3 +306,18 @@ class PhotoApp.PhotosPage
 
         PhotoApp.paginate()
 
+        $('.thumbnails').hide()
+        $('#loader').show()
+
+        numImages = $('a.thumbnail img').length
+        loadedImages = 0
+
+        $.each $('a.thumbnail img'), (counter, el) =>
+            img = new Image()
+            img.src = $(el).attr 'src'
+
+            img.onload = =>
+                loadedImages += 1
+                if loadedImages >= numImages
+                    $('.thumbnails').show()
+                    $('#loader').hide()
