@@ -9,13 +9,12 @@
 
     {{ forms.render_field(form.title) }}
     {{ forms.render_field(form.taglist) }}
-    {{ forms.render_field(form.is_public) }}
+    {{ forms.render_checkbox_field(form.is_public) }}
 
     <label>Photos</label>
     <dl>
         {% for image in form.images.entries %}
-        {{ forms.render_errors(image) }}
-        <dd>{{ image }}
+        <dd>{{ forms.render_field(image, with_label=False) }}
         {% if loop.index > 1 %}
         <a href="#" class="remove-upload-field"><i class="icon-remove"></i></a>
         {% endif %}
