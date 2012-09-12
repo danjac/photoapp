@@ -55,6 +55,21 @@ class PhotoApp.Photo
         @tmpl = $('#photo-modal-template').html()
         @render()
 
+        # clear old events
+        #
+        @doc.off 'submit', '#edit-photo-form'
+        @doc.off 'submit', '#copy-photo-form'
+        @doc.off 'submit', '#share-photo-form'
+
+        @doc.off 'click', '#photo-modal .share-add-another-btn'
+        @doc.off 'click', '#photo-modal .remove-share-email'
+        @doc.off 'click', '#photo-modal .cancel-btn'
+        @doc.off 'click', '#photo-modal .edit-btn'
+        @doc.off 'click', '#photo-modal .share-btn'
+        @doc.off 'click', '#photo-modal .copy-btn'
+        @doc.off 'click', '#photo-modal .delete-btn'
+        @doc.off 'click', '#photo-modal .delete-shared-btn'
+
         @doc.on 'click', '#photo-modal .share-add-another-btn', (event) =>
             event.preventDefault()
             numItems = $("#share-photo-form input[type='text']").length
@@ -89,7 +104,6 @@ class PhotoApp.Photo
             event.preventDefault()
             @submitForm($('#edit-photo-form'), (response) =>
                 @title = response.title
-                alert @el.attr 'data-title'
                 @el.attr 'data-title', @title
                 img = @el.find 'img'
                 img.attr 'alt', @title
