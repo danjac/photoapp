@@ -89,6 +89,7 @@ class PhotoApp.Photo
             event.preventDefault()
             @submitForm($('#edit-photo-form'), (response) =>
                 @title = response.title
+                alert @el.attr 'data-title'
                 @el.attr 'data-title', @title
                 img = @el.find 'img'
                 img.attr 'alt', @title
