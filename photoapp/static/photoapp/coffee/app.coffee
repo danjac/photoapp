@@ -272,7 +272,7 @@ class PhotoApp.PhotosPage
 
         @searchBtn = $('#search-btn')
 
-        @doc.on 'click', '.thumbnails a', (event) =>
+        @doc.on 'click', 'a.thumbnail', (event) =>
             new PhotoApp.Photo(@, $(event.currentTarget))
 
         @doc.on 'click', '#search-btn', (event) =>
