@@ -382,10 +382,17 @@ def photo_delete_listener(mapper, connection, target):
              Tag.owner_id == target.owner_id)
     )
 
-    connection.execute(Tag.__table__.update().values(frequency=freq))
+    connection.execute(Tag.__table__.update().where(
+        Tag.owner_id == target.owner_id
+    ).values(frequency=freq))
 
     # remove any tags with frequency 0
-    connection.execute(Tag.__table__.delete().where(Tag.frequency == 0))
+    connection.execute(
+        Tag.__table__.delete().where(
+            and_(Tag.owner_id == target.owner_id,
+                 Tag.frequency == 0)
+        )
+    )
 
 
 event.listen(Photo, 'after_delete', photo_delete_listener)
