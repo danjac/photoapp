@@ -8,3 +8,5 @@
 data
 test_uploads
 uploads
+photoapp/static/js
+photoapp/static/css
