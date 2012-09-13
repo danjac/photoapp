@@ -8,7 +8,7 @@ import mimetypes
 import Image
 import ImageOps
 
-from cryptacular.bcrypt import BCRYPTPasswordManager
+from passlib.hash import bcrypt
 from pyramid.security import Allow, Everyone
 
 from sqlalchemy import (
@@ -61,9 +61,6 @@ class TimestampedMixin(object):
 
 
 Base = declarative_base(cls=Base)
-
-
-_passwd_mgr = BCRYPTPasswordManager()
 
 
 def includeme(config):
@@ -124,10 +121,10 @@ class User(TimestampedMixin, Base):
 
     @password.setter
     def set_password(self, password):
-        self._password = _passwd_mgr.encode(password)
+        self._password = bcrypt.encrypt(password)
 
     def check_password(self, password):
-        return _passwd_mgr.check(self.password, password)
+        return bcrypt.verify(password, self.password)
 
     def reset_key(self):
         self.key = random_string()
