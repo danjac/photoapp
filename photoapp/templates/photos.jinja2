@@ -27,6 +27,14 @@
         <% if (owner) { %>
         <h4>owned by <%= owner %></h4>
         <% } %>
+        <div class="permalink-container permalink-container-is-public hide">
+            <input type="text" class="permalink span4" value="<%= imageURL %>">
+            <a class="close-permalink-btn" href="#"><i class="icon-remove"></i></a>
+        </div>
+        <div class="permalink-container permalink-container-is-private alert alert-warning hide">
+            <button type="button" class="close close-permalink-btn">&times;</button>
+            You can only link to a photo you have made public. Click 'Edit' and select the 'Make this photo public' checkbox.
+        </div>
     </div>
     <div class="modal-body" id="photo-modal-body">
         <div class="messages hide"></div>
@@ -40,6 +48,7 @@
     </div>
     <div class="modal-footer hide" id="photo-modal-footer">
         <div class="buttons">
+            <a href="javascript:void(0);" class="btn permalink-btn"><i class="icon-asterisk"></i> Permalink</a>
             <a href="<%= downloadURL %>" class="btn download-btn"><i class="icon-download"></i> Download</a>
             <a href="javascript:void(0);" class="btn share-btn"><i class="icon-share"></i> Share</a>
             <a href="javascript:void(0);" class="btn edit-btn"><i class="icon-pencil"></i> Edit</a>
@@ -79,6 +88,9 @@
            data-width="{{ photo.width }}"
            data-height="{{ photo.height }}"
            data-title="{{ photo.title }}"
+           {% if photo.is_public %}
+           data-is-public="1"
+           {% endif %}
            {% if request.user.id != photo.owner_id %}
            data-owner="{{ photo.owner.name }}"
            {% endif %}
@@ -87,7 +99,7 @@
            {% if has_permission('delete', photo) %}data-delete-url="{{ request.route_url('delete', id=photo.id) }}"{% endif %}
            {% if has_permission('delete_shared', photo) %}data-delete-shared-url="{{ request.route_url('delete_shared', id=photo.id) }}"{% endif %}
            {% if has_permission('copy', photo) %}data-copy-url="{{ request.route_url('copy', id=photo.id) }}"{% endif %}
-            href="#" class="thumbnail">
+            href="{{ request.route_url('image', id=photo.id) }}" target="_blank" class="thumbnail">
             <img src="{{ request.route_url('thumbnail', id=photo.id) }}" title="{{ photo.title }}" alt="{{ photo.title }}">
         </a>
     </li>

@@ -8,7 +8,7 @@ class PhotoApp.Message
         @tmpl = $('#message-template').html()
 
     show: () ->
-        $(@target).html(_.template(@tmpl, @)).show()
+        $(@target).html(_.template(@tmpl, @)).show().fadeOut(3000)
 
 
 PhotoApp.showMessage = (message, target) ->
@@ -32,6 +32,7 @@ class PhotoApp.Photo
         @modal = $('#photo-modal')
 
         @photoID = @el.attr 'data-photo-id'
+        @isPublic = @el.attr 'data-is-public'
 
         @imageURL = @el.attr 'data-image-url'
         @thumbnailURL = @el.attr 'data-thumbnail-url'
@@ -66,6 +67,24 @@ class PhotoApp.Photo
         @doc.off 'click', '#photo-modal .copy-btn'
         @doc.off 'click', '#photo-modal .delete-btn'
         @doc.off 'click', '#photo-modal .delete-shared-btn'
+        @doc.off 'click', '#photo-modal .permalink-btn'
+        @doc.off 'click', '#photo-modal .close-permalink-btn'
+
+        @doc.on 'click', '#photo-modal .permalink-btn', (event) =>
+            event.preventDefault()
+            @hideButtons()
+
+            if @isPublic
+                $('#photo-modal .permalink-container-is-public').show()
+            else
+                $('#photo-modal .permalink-container-is-private').show()
+
+            $('#photo-modal input.permalink').focus().select()
+
+        @doc.on 'click', '#photo-modal .close-permalink-btn', (event) =>
+            event.preventDefault()
+            $('#photo-modal .permalink-container').hide()
+            @showButtons()
 
         @doc.on 'click', '#photo-modal .share-add-another-btn', (event) =>
             event.preventDefault()
@@ -99,6 +118,14 @@ class PhotoApp.Photo
             @submitForm($('#edit-photo-form'), (response) =>
                 @title = response.title
                 @el.attr 'data-title', @title
+
+                if response.is_public
+                    @el.attr 'data-is-public', '1'
+                    @isPublic = true
+                else
+                    @el.removeAttr 'data-is-public'
+                    @isPublic = false
+
                 img = @el.find 'img'
                 img.attr 'alt', @title
                 img.attr 'title', @title
@@ -175,15 +202,20 @@ class PhotoApp.Photo
                 $('#photo-modal-load').html(response.html)
         )
 
+    showButtons: ->
+        $('#photo-modal-footer .buttons').show()
+
+    hideButtons: ->
+        $('#photo-modal-footer .buttons').hide()
 
     showDefaultContent: ->
         $('#photo-modal-load').hide()
         $('#photo-modal-content').show()
-        $('#photo-modal-footer .buttons').show()
+        @showButtons()
 
     showForm: (url) ->
         $('#photo-modal-content').hide()
-        $('#photo-modal-footer .buttons').hide()
+        @hideButtons()
 
         $.get url, null, (response) =>
             $('#photo-modal-load').show().html(response.html)

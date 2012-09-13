@@ -398,6 +398,7 @@ def edit(photo, request):
 
         return {'success': True,
                 'title': photo.title,
+                'is_public' : photo.is_public,
                 'message': 'Your photo has been updated'}
 
     html = render(
