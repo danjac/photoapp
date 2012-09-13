@@ -40,7 +40,7 @@ from sqlalchemy.orm import (
 
 from zope.sqlalchemy import ZopeTransactionExtension
 
-from .utils import on_commit
+from .data_manager import on_commit
 from .security import Admins, UserID, PhotoID
 
 DBSession = scoped_session(sessionmaker(extension=ZopeTransactionExtension()))
