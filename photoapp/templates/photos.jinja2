@@ -5,6 +5,21 @@
 
 <div id="photo-modal" class="modal hide fade"></div>
 
+<script type="text/template" id="tag-cloud-template">
+    <div class="well" id="tag-cloud" style="height:250px;"></div>
+</script>
+
+<script type="text/template" id="share-field-template">
+<dd>
+    <div class="control-group">
+        <div class="controls">
+            <input type="text" name="emails-<%= numItems %>" />
+            <a href="#" class="remove-share-email"><i class="icon-remove"></i></a>
+        </div>
+    </div>
+</dd>
+</script>
+
 <script type="text/template" id="photo-modal-template">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>

@@ -95,5 +95,11 @@
     {% endassets %}
     {% block scripts %}{% endblock %}
 
+    <script type="text/template" id="message-template">
+        <div class="alert alert-success">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <%= message %>
+        </div>
+    </script>
   </body>
 </html>

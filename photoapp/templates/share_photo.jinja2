@@ -12,13 +12,16 @@
     <dl class="share-email-list">
 
         {% for item in form.emails.entries %}
-
         <dd>
-            {{ forms.render_errors(item) }}
-            {{ item }}
-            {% if loop.index > 1 %}
-            <a href="#" class="remove-share-email"><i class="icon-remove"></i></a>
-            {% endif %}
+            <div class="control-group">
+                <div class="controls">
+                    <input type="text" name="emails-<%= numItems %>">
+                    {% if loop.index > 1 %}
+                    <a href="#" class="remove-share-email"><i class="icon-remove"></i></a>
+                    {% endif %}
+                    {{ forms.render_errors(item) }}
+                </div>
+            </div>
         </dd>
         {% endfor %}
 

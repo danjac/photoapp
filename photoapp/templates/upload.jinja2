@@ -3,6 +3,18 @@
 
 {% block content %}
 
+<script type="text/template" id="image-field-template">
+<dd>
+    <div class="control-group">
+        <div class="controls">
+            <input type="file" name="images-<%= numItems %>" />
+            <a href="#" class="remove-upload-field"><i class="icon-remove"></i></a>
+        </div>
+    </div>
+</dd>
+</script>
+
+
 {% call forms.render_form(form, multipart=True) %}
 
     <legend>Upload a photo to your private album</legend>

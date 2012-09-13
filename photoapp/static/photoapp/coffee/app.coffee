@@ -5,15 +5,10 @@ PhotoApp = {} unless PhotoApp?
 class PhotoApp.Message
 
     constructor: (@message, @target="#messages") ->
+        @tmpl = $('#message-template').html()
 
     show: () ->
-
-        html = "
-        <div class=\"alert alert-success\">
-            <button type=\"button\" class=\"close\" data-dismiss=\"alert\">&times;</button>
-            #{@message}
-        </div>"
-        $(@target).html(html).show()
+        $(@target).html(_.template(@tmpl, @)).show()
 
 
 PhotoApp.showMessage = (message, target) ->
@@ -52,7 +47,9 @@ class PhotoApp.Photo
         @height = @el.attr 'data-height'
         @width = @el.attr 'data-width'
 
-        @tmpl = $('#photo-modal-template').html()
+        @modalTmpl = $('#photo-modal-template').html()
+        @shareFieldTmpl = $('#share-field-template').html()
+
         @render()
 
         # clear old events
@@ -73,15 +70,12 @@ class PhotoApp.Photo
         @doc.on 'click', '#photo-modal .share-add-another-btn', (event) =>
             event.preventDefault()
             numItems = $("#share-photo-form input[type='text']").length
-            newItem = "<dd><input type=\"text\" name=\"emails-#{ numItems }\">
-                <a href=\"#\" class=\"remove-share-email\"><i class=\"icon-remove\"></i></a>
-                </dd>"
-
+            newItem = _.template(@shareFieldTmpl, {numItems: numItems})
             $(event.currentTarget).parent().before(newItem)
 
         @doc.on 'click', '#photo-modal .remove-share-email', (event) =>
             event.preventDefault()
-            $(event.currentTarget).parent().remove()
+            $(event.currentTarget).closest('dd').remove()
 
         @doc.on 'click', '#photo-modal .cancel-btn', (event) =>
             event.preventDefault()
@@ -163,7 +157,7 @@ class PhotoApp.Photo
         @modal.modal('show')
 
     render: ->
-        @modal.html(_.template @tmpl, @)
+        @modal.html(_.template @modalTmpl, @)
 
     showMessage: (message) ->
         PhotoApp.showMessage message, "#photo-modal .messages"
@@ -236,6 +230,7 @@ class PhotoApp.UploadPage
 
     onload: ->
         @doc = $(document)
+        @imageFieldTmpl = $('#image-field-template').html()
         maxUploads = 3
 
         $('.upload-add-another-btn').click (event) =>
@@ -244,9 +239,7 @@ class PhotoApp.UploadPage
             numItems = $("form input[type='file']").length
 
             if numItems < maxUploads
-                newItem = "<dd><input type=\"file\" name=\"images-#{ numItems }\">
-                    <a href=\"#\" class=\"remove-upload-field\"><i class=\"icon-remove\"></i></a>
-                    </dd>"
+                newItem = _.template(@imageFieldTmpl, {numItems: numItems})
                 btn.parent().before(newItem)
                 if (numItems + 1) >= maxUploads
                     btn.parent().hide()
@@ -271,8 +264,7 @@ class PhotoApp.PhotosPage
         $.get(@tagsURL, null, (response) =>
 
             if response.tags.length > 0
-                html = '<div class="well" id="tag-cloud" style="height:250px;"></div>'
-                @searchBox.append(html)
+                @searchBox.append(@tagCloudHtml)
 
                 $('#tag-cloud').jQCloud(response.tags)
 
@@ -286,6 +278,8 @@ class PhotoApp.PhotosPage
         @searchBox.hide()
 
         @searchBtn = $('#search-btn')
+
+        @tagCloudHtml = $('#tag-cloud-template').html()
 
         @doc.on 'click', 'a.thumbnail', (event) =>
             event.preventDefault()
