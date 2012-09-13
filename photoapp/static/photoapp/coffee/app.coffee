@@ -288,9 +288,11 @@ class PhotoApp.PhotosPage
         @searchBtn = $('#search-btn')
 
         @doc.on 'click', 'a.thumbnail', (event) =>
+            event.preventDefault()
             new PhotoApp.Photo(@, $(event.currentTarget))
 
         @doc.on 'click', '#search-btn', (event) =>
+            event.preventDefault()
 
             @searchBox.slideToggle 'slow'
             @searchBtn.toggleClass 'btn-primary'
@@ -300,8 +302,5 @@ class PhotoApp.PhotosPage
 
             unless @searchBtn.is '.btn-primary'
                 @loadTags()
-
-            false
-
 
         PhotoApp.paginate()
