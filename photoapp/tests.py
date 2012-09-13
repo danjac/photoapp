@@ -449,6 +449,8 @@ class SignupTests(TestCase):
             last_name="Tester",
         )
 
+        req.user = None
+
         res = signup(req)
 
         self.assert_(res.status_int == 302)
@@ -481,6 +483,8 @@ class SignupTests(TestCase):
             invite=invite.key
         )
 
+        req.user = None
+
         res = signup(req)
 
         self.assert_(res.status_int == 302)
@@ -510,6 +514,8 @@ class SignupTests(TestCase):
             last_name="Tester",
             invite=invite.key
         )
+
+        req.user = None
 
         res = signup(req)
 
@@ -777,6 +783,8 @@ class SignupFormTests(TestCase):
             password_again="test"
         )
 
+        req.user = None
+
         form = SignupForm(req)
         self.assert_(form.validate())
 
@@ -796,6 +804,8 @@ class SignupFormTests(TestCase):
             password="test",
             password_again="test"
         )
+
+        req.user = None
 
         form = SignupForm(req)
         self.assert_(not form.validate())
@@ -818,16 +828,11 @@ class PublicPhotoTests(TestCase):
         self.assert_(res['page'].item_count == 1)
 
 
-class EditAccountFormTests(TestCase):
-
-    def test_with_no_obj_passed(self):
-
-        from .forms import EditAccountForm
-        self.assertRaises(ValueError, EditAccountForm, testing.DummyRequest())
+class AccountFormTests(TestCase):
 
     def test_with_same_user_email(self):
 
-        from .forms import EditAccountForm
+        from .forms import AccountForm
         from .models import User, DBSession
 
         user = User(email="tester@gmail.com", password="test")
@@ -843,12 +848,14 @@ class EditAccountFormTests(TestCase):
             password_again="test"
         )
 
-        form = EditAccountForm(req, obj=user)
+        req.user = user
+
+        form = AccountForm(req)
         self.assert_(form.validate())
 
     def test_with_another_user_email(self):
 
-        from .forms import EditAccountForm
+        from .forms import AccountForm
         from .models import User, DBSession
 
         user = User(email="tester@gmail.com", password="test")
@@ -869,7 +876,9 @@ class EditAccountFormTests(TestCase):
             password_again="test"
         )
 
-        form = EditAccountForm(req, obj=user)
+        req.user = user
+
+        form = AccountForm(req)
         self.assert_(not form.validate())
 
 

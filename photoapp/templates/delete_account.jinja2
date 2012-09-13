@@ -1,11 +1,13 @@
 {% extends "layout.jinja2" %}
+{% import "_forms.jinja2" as forms with context %}
 
 {% block content %}
-<form method="POST" action="{{ request.route_url('delete_account') }}">
+
+{% call forms.render_form(form) %}
     <p>
         Are you sure you want to delete your account? You will lose <b>ALL</b> your photos!
     </p>
     <a href="{{ request.route_url('settings') }}" class="btn btn-primary">Cancel</a>
     <button type="submit" onclick="return confirm('Sure???')" class="btn btn-danger">Go ahead</button>
-</form>
+{% endcall %}
 {% endblock %}

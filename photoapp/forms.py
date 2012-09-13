@@ -80,8 +80,6 @@ class LoginForm(Form):
 
 class AccountForm(Form):
 
-    invite = HiddenField()
-
     first_name = TextField("First name", validators=[Required()])
     last_name = TextField("Last name", validators=[Required()])
 
@@ -97,38 +95,30 @@ class AccountForm(Form):
 
     submit = SubmitField("Save")
 
-
-class EditAccountForm(AccountForm):
-
-    def __init__(self, *args, **kwargs):
-
-        super(EditAccountForm, self).__init__(*args, **kwargs)
-        try:
-            obj = kwargs['obj']
-        except KeyError:
-            raise ValueError("obj is a required argument")
-
-        self.current_email = obj.email
-
     def validate_email(self, field):
-        """
-        When latest version of wtforms comes out use extra_validators
-        instead to get current user email.
-        """
-        if DBSession.query(exists().where(
-            and_(User.email == field.data,
-                 not_(User.email == self.current_email)))).scalar():
+
+        clauses = [User.email == field.data]
+
+        if self.request.user:
+            clauses.append(not_(User.email == self.request.user.email))
+
+        if DBSession.query(exists().where(and_(*clauses))).scalar():
             raise ValidationError("This email address is already taken")
 
 
 class SignupForm(AccountForm):
 
+    invite = HiddenField()
     submit = SubmitField("Sign up")
 
     def validate_email(self, field):
 
         if DBSession.query(exists().where(User.email == field.data)).scalar():
             raise ValidationError("This email address is already taken")
+
+
+class DeleteAccountForm(Form):
+    pass
 
 
 class ForgotPasswordForm(Form):

@@ -21,13 +21,14 @@ from .models import (
 
 from .forms import (
     LoginForm,
+    AccountForm,
     SignupForm,
-    EditAccountForm,
+    DeleteAccountForm,
+    ForgotPasswordForm,
+    ChangePasswordForm,
     PhotoUploadForm,
     PhotoEditForm,
     PhotoShareForm,
-    ForgotPasswordForm,
-    ChangePasswordForm,
 )
 
 
@@ -506,7 +507,7 @@ def edit_account(request):
     Edit user account details.
     """
 
-    form = EditAccountForm(request, obj=request.user)
+    form = AccountForm(request, obj=request.user)
 
     if form.validate():
 
@@ -601,7 +602,7 @@ def delete_account(request):
         request.session.flash("Your account has been deleted")
         return HTTPFound(request.route_url("welcome"))
 
-    return {}
+    return {'form': form}
 
 
 def photos_page(request, photos, items_per_page=18, **kwargs):
