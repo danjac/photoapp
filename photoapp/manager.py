@@ -4,7 +4,7 @@ import transaction
 
 class DataManager(object):
     """
-    Basic transactional manager
+    Base transactional manager.
     """
     transaction_manager = transaction.manager
 
@@ -35,7 +35,10 @@ class DataManager(object):
 
 def on_commit(func, data_manager_cls=DataManager, on_abort=None):
     """
-    Decorator for managing transactions
+    Decorator for managing transactions.
+
+    The decorated function will only execute when the transaction
+    is committed.
     """
 
     @functools.wraps(func)
