@@ -95,7 +95,8 @@ class User(TimestampedMixin, Base):
 
     shared_photos = relationship("Photo",
                                  secondary="photos_users",
-                                 backref="shared_users")
+                                 backref="shared_users",
+                                 order_by="Photo.created_at.desc()")
 
     def __unicode__(self):
         return self.name or self.email
@@ -157,12 +158,16 @@ class Photo(TimestampedMixin, Base):
 
     tags = relationship("Tag",
                         secondary="photos_tags",
-                        backref=backref("photos", cascade="delete"))
+                        backref=backref("photos",
+                                        order_by="Photo.created_at.desc()",
+                                        cascade="delete"))
 
     owner = relationship("User",
                          innerjoin=True,
                          lazy="joined",
-                         backref=backref("photos", cascade="delete"))
+                         backref=backref("photos",
+                                         order_by="Photo.created_at.desc()",
+                                         cascade="delete"))
 
     @property
     def content_type(self):

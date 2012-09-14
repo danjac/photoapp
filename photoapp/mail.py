@@ -2,7 +2,7 @@ import sys
 import mailer
 
 
-from ._manager import on_commit
+from .manager import on_commit
 
 
 def get_mailer(request):
