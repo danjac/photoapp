@@ -19,6 +19,7 @@ def includeme(config):
     config.add_route('search', '/search')
     config.add_route('tags', '/tags')
     config.add_route('shared', '/shared')
+    config.add_route('public_all', '/all')
 
     config.add_route('public', '/user/{id}',
                      traverse='/{id}',

@@ -413,7 +413,10 @@ def edit(photo, request):
 @view_config(route_name="public",
              permission=NO_PERMISSION_REQUIRED,
              renderer="shared.jinja2")
-def public_photos(user, request):
+def public_photos_for_user(user, request):
+    """
+    Show user's public photos
+    """
 
     photos = DBSession.query(Photo).filter_by(
         owner_id=user.id,
@@ -421,6 +424,20 @@ def public_photos(user, request):
     )
 
     return {'page': photos_page(request, photos)}
+
+
+@view_config(route_name="public_all",
+             permission=NO_PERMISSION_REQUIRED,
+             renderer="shared.jinja2")
+def all_public_photos(request):
+    """
+    Return all photos marked public for
+    all users.
+    """
+
+    photos = DBSession.query(Photo).filter_by(is_public=True)
+
+    return {'page' : photos_page(request, photos)}
 
 
 @view_config(route_name="share",
