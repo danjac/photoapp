@@ -423,7 +423,7 @@ def public_photos_for_user(user, request):
         is_public=True
     )
 
-    return {'page': photos_page(request, photos)}
+    return {'page': photos_page(request, photos), 'user': user}
 
 
 @view_config(route_name="public_all",
@@ -437,7 +437,7 @@ def all_public_photos(request):
 
     photos = DBSession.query(Photo).filter_by(is_public=True)
 
-    return {'page' : photos_page(request, photos)}
+    return {'page': photos_page(request, photos), 'user': request.user}
 
 
 @view_config(route_name="share",

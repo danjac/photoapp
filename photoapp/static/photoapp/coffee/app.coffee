@@ -44,6 +44,7 @@ class PhotoApp.Photo
         @copyURL = @el.attr 'data-copy-url'
 
         @owner = @el.attr 'data-owner'
+        @ownerURL = @el.attr 'data-owner-url'
         @title = @el.attr 'data-title'
         @height = @el.attr 'data-height'
         @width = @el.attr 'data-width'

@@ -25,7 +25,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h3><%= title %></h3>
         <% if (owner) { %>
-        <h4>owned by <%= owner %></h4>
+        <h4>owned by <a href="<%= ownerURL %>"><%= owner %></a></h4>
         <% } %>
         <div class="permalink-container permalink-container-is-public hide">
             <input type="text" class="permalink span4" value="<%= imageURL %>">
@@ -60,7 +60,7 @@
 </script>
 
 
-{% block search %}
+{% block page_header %}
 {% if page.item_count or show_search_if_empty %}
 <div class="btn-group">
     <button class="btn btn-large btn-block btn-primary" href="#" type="button" id="search-btn"><i class="icon-search icon-white"></i></button>
@@ -93,6 +93,7 @@
            {% endif %}
            {% if request.user.id != photo.owner_id %}
            data-owner="{{ photo.owner.name }}"
+           data-owner-url="{{ request.route_url('public', id=photo.owner_id) }}"
            {% endif %}
            {% if has_permission('edit', photo) %}data-edit-url="{{ request.route_url('edit', id=photo.id) }}"{% endif %}
            {% if has_permission('share', photo) %}data-share-url="{{ request.route_url('share', id=photo.id) }}"{% endif %}
