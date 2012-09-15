@@ -426,7 +426,7 @@ def public_photos_for_user(user, request):
     photos = DBSession.query(Photo).filter_by(
         owner_id=user.id,
         is_public=True
-    )
+    ).order_by(Photo.created_at.desc())
 
     return {'page': photos_page(request, photos), 'user': user}
 
@@ -440,7 +440,9 @@ def all_public_photos(request):
     all users.
     """
 
-    photos = DBSession.query(Photo).filter_by(is_public=True)
+    photos = DBSession.query(Photo).filter_by(
+        is_public=True
+    ).order_by(Photo.created_at.desc())
 
     return {'page': photos_page(request, photos), 'user': request.user}
 
