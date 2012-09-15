@@ -5,7 +5,13 @@ from pyramid.view import view_config, forbidden_view_config
 from pyramid.security import remember, forget, NO_PERMISSION_REQUIRED
 from pyramid.response import Response, FileResponse
 from pyramid.renderers import render
-from pyramid.httpexceptions import HTTPFound, HTTPForbidden, HTTPNotFound
+
+from pyramid.httpexceptions import (
+    HTTPFound,
+    HTTPForbidden,
+    HTTPNotFound,
+    HTTPError,
+)
 
 from sqlalchemy import and_, or_
 
@@ -41,7 +47,7 @@ def not_found(context, request):
 
 @view_config(permission=NO_PERMISSION_REQUIRED,
              renderer="error.jinja2",
-             context=Exception)
+             context=HTTPError)
 def error(context, request):
     return {}
 

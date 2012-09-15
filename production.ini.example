@@ -20,7 +20,7 @@ session.cookie_on_exception = true
 
 sqlalchemy.url = postgresql://postgres:*****@localhost:5432/photoapp
 
-photoapp.uploads_dir = %(here)s/uploads
+photoapp.filestorage.base_dir = %(here)s/uploads
 
 photoapp.mailer.to_stdout = true
 photoapp.mailer.from_address = accounts@photoapp.com

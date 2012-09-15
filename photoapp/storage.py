@@ -62,7 +62,7 @@ class FileStorage(object):
 
     @classmethod
     def from_settings(cls, settings):
-        return cls(settings['photoapp.uploads_dir'])
+        return cls(settings['photoapp.filestorage.base_dir'])
 
     def path(self, name):
         return os.path.join(self.base_dir, name)
