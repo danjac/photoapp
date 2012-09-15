@@ -1,19 +1,4 @@
 {% extends "photos.jinja2" %}
 
-{% block page_header %}
+{% block page_header %}{% endblock %}
 
-
-{% if request.user or user %}
-<ul class="nav nav-tabs">
-    <li {% if request.matched_route.name == 'public' %} class="active" {% endif %}><a href="{{ request.route_url('public', id=user.id ) }}">
-    {% if user == request.user %}
-    My photos
-    {% else %}
-    {{ user.first_name }}'s photos
-    {% endif %}
-    </a></li>
-    <li {% if request.matched_route.name == 'public_all' %} class="active" {% endif %}><a href="{{ request.route_url('public_all') }}">Everyone's photos</li>
-</ul>
-{% endif %}
-
-{% endblock %}

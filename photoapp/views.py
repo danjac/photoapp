@@ -10,7 +10,6 @@ from pyramid.httpexceptions import (
     HTTPFound,
     HTTPForbidden,
     HTTPNotFound,
-    HTTPError,
 )
 
 from sqlalchemy import and_, or_
@@ -43,14 +42,6 @@ from .forms import (
              context=HTTPNotFound)
 def not_found(context, request):
     return {}
-
-
-@view_config(permission=NO_PERMISSION_REQUIRED,
-             renderer="error.jinja2",
-             context=HTTPError)
-def error(context, request):
-    return {}
-
 
 
 @view_config(route_name='welcome',
@@ -426,7 +417,7 @@ def edit(photo, request):
 
 @view_config(route_name="public",
              permission=NO_PERMISSION_REQUIRED,
-             renderer="shared.jinja2")
+             renderer="public.jinja2")
 def public_photos_for_user(user, request):
     """
     Show user's public photos
@@ -442,7 +433,7 @@ def public_photos_for_user(user, request):
 
 @view_config(route_name="public_all",
              permission=NO_PERMISSION_REQUIRED,
-             renderer="shared.jinja2")
+             renderer="public.jinja2")
 def all_public_photos(request):
     """
     Return all photos marked public for
