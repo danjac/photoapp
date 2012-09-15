@@ -21,11 +21,11 @@ def includeme(config):
     config.add_route('shared', '/shared')
     config.add_route('public_all', '/all')
 
-    config.add_route('public', '/user/{id}',
+    config.add_route('public', '/user/{id:\d+}',
                      traverse='/{id}',
                      factory=UserResource)
 
-    config.add_route('tag', '/tag/{id}/{name}',
+    config.add_route('tag', '/tag/{id:\d+}/{name}',
                      traverse='/{id}',
                      factory=TagResource)
 
@@ -44,11 +44,11 @@ def includeme(config):
                                     traverse='/{id}',
                                     factory=PhotoResource)
 
-    photo_route('thumbnail', '/thumbnail/{id}.jpg')
-    photo_route('image', '/photo/{id}.jpg')
-    photo_route('download', '/download/{id}.jpg')
-    photo_route('share', '/share/{id}')
-    photo_route('edit', '/edit/{id}')
-    photo_route('delete', '/delete/{id}')
-    photo_route('copy', '/copy/{id}')
-    photo_route('delete_shared', '/deleteshared/{id}')
+    photo_route('thumbnail', '/thumbnail/{id:\d+}.jpg')
+    photo_route('image', '/photo/{id:\d+}.jpg')
+    photo_route('download', '/download/{id:\d+}.jpg')
+    photo_route('share', '/share/{id:\d+}')
+    photo_route('edit', '/edit/{id:\d+}')
+    photo_route('delete', '/delete/{id:\d+}')
+    photo_route('copy', '/copy/{id:\d+}')
+    photo_route('delete_shared', '/deleteshared/{id:\d+}')
