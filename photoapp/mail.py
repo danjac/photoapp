@@ -1,16 +1,27 @@
 import sys
 import mailer
 
+from zope.interface import Interface, implements
 
 from .manager import on_commit
 
 
 def get_mailer(request):
-    return Mailer.from_settings(request.registry.settings)
+    return request.registry.queryUtility(IMailer)
 
 
 def includeme(config):
+
+    config.registry.registerUtility(
+        Mailer.from_settings(config.get_settings()), IMailer)
+
     config.set_request_property(get_mailer, 'mailer', reify=True)
+
+
+class IMailer(Interface):
+
+    def send(msg):
+        pass
 
 
 class Mailer(mailer.Mailer):
@@ -26,6 +37,8 @@ class Mailer(mailer.Mailer):
 
     4. from_address option gives site-wide default From address
     """
+
+    implements(IMailer)
 
     @classmethod
     def from_settings(cls, settings):

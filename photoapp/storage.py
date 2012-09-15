@@ -2,13 +2,31 @@ import os
 import shutil
 import logging
 
+from zope.interface import Interface, implements
+
 
 def get_storage(request):
-    return FileStorage.from_settings(request.registry.settings)
+    return request.registry.queryUtility(IFileStorage)
 
 
 def includeme(config):
+
+    config.registry.registerUtility(
+        FileStorage.from_settings(config.get_settings()), IFileStorage)
+
     config.set_request_property(get_storage, 'fs', reify=True)
+
+
+class IFileStorage(Interface):
+
+    def path(name):
+        pass
+
+    def file(name):
+        pass
+
+    def read(name):
+        pass
 
 
 class FileObj(object):
