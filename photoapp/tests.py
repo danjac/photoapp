@@ -109,7 +109,7 @@ class StorageTests(TestCase):
         from .storage import FileStorage
 
         settings = self.config.get_settings()
-        path = os.path.join(settings['photoapp.uploads_dir'], 'test.jpg')
+        path = os.path.join(settings['photoapp.filestorage.base_dir'], 'test.jpg')
 
         fs = FileStorage.from_settings(settings)
         self.assert_(fs.path("test.jpg") == path)
