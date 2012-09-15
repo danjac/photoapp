@@ -39,6 +39,14 @@ def not_found(context, request):
     return {}
 
 
+@view_config(permission=NO_PERMISSION_REQUIRED,
+             renderer="error.jinja2",
+             context=Exception)
+def error(context, request):
+    return {}
+
+
+
 @view_config(route_name='welcome',
              permission=NO_PERMISSION_REQUIRED,
              renderer='welcome.jinja2')
