@@ -29,7 +29,8 @@ class IMailer(Interface):
 
 def mailer_settings_factory(settings, prefix='photoapp.mailer.'):
 
-    mailer_cls = _mailer_classes.get(prefix + 'type', ConsoleMailer)
+    mailer_type = settings.get(prefix + 'type', 'console')
+    mailer_cls = _mailer_classes[mailer_type]
     return mailer_cls.from_settings(settings, prefix)
 
 
