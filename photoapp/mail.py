@@ -39,7 +39,7 @@ class SMTP_Mailer(mailer.Mailer):
     implements(IMailer)
 
     @classmethod
-    def from_settings(cls, settings, prefix='photoapp.mailer.'):
+    def from_settings(cls, settings, prefix):
 
         defaults = (
             ('host', 'localhost'),
@@ -77,7 +77,7 @@ class ConsoleMailer(object):
     implements(IMailer)
 
     @classmethod
-    def from_settings(cls, settings, prefix='photoapp.mailer.'):
+    def from_settings(cls, settings, prefix):
         return cls(from_address=settings.get(prefix + 'from_address'))
 
     def __init__(self, from_address=None):
