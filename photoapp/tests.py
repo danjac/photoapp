@@ -816,7 +816,7 @@ class PublicPhotoTests(TestCase):
     def test_public_photos(self):
 
         from .models import User, Photo, DBSession
-        from .views import public_photos
+        from .views import public_photos_for_user
 
         user = User(email="tester@gmail.com", password="test")
         photo = Photo(title="test", owner=user, is_public=True)
@@ -824,7 +824,7 @@ class PublicPhotoTests(TestCase):
         DBSession.add_all((user, photo))
         DBSession.flush()
 
-        res = public_photos(user, testing.DummyRequest())
+        res = public_photos_for_user(user, testing.DummyRequest())
         self.assert_(res['page'].item_count == 1)
 
 
