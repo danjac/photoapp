@@ -19,6 +19,9 @@ def includeme(config):
 
 class IFileStorage(Interface):
 
+    def from_settings(settings, prefix):
+        pass
+
     def path(name):
         pass
 
@@ -60,9 +63,11 @@ class FileObj(object):
 
 class FileStorage(object):
 
+    implements(IFileStorage)
+
     @classmethod
-    def from_settings(cls, settings):
-        return cls(settings['photoapp.filestorage.base_dir'])
+    def from_settings(cls, settings, prefix='photoapp.filestorage.'):
+        return cls(settings[prefix + 'base_dir'])
 
     def path(self, name):
         return os.path.join(self.base_dir, name)

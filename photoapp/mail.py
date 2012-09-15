@@ -13,35 +13,32 @@ def get_mailer(request):
 def includeme(config):
 
     config.registry.registerUtility(
-        Mailer.from_settings(config.get_settings()), IMailer)
+        mailer_settings_factory(config.get_settings()), IMailer)
 
     config.set_request_property(get_mailer, 'mailer', reify=True)
 
 
 class IMailer(Interface):
 
+    def from_settings(settings, prefix):
+        pass
+
     def send(msg):
         pass
 
 
-class Mailer(mailer.Mailer):
-    """
-    Modified Mailer class:
+def mailer_settings_factory(settings, prefix='photoapp.mailer.'):
 
-    1. Runs inside transaction, so unwanted emails don't get sent
+    mailer_cls = _mailer_classes.get(prefix + 'type', ConsoleMailer)
+    return mailer_cls.from_settings(settings, prefix)
 
-    2. from_settings classmethod loads config settings
 
-    3. to_stdout option prints email to console for dev/testing
-       instead of sending
-
-    4. from_address option gives site-wide default From address
-    """
+class SMTP_Mailer(mailer.Mailer):
 
     implements(IMailer)
 
     @classmethod
-    def from_settings(cls, settings):
+    def from_settings(cls, settings, prefix='photoapp.mailer.'):
 
         defaults = (
             ('host', 'localhost'),
@@ -50,31 +47,47 @@ class Mailer(mailer.Mailer):
             ('usr', None),
             ('pwd', None),
             ('from_address', None),
-            ('to_stdout', False),
             #('use_ssl', False)
         )
 
         kw = {}
 
         for name, default in defaults:
-            kw[name] = settings.get('photoapp.mailer.%s' % name, default)
+            kw[name] = settings.get(prefix + name, default)
 
         return cls(**kw)
 
     def __init__(self, *args, **kwargs):
-        self.to_stdout = kwargs.pop('to_stdout', False)
         self.from_address = kwargs.pop('from_address', None)
-        super(Mailer, self).__init__(*args, **kwargs)
-
-    def send_to_stdout(self, msg):
-        sys.stdout.write(msg.as_string())
+        super(SMTP_Mailer, self).__init__(*args, **kwargs)
 
     @on_commit
     def send(self, msg):
 
         msg.From = msg.From or self.from_address
+        super(SMTP_Mailer, self).send(msg)
 
-        if self.to_stdout:
-            return self.send_to_stdout(msg)
-        else:
-            return super(Mailer, self).send(msg)
+
+class ConsoleMailer(object):
+    """
+    Just dumps message to stdout. Use for development/testing.
+    """
+
+    implements(IMailer)
+
+    @classmethod
+    def from_settings(cls, settings, prefix='photoapp.mailer.'):
+        return cls(from_address=settings.get(prefix + 'from_address'))
+
+    def __init__(self, from_address=None):
+        self.from_address = from_address
+
+    @on_commit
+    def send(self, msg):
+        sys.stdout.write(msg.as_string())
+
+
+_mailer_classes = {
+    'smtp': SMTP_Mailer,
+    'console': ConsoleMailer,
+}
