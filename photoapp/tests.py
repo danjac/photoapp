@@ -565,9 +565,10 @@ class LoginTests(TestCase):
 
         request = self.make_POST_request(
             email="danjac354@gmail.com",
-            password="test"
+            password="test",
         )
 
+        request.host = "example.com"
         request.matched_route = mock.Mock()
         request.matched_route.name = "home"
 
@@ -592,6 +593,38 @@ class LoginTests(TestCase):
         response = login(request)
         self.assert_('form' in response)
 
+    def test_login_to_other_domain(self):
+        """
+        If current page is "login" we should redirect
+        to the home page instead.
+        """
+
+        from .views import login
+        from .models import User, DBSession
+
+        u = User(email="danjac354@gmail.com", password="test")
+        DBSession.add(u)
+        DBSession.flush()
+
+        redirect = "http://google.com"
+
+        request = self.make_POST_request(
+            email="danjac354@gmail.com",
+            next=redirect,
+            password="test"
+        )
+
+        request.host = "example.com"
+        request.matched_route = mock.Mock()
+        request.matched_route.name = "login"
+        request.url = redirect
+
+        self.load_routes()
+
+        response = login(request)
+        form = response['form']
+        self.assert_(form.errors['next'] == ['Invalid domain'])
+
     def test_login_to_login_page(self):
         """
         If current page is "login" we should redirect
@@ -613,6 +646,7 @@ class LoginTests(TestCase):
             password="test"
         )
 
+        request.host = "example.com"
         request.matched_route = mock.Mock()
         request.matched_route.name = "login"
         request.url = redirect
@@ -640,6 +674,7 @@ class LoginTests(TestCase):
             password="test"
         )
 
+        request.host = "example.com"
         request.matched_route = mock.Mock()
         request.matched_route.name = "upload"
         request.url = redirect

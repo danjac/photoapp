@@ -20,6 +20,7 @@ from wtforms.validators import (
     EqualTo,
     Email,
     URL,
+    Optional,
 )
 
 from wtforms.ext.csrf import SecureForm
@@ -73,7 +74,8 @@ class Form(SecureForm):
 
 class LoginForm(Form):
 
-    next = HiddenField(validators=[URL(require_tld=False)])
+    next = HiddenField(validators=[Optional(),
+                                   URL(require_tld=False)])
 
     email = TextField("Email address")
     password = PasswordField("Password")
@@ -89,7 +91,7 @@ class LoginForm(Form):
         if field.data:
             domain = urlparse.urlparse(field.data).netloc
 
-            if domain != self.request.host:
+            if domain and domain != self.request.host:
                 raise ValidationError("Invalid domain")
 
 

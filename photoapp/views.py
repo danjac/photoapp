@@ -169,7 +169,6 @@ def login(request):
     form = LoginForm(request, next=request.url)
 
     if form.validate():
-        print "OK"
 
         user = User.authenticate(form.email.data, form.password.data)
         if user:
@@ -186,8 +185,7 @@ def login(request):
                 redirect = form.next.data or default_redirect
 
             return HTTPFound(redirect, headers=headers)
-    else:
-        print form.errors
+
     return {'form': form}
 
 
