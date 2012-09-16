@@ -12,7 +12,7 @@
     {{ user.first_name }}'s photos
     {% endif %}
     </a></li>
-    <li {% if request.matched_route.name == 'public_all' %} class="active" {% endif %}><a href="{{ request.route_url('public_all') }}">Everyone's photos</li>
+    <li {% if request.matched_route.name == 'public_all' %} class="active" {% endif %}><a href="{{ request.route_url('public_all') }}">Everyone's photos</a></li>
 </ul>
 {% endif %}
 
