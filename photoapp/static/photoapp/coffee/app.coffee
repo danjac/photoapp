@@ -135,30 +135,11 @@ class PhotoApp.Photo
 
             )
 
-        if @editURL?
-            $('#photo-modal .edit-btn').show().on 'click', => @edit()
-        else
-            $('#photo-modal .edit-btn').hide()
-
-        if @shareURL?
-            $('#photo-modal .share-btn').show().on 'click', => @share()
-        else
-            $('#photo-modal .share-btn').hide()
-
-        if @copyURL?
-            $('#photo-modal .copy-btn').show().on 'click', => @copy()
-        else
-            $('#photo-modal .copy-btn').hide()
-
-        if @deleteURL?
-            $('#photo-modal .delete-btn').show().on 'click', => @delete()
-        else
-            $('#photo-modal .delete-btn').hide()
-
-        if @deleteSharedURL?
-            $('#photo-modal .delete-shared-btn').show().on 'click', => @deleteShared()
-        else
-            $('#photo-modal .delete-shared-btn').hide()
+        @renderButton '#photo-modal .edit-btn', @editURL, @edit
+        @renderButton '#photo-modal .share-btn', @shareURL, @share
+        @renderButton '#photo-modal .copy-btn', @copyURL, @copy
+        @renderButton '#photo-modal .delete-btn', @deleteURL, @delete
+        @renderButton '#photo-modal .delete-shared-btn', @deleteSharedURL, @deleteShared
 
         @modal.on 'show', =>
 
@@ -186,6 +167,16 @@ class PhotoApp.Photo
 
     render: ->
         @modal.html(_.template @modalTmpl, @)
+
+    renderButton: (btn, url, onClick) ->
+
+        if url?
+            $(btn).show().on 'click', (event) =>
+                event.preventDefault()
+                onClick(event)
+
+        else
+            $(btn).hide()
 
     showMessage: (message) ->
         PhotoApp.showMessage message, "#photo-modal .messages"
@@ -230,16 +221,21 @@ class PhotoApp.Photo
                     @el.parent().remove()
                     PhotoApp.showMessage("Photo '#{@title}' has been deleted")
 
-    edit: -> @showForm @editURL
+    edit: => @showForm @editURL
 
-    share: -> @showForm @shareURL
+    share: => @showForm @shareURL
 
-    copy: -> @showForm @copyURL
+    copy: => @showForm @copyURL
 
-    deleteShared: ->
+    delete: => @deleteAction @deleteURL
+
+    deleteShared: => @deleteAction @deleteSharedURL
+
+    deleteAction: (deleteURL) ->
+
         if confirm "Are you sure you want to delete this photo?"
             @modal.modal('hide')
-            $.post @deleteSharedURL, null, (response) =>
+            $.post deleteURL, null, (response) =>
                 if response.success?
                     @el.parent().remove()
                     PhotoApp.showMessage("Photo '#{@title}' has been deleted")
