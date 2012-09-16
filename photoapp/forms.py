@@ -1,5 +1,6 @@
 import cgi
 import mimetypes
+import urlparse
 
 from wtforms import (
     TextField,
@@ -18,6 +19,7 @@ from wtforms.validators import (
     Required,
     EqualTo,
     Email,
+    URL,
 )
 
 from wtforms.ext.csrf import SecureForm
@@ -71,11 +73,24 @@ class Form(SecureForm):
 
 class LoginForm(Form):
 
-    next = HiddenField()
+    next = HiddenField(validators=[URL(require_tld=False)])
 
     email = TextField("Email address")
     password = PasswordField("Password")
     login = SubmitField("Sign in")
+
+    def validate_next(self, field):
+        """
+        Prevent CSRF attacks where someone
+        tries to redirect to an outside URL
+        post-login
+        """
+
+        if field.data:
+            domain = urlparse.urlparse(field.data).netloc
+
+            if domain != self.request.host:
+                raise ValidationError("Invalid domain")
 
 
 class AccountForm(Form):
