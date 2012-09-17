@@ -2,7 +2,7 @@ import os
 import shutil
 import logging
 
-from zope.interface import Interface, implements
+from zope.interface import Interface, implementer
 
 
 def get_storage(request):
@@ -61,9 +61,8 @@ class FileObj(object):
         return os.path.exists(self.path)
 
 
+@implementer(IFileStorage)
 class FileStorage(object):
-
-    implements(IFileStorage)
 
     @classmethod
     def from_settings(cls, settings, prefix='photoapp.filestorage.'):

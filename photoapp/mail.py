@@ -1,7 +1,7 @@
 import sys
 import mailer
 
-from zope.interface import Interface, implements
+from zope.interface import Interface, implementer
 
 from .manager import on_commit
 
@@ -18,6 +18,13 @@ def includeme(config):
     config.set_request_property(get_mailer, 'mailer', reify=True)
 
 
+def mailer_settings_factory(settings, prefix='photoapp.mailer.'):
+
+    mailer_type = settings.get(prefix + 'type', 'console')
+    mailer_cls = _mailer_classes[mailer_type]
+    return mailer_cls.from_settings(settings, prefix)
+
+
 class IMailer(Interface):
 
     def from_settings(settings, prefix):
@@ -27,16 +34,8 @@ class IMailer(Interface):
         pass
 
 
-def mailer_settings_factory(settings, prefix='photoapp.mailer.'):
-
-    mailer_type = settings.get(prefix + 'type', 'console')
-    mailer_cls = _mailer_classes[mailer_type]
-    return mailer_cls.from_settings(settings, prefix)
-
-
+@implementer(IMailer)
 class SMTP_Mailer(mailer.Mailer):
-
-    implements(IMailer)
 
     @classmethod
     def from_settings(cls, settings, prefix):
@@ -69,12 +68,11 @@ class SMTP_Mailer(mailer.Mailer):
         super(SMTP_Mailer, self).send(msg)
 
 
+@implementer(IMailer)
 class ConsoleMailer(object):
     """
     Just dumps message to stdout. Use for development/testing.
     """
-
-    implements(IMailer)
 
     @classmethod
     def from_settings(cls, settings, prefix):
