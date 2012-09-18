@@ -28,7 +28,10 @@ def cache_anonymous(handler, registry):
             if response is not None:
                 return handler(request)
 
-        if not request.params and user_id is None:
+        if all((user_id is None,
+                not(request.params),
+                not(request.session.peek_flash()))):
+
             return _cached_response()
 
         return handler(request)
