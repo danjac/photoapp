@@ -1,5 +1,7 @@
 import datetime
 import operator
+import string
+
 import mailer
 
 from pyramid.view import view_config, forbidden_view_config
@@ -647,16 +649,17 @@ def send_forgot_password_email(request, user):
     Send email with link to recover/change password.
     """
 
-    body = """
-    Hi, {first_name}
+    url = request.route_url('change_pass', _query={'key': user.key})
 
-    Please go here: {url} to change your password.
+    body = string.Template("""
+    Hi, $first_name
+
+    Please go here: $url to change your password.
 
     Thanks!
-    """.format(
+    """).substitute(
         first_name=user.first_name,
-        url=request.route_url('change_pass',
-                              _query={'key': user.key})
+        url=url,
     )
 
     message = mailer.Message(To=user.email,
@@ -671,17 +674,17 @@ def send_shared_photo_email(request, photo, recipient, note):
     Sends an email notifying an existing member of a photo share.
     """
 
-    body = """
-    Hi, {first_name}
-    {name} has shared the photo {title} with you!
-    Check your shared photos collection here: {url}
-    {note}
-    """.format(
-        first_name=recipient.first_name,
-        name=request.user.name,
-        title=photo.title,
-        url=request.route_url('shared'),
-        note=note)
+    body = string.Template("""
+    Hi, $first_name
+    $name has shared the photo $title with you!
+    Check your shared photos collection here: $url
+
+    $note
+    """).substitute(first_name=recipient.first_name,
+                    name=request.user.name,
+                    title=photo.title,
+                    url=request.route_url('shared'),
+                    note=note)
 
     subject = "A photo has been shared with you"
 
@@ -700,14 +703,15 @@ def send_invite_email(request, invite, note):
     """
     url = request.route_url('signup', _query={'invite': invite.key})
 
-    body = """
-    Hi, {name} has shared a photo with you!
+    body = string.Template("""
+    Hi, $name has shared a photo with you!
     To see the photo, click here {url} to join
     MyOwnDamnPhotos!
-    {note}
-    """.format(name=request.user.name,
-               note=note,
-               url=url)
+
+    $note
+    """).substitute(name=request.user.name,
+                    note=note,
+                    url=url)
 
     subject = "A photo has been shared with you"
 
