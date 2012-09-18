@@ -30,6 +30,7 @@ requires = [
     'cssmin',
     'requests',
     'webtest',
+    'pylibmc',
 ]
 
 setup(
