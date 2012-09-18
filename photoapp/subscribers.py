@@ -26,3 +26,7 @@ def add_renderer_globals(event):
 
     event['has_permission'] = _has_permission
     event['page_url'] = PageURL_WebOb(request)
+
+    event['google_tracking_code'] = request.registry.settings.get(
+        'photoapp.google_tracking_code'
+    )
