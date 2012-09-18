@@ -22,13 +22,13 @@ def cache_anonymous(handler, registry):
 
         user_id = unauthenticated_userid(request)
 
-        @cache.cache_region('default', request.url)
+        @cache.cache_region('default', request.path_url)
         def _cached_response():
             response = handler(request)
             if response is not None:
                 return handler(request)
 
-        if request.method == "GET" and user_id is None:
+        if not request.params and user_id is None:
             return _cached_response()
 
         return handler(request)
