@@ -1,4 +1,5 @@
 from pyramid.config import Configurator
+from pyramid_beaker import set_cache_regions_from_settings
 
 
 def main(global_config, **settings):
@@ -20,6 +21,10 @@ def main(global_config, **settings):
     config.include('photoapp.mail')
     config.include('photoapp.assets')
     config.include('photoapp.routes')
+    config.include('photoapp.tweens')
+
+    # caching
+    set_cache_regions_from_settings(settings)
 
     config.scan()
 
