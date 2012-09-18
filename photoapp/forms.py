@@ -25,7 +25,7 @@ from wtforms.validators import (
 
 from wtforms.ext.csrf import SecureForm
 
-from sqlalchemy import exists, and_, not_
+from sqlalchemy import exists
 
 from .models import User, DBSession
 
@@ -114,12 +114,11 @@ class AccountForm(Form):
 
     def validate_email(self, field):
 
-        clauses = [User.email == field.data]
-
+        where = (User.email == field.data)
         if self.request.user:
-            clauses.append(not_(User.email == self.request.user.email))
+            where = where & ~(User.email == self.request.user.email)
 
-        if DBSession.query(exists().where(and_(*clauses))).scalar():
+        if DBSession.query(exists().where(where)).scalar():
             raise ValidationError("This email address is already taken")
 
 

@@ -6,7 +6,6 @@ import unittest
 import datetime
 
 import transaction
-import requests
 
 from pyramid import testing
 from pyramid.paster import get_appsettings
@@ -1034,14 +1033,3 @@ class AuthenticationTests(TestCase):
             self.assert_(get_user(request) == user)
 
             DBSession.delete(user)
-
-    def test_get_user_if_basic_auth_and_valid(self):
-
-        from .auth import get_user
-        from .models import User, DBSession
-
-        user = User(email="danjac354@gmail.com")
-        DBSession.add(user)
-        DBSession.flush()
-
-        request = testing.DummyRequest()

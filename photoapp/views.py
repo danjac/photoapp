@@ -1,4 +1,5 @@
 import datetime
+import operator
 import mailer
 
 from pyramid.view import view_config, forbidden_view_config
@@ -11,8 +12,6 @@ from pyramid.httpexceptions import (
     HTTPForbidden,
     HTTPNotFound,
 )
-
-from sqlalchemy import and_, or_
 
 from webhelpers.paginate import Page
 
@@ -101,12 +100,14 @@ def search(request):
     search_terms = set(search_terms[:5])
 
     if search_terms:
-        query = [(or_(Photo.title.ilike("%%%s%%" % t),
-                  Tag.name.ilike(t))) for t in search_terms]
+        query = [
+            (Photo.title.ilike(
+                "%%%s%%" % t)) | (Tag.name.ilike(t)) for t in search_terms
+        ]
 
         query += [Photo.owner_id == request.user.id]
 
-        query = reduce(and_, query)
+        query = reduce(operator.and_, query)
 
         photos = DBSession.query(Photo).filter(query).join(
             Photo.tags).distinct().all()
@@ -697,7 +698,6 @@ def send_invite_email(request, invite, note):
     """
     Sends an email to someone who is not yet a member.
     """
-
     url = request.route_url('signup', _query={'invite': invite.key})
 
     body = """

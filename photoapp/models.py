@@ -24,7 +24,6 @@ from sqlalchemy import (
     func,
     event,
     select,
-    and_,
 )
 
 
@@ -380,8 +379,7 @@ def photo_delete_listener(mapper, connection, target):
     """
 
     freq = select([func.count(photos_tags.c.tag_id)]).where(
-        and_(photos_tags.c.tag_id == Tag.id,
-             Tag.owner_id == target.owner_id)
+        (photos_tags.c.tag_id == Tag.id) & (Tag.owner_id == target.owner_id)
     )
 
     connection.execute(Tag.__table__.update().where(
@@ -391,8 +389,7 @@ def photo_delete_listener(mapper, connection, target):
     # remove any tags with frequency 0
     connection.execute(
         Tag.__table__.delete().where(
-            and_(Tag.owner_id == target.owner_id,
-                 Tag.frequency == 0)
+            (Tag.owner_id == target.owner_id) & (Tag.frequency == 0)
         )
     )
 
