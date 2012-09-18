@@ -24,9 +24,7 @@ def cache_anonymous(handler, registry):
 
         @cache.cache_region('default', request.path_url)
         def _cached_response():
-            response = handler(request)
-            if response is not None:
-                return handler(request)
+            return handler(request)
 
         if all((user_id is None,
                 not(request.params),
