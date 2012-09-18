@@ -24,4 +24,5 @@ def deploy():
         api.run("%s/alembic upgrade head" % api.env.python_path)
 
         # restart long-running processes
+        api.sudo("/etc/init.d/memcached restart")
         api.sudo("supervisorctl restart photoapp")
