@@ -1,6 +1,7 @@
 from pyramid.security import unauthenticated_userid
 from beaker import cache
 
+
 def includeme(config):
     config.add_tween('photoapp.tweens.cache_anonymous')
 
@@ -23,7 +24,9 @@ def cache_anonymous(handler, registry):
 
         @cache.cache_region('default', request.url)
         def _cached_response():
-            return handler(request)
+            response = handler(request)
+            if response is not None:
+                return handler(request)
 
         if request.method == "GET" and user_id is None:
             return _cached_response()
@@ -31,6 +34,3 @@ def cache_anonymous(handler, registry):
         return handler(request)
 
     return _tween
-
-
-
