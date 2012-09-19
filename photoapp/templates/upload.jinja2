@@ -17,7 +17,7 @@
 
 {% call forms.render_form(form, multipart=True) %}
 
-    <legend>Upload a photo to your private album</legend>
+    <legend>Upload up to three photos to your collection.</legend>
 
     {{ forms.render_field(form.title) }}
     {{ forms.render_field(form.taglist) }}
@@ -38,7 +38,6 @@
             <button type="button" class="upload-add-another-btn btn"><i class="icon-plus"></i> Add another</button>
         </dd>
         {% endif %}
-
 
     </dl>
 
