@@ -23,12 +23,22 @@ jquery_js = Bundle(
     debug=False,
 )
 
+
 jquery_css = Bundle(
     'jquery/*.css',
     filters='cssmin',
     output='css/jquery.css',
     debug=False,
 )
+
+
+jquery_ui_css = Bundle(
+    'jquery/themes/base/*.css',
+    filters='cssmin',
+    output='css/jquery-ui.css',
+    debug=False,
+)
+
 
 ias_js = Bundle(
     'ias/*.js',
@@ -59,6 +69,7 @@ def includeme(config):
 
     config.add_webasset('bootstrap_css', bootstrap_css)
     config.add_webasset('jquery_css', jquery_css)
+    config.add_webasset('jquery_ui_css', jquery_ui_css)
     config.add_webasset('ias_css', ias_css)
     config.add_webasset('bootstrap_js', bootstrap_js)
     config.add_webasset('jquery_js', jquery_js)

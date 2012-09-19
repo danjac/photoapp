@@ -236,7 +236,12 @@ def signup(request):
         DBSession.flush()
 
         if invite:
+            print invite.sender
             user.shared_photos.append(invite.photo)
+
+            invite.photo.owner.contacts.append(user)
+            user.contacts.append(invite.photo.owner)
+
             invite.accepted_on = datetime.datetime.now()
             redirect = request.route_url('shared')
         else:
@@ -483,6 +488,9 @@ def share_photo(photo, request):
         for user in users:
 
             user.shared_photos.append(photo)
+            request.user.contacts.append(user)
+            user.contacts.append(request.user)
+
             emails_for_invites.remove(user.email)
 
             send_shared_photo_email(request, photo, user, note)
@@ -512,7 +520,17 @@ def share_photo(photo, request):
         'photo': photo,
         }, request)
 
-    return {'success': False, 'html': html}
+    # drop down list of previous contacts
+
+    contacts = [
+        {'label': "{0} ({1})".format(contact.name, contact.email),
+         'value': contact.email} for contact in request.user.contacts]
+
+    return {
+        'success': False,
+        'html': html,
+        'contacts': contacts,
+    }
 
 
 @view_config(route_name='about',
@@ -711,7 +729,7 @@ def send_invite_email(request, invite, note):
 
     body = string.Template("""
     Hi, $name has shared a photo with you!
-    To see the photo, click here {url} to join
+    To see the photo, click here $url to join
     MyOwnDamnPhotos!
 
     $note

@@ -52,6 +52,7 @@ class PhotoApp.Photo
         @modalTmpl = $('#photo-modal-template').html()
         @shareFieldTmpl = $('#share-field-template').html()
 
+        @contacts = []
         @render()
 
         # clear old events
@@ -92,6 +93,7 @@ class PhotoApp.Photo
             numItems = $("#share-photo-form input[type='text']").length
             newItem = _.template(@shareFieldTmpl, {numItems: numItems})
             $(event.currentTarget).parent().before(newItem)
+            @shareAutoComplete()
 
         @doc.on 'click', '#photo-modal .remove-share-email', (event) =>
             event.preventDefault()
@@ -205,13 +207,15 @@ class PhotoApp.Photo
         $('#photo-modal-content').show()
         @showButtons()
 
-    showForm: (url) ->
+    showForm: (url, callback) ->
         $('#photo-modal-content').hide()
         @hideButtons()
 
         $.get url, null, (response) =>
             $('#photo-modal-load').show().html(response.html)
-            #$('#photo-modal-footer a').addClass('disabled')
+
+            if callback?
+                callback(response)
 
     delete: ->
         if confirm "Are you sure you want to delete this photo?"
@@ -223,7 +227,14 @@ class PhotoApp.Photo
 
     edit: => @showForm @editURL
 
-    share: => @showForm @shareURL
+    shareAutoComplete: =>
+        $('.share-email-field').autocomplete
+            source: @contacts
+            dataType: "json"
+
+    share: => @showForm @shareURL, (response) =>
+        @contacts = response.contacts
+        @shareAutoComplete()
 
     copy: => @showForm @copyURL
 

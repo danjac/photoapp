@@ -92,6 +92,12 @@ class User(TimestampedMixin, Base):
 
     key = Column(String(30), unique=True)
 
+    contacts = relationship("User",
+                            secondary="contacts",
+                            primaryjoin="User.id==contacts.c.owner_id",
+                            secondaryjoin="User.id==contacts.c.contact_id",
+                            order_by="User.first_name,User.last_name")
+
     shared_photos = relationship("Photo",
                                  secondary="photos_users",
                                  backref="shared_users",
@@ -313,6 +319,24 @@ class Tag(Base):
     @property
     def __acl__(self):
         return [(Allow, UserID(self.owner_id), "view")]
+
+
+contacts = Table(
+    "contacts",
+    Base.metadata,
+
+    Column("owner_id",
+           Integer,
+           ForeignKey("users.id", ondelete="CASCADE"),
+           nullable=False,
+           primary_key=True),
+
+    Column("contact_id",
+           Integer,
+           ForeignKey("users.id", ondelete="CASCADE"),
+           nullable=False,
+           primary_key=True)
+)
 
 
 photos_users = Table(
