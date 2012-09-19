@@ -13,7 +13,7 @@
 <ul class="thumbnails">
     {% for photo in photos %}
     <li class="span4 photo">
-        <a class="thumbnail" href="{{ request.route_url('public', id=photo.owner_id) }}" title="{{ photo.title }}">
+        <a class="thumbnail" href="{{ request.route_url('public_all') }}" title="{{ photo.title }}">
             <img src="{{ request.route_url('thumbnail', id=photo.id) }}" alt="{{ photo.title }}">
         </a>
     </li>
