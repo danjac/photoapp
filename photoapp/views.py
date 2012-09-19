@@ -561,7 +561,7 @@ def logout(request):
     """
 
     headers = forget(request)
-    return HTTPFound(request.route_url('home'), headers=headers)
+    return HTTPFound(request.route_url('welcome'), headers=headers)
 
 
 @view_config(route_name="delete_shared",
