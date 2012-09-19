@@ -672,7 +672,8 @@ class WelcomeTests(TestCase):
         req = testing.DummyRequest()
         req.user = None
         res = welcome(req)
-        self.assert_(res == {})
+        photos = res['photos']
+        self.assert_(len(list(photos)) == 0)
 
     def test_welcome_if_user(self):
 

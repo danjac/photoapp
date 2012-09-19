@@ -8,4 +8,17 @@
     <a class="btn btn-primary btn-large" href="{{ request.route_url('signup') }}">Join today</a>
     <a class="btn btn-primary btn-large" href="{{ request.route_url('about') }}">Learn more</a>
 </div>
+
+{% if photos %}
+<ul class="thumbnails">
+    {% for photo in photos %}
+    <li class="span4 photo">
+        <a class="thumbnail" href="{{ request.route_url('public', id=photo.owner_id) }}" title="{{ photo.title }}">
+            <img src="{{ request.route_url('thumbnail', id=photo.id) }}" alt="{{ photo.title }}">
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
+
 {% endblock %}

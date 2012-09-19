@@ -17,6 +17,8 @@ from pyramid.httpexceptions import (
 
 from webhelpers.paginate import Page
 
+from sqlalchemy import func
+
 from .models import (
     DBSession,
     User,
@@ -57,7 +59,13 @@ def welcome(request):
     if request.user:
         return HTTPFound(request.route_url('home'))
 
-    return {}
+    # get random set of photos
+
+    photos = DBSession.query(Photo).filter(
+        Photo.is_public == True
+    ).order_by(func.random()).limit(3)
+
+    return {'photos': photos}
 
 
 @view_config(route_name='home',
