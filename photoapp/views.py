@@ -281,13 +281,11 @@ def change_password(request):
     forgotten.
     """
 
-    user = request.user
-    key = None
+    key = request.params.get('key', None)
+    user = None
 
-    if user is None:
-        key = request.params.get('key', None)
-        if key:
-            user = DBSession.query(User).filter_by(key=key).first()
+    if key:
+        user = DBSession.query(User).filter_by(key=key).first()
 
     if user is None:
         raise HTTPForbidden()

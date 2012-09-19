@@ -1011,3 +1011,173 @@ class AuthenticationTests(TestCase):
             self.assert_(get_user(request) == user)
 
             DBSession.delete(user)
+
+
+class SearchTests(TestCase):
+
+    def make_photo(self):
+
+        from .models import User, Photo, DBSession
+
+        user = User(email="tester@gmail.com")
+        photo = Photo(title="Lamborghini", owner=user, image="test.jpg")
+        photo.taglist = "wallpaper cars"
+
+        DBSession.add_all((user, photo))
+        DBSession.flush()
+
+        return photo
+
+    def test_search_with_no_items(self):
+
+        from .views import search
+
+        req = testing.DummyRequest()
+        res = search(req)
+        self.assert_(res['page'].item_count == 0)
+
+    def test_search_by_title(self):
+
+        from .views import search
+
+        photo = self.make_photo()
+
+        req = testing.DummyRequest()
+        req.user = photo.owner
+        req.GET['search'] = 'lamborghini'
+        res = search(req)
+
+        self.assert_(res['page'].item_count == 1)
+        self.assert_(res['page'].items[0] == photo)
+
+    def test_search_if_one_good_one_bad(self):
+
+        from .views import search
+
+        photo = self.make_photo()
+
+        req = testing.DummyRequest()
+        req.user = photo.owner
+        req.GET['search'] = 'lamborghini ferrari'
+        res = search(req)
+
+        self.assert_(res['page'].item_count == 0)
+
+    def test_search_by_keyword(self):
+
+        from .views import search
+
+        photo = self.make_photo()
+
+        req = testing.DummyRequest()
+        req.user = photo.owner
+        req.GET['search'] = 'wallpaper'
+        res = search(req)
+
+        self.assert_(res['page'].item_count == 1)
+        self.assert_(res['page'].items[0] == photo)
+
+    def test_search_if_other_user(self):
+
+        from .views import search
+        from .models import User, DBSession
+
+        self.make_photo()
+
+        other = User(email="another@gmail.com")
+        DBSession.add(other)
+        DBSession.flush()
+
+        req = testing.DummyRequest()
+        req.user = other
+        req.GET['search'] = 'lamborghini'
+        res = search(req)
+
+        self.assert_(res['page'].item_count == 0)
+
+
+class TestGetTags(TestCase):
+
+    def test_get_tags(self):
+
+        from .models import User, Tag, DBSession
+        from .views import get_tags
+
+        user = User(email="tester@gmail.com")
+        tag = Tag(name='wallpaper', owner=user, frequency=1)
+
+        DBSession.add_all((user, tag))
+        DBSession.flush()
+
+        req = testing.DummyRequest()
+        req.user = user
+        req.route_url = MockRoute
+
+        res = get_tags(req)
+
+        self.assert_(res['tags'][0]['text'] == 'wallpaper')
+        self.assert_(res['tags'][0]['weight'] == 1)
+        self.assert_(res['tags'][0]['link'].route_name == 'tag')
+        self.assert_(res['tags'][0]['link'].params['id'] == tag.id)
+        self.assert_(res['tags'][0]['link'].params['name'] == 'wallpaper')
+
+
+class ChangePasswordTests(TestCase):
+
+    def test_if_no_key_found(self):
+
+        from pyramid.httpexceptions import HTTPForbidden
+
+        from .views import change_password
+
+        self.assertRaises(HTTPForbidden,
+                          change_password,
+                          testing.DummyRequest())
+
+    def test_if_no_user_found(self):
+
+        from pyramid.httpexceptions import HTTPForbidden
+
+        from .views import change_password
+
+        req = testing.DummyRequest()
+        req.params['key'] = 'foo'
+
+        self.assertRaises(HTTPForbidden, change_password, req)
+
+    def test_if_user_found(self):
+
+        from .views import change_password
+        from .models import User, DBSession
+
+        user = User(email="tester@gmail.com", key="foo")
+        DBSession.add(user)
+        DBSession.flush()
+
+        req = testing.DummyRequest()
+        req.params['key'] = 'foo'
+
+        res = change_password(req)
+        self.assert_(res['form'] is not None)
+        self.assert_(res['form'].key.data == 'foo')
+
+    def test_change_password_successfully(self):
+
+        from .views import change_password
+        from .models import User, DBSession
+
+        user = User(email="tester@gmail.com", key="foo", password="test1")
+        self.assert_(user.check_password('test1'))
+
+        DBSession.add(user)
+        DBSession.flush()
+
+        req = self.make_POST_request(password='test2',
+                                     password_again='test2',
+                                     key='foo')
+
+        req.user = user
+        res = change_password(req)
+        self.assert_(res.location.route_name == 'login')
+
+        self.assert_(user.check_password('test2'))
