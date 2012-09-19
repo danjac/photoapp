@@ -711,7 +711,7 @@ def send_invite_email(request, invite, note):
 
     body = string.Template("""
     Hi, $name has shared a photo with you!
-    To see the photo, click here {url} to join
+    To see the photo, click here $url to join
     MyOwnDamnPhotos!
 
     $note
