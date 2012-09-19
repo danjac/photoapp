@@ -1182,3 +1182,17 @@ class ChangePasswordTests(TestCase):
         self.assert_(res.location.route_name == 'login')
 
         self.assert_(user.check_password('test2'))
+
+
+class LogoutTests(TestCase):
+
+    def test_logout(self):
+
+        from .views import logout
+
+        req = testing.DummyRequest()
+        req.route_url = MockRoute
+
+        res = logout(req)
+        self.assert_(res.status_int == 302)
+        self.assert_(res.location.route_name == "welcome")
