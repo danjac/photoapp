@@ -22,6 +22,14 @@ from sqlalchemy import engine_from_config
 from webob.multidict import MultiDict
 
 
+class MockRoute(object):
+    """Fakes out a route_url call."""
+    def __init__(self, route_name, **params):
+
+        self.route_name = route_name
+        self.params = params
+
+
 class TestCase(unittest.TestCase):
 
     @classmethod
@@ -52,10 +60,6 @@ class TestCase(unittest.TestCase):
         from . import main
         return main(self.config, **self.settings)
 
-    def load_routes(self):
-        # add this so we can redirect
-        self.config.include('photoapp.routes')
-
     def make_POST_request(self, **data):
 
         request = testing.DummyRequest()
@@ -64,6 +68,7 @@ class TestCase(unittest.TestCase):
         data.setdefault('csrf_token', request.session.get_csrf_token())
         request.POST = MultiDict(data)
         request.params.update(request.POST)
+        request.route_url = MockRoute
         return request
 
     def tearDown(self):
@@ -427,8 +432,6 @@ class SignupTests(TestCase):
         from .views import signup
         from .models import User, DBSession
 
-        self.load_routes()
-
         req = self.make_POST_request(
             email="tester@gmail.com",
             password="test",
@@ -442,7 +445,7 @@ class SignupTests(TestCase):
         res = signup(req)
 
         self.assert_(res.status_int == 302)
-        self.assert_(res.location == 'http://example.com/home')
+        self.assert_(res.location.route_name == 'home')
         self.assert_(DBSession.query(User).count() == 1)
 
     def test_post_signup_with_accepted_invite(self):
@@ -460,8 +463,6 @@ class SignupTests(TestCase):
         DBSession.add_all((user, photo, invite))
         DBSession.flush()
 
-        self.load_routes()
-
         req = self.make_POST_request(
             email="friend@gmail.com",
             password="test",
@@ -476,7 +477,7 @@ class SignupTests(TestCase):
         res = signup(req)
 
         self.assert_(res.status_int == 302)
-        self.assert_(res.location == 'http://example.com/home')
+        self.assert_(res.location.route_name == 'home')
         self.assert_(DBSession.query(User).count() == 2)
         self.assert_(invite.accepted_on is not None)
 
@@ -492,8 +493,6 @@ class SignupTests(TestCase):
         DBSession.add_all((user, photo, invite))
         DBSession.flush()
 
-        self.load_routes()
-
         req = self.make_POST_request(
             email="friend@gmail.com",
             password="test",
@@ -508,7 +507,7 @@ class SignupTests(TestCase):
         res = signup(req)
 
         self.assert_(res.status_int == 302)
-        self.assert_(res.location == 'http://example.com/shared')
+        self.assert_(res.location.route_name == 'shared')
         self.assert_(DBSession.query(User).count() == 2)
         self.assert_(invite.accepted_on is not None)
 
@@ -558,11 +557,9 @@ class LoginTests(TestCase):
         request.matched_route = mock.Mock()
         request.matched_route.name = "home"
 
-        self.load_routes()
-
         response = login(request)
         self.assert_(response.status_code == 302)
-        self.assert_(response.location == "http://example.com/home")
+        self.assert_(response.location.route_name == "home")
 
     def test_login_invalid_user(self):
 
@@ -605,8 +602,6 @@ class LoginTests(TestCase):
         request.matched_route.name = "login"
         request.url = redirect
 
-        self.load_routes()
-
         response = login(request)
         form = response['form']
         self.assert_(form.errors['next'] == ['Invalid domain'])
@@ -637,11 +632,9 @@ class LoginTests(TestCase):
         request.matched_route.name = "login"
         request.url = redirect
 
-        self.load_routes()
-
         response = login(request)
         self.assert_(response.status_code == 302)
-        self.assert_(response.location == "http://example.com/home")
+        self.assert_(response.location.route_name == "home")
 
     def test_login_to_another_page(self):
 
@@ -665,8 +658,6 @@ class LoginTests(TestCase):
         request.matched_route.name = "upload"
         request.url = redirect
 
-        self.load_routes()
-
         response = login(request)
         self.assert_(response.status_code == 302)
         self.assert_(response.location == "http://example.com/upload")
@@ -688,13 +679,12 @@ class WelcomeTests(TestCase):
         from .views import welcome
         from .models import User
 
-        self.load_routes()
-
         req = testing.DummyRequest()
         req.user = User()
+        req.route_url = MockRoute
         res = welcome(req)
         self.assert_(res.status_int == 302)
-        self.assert_(res.location == 'http://example.com/home')
+        self.assert_(res.location.route_name == 'home')
 
 
 class ForgotPasswordTests(TestCase):
@@ -712,8 +702,6 @@ class ForgotPasswordTests(TestCase):
 
         req = self.make_POST_request(email="tester@gmail.com")
         req.mailer = DummyMailer()
-
-        self.load_routes()
 
         res = forgot_password(req)
         self.assert_(res.status_int == 302)

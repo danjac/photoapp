@@ -221,7 +221,7 @@ class Photo(TimestampedMixin, Base):
     def save_image(self, fs, fp, name):
 
         # create a GUID based name
-        name, ext = os.path.splitext(name)
+        _, ext = os.path.splitext(name)
 
         base_name = random_string()
 
