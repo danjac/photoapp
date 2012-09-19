@@ -61,8 +61,8 @@ def welcome(request):
 
     # get random set of photos
 
-    photos = DBSession.query(Photo).filter(
-        Photo.is_public == True
+    photos = DBSession.query(Photo).filter_by(
+        is_public=True
     ).order_by(func.random()).limit(3)
 
     return {'photos': photos}
