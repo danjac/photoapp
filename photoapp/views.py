@@ -239,8 +239,8 @@ def signup(request):
             print invite.sender
             user.shared_photos.append(invite.photo)
 
-            invite.photo.owner.contacts.append(user)
-            user.contacts.append(invite.photo.owner)
+            invite.sender.contacts.append(user)
+            user.contacts.append(invite.sender)
 
             invite.accepted_on = datetime.datetime.now()
             redirect = request.route_url('shared')

@@ -481,6 +481,8 @@ class SignupTests(TestCase):
         self.assert_(DBSession.query(User).count() == 2)
         self.assert_(invite.accepted_on is not None)
 
+        user1, user2 = DBSession.query(User).all()
+
     def test_post_signup_with_invite(self):
 
         from .views import signup
