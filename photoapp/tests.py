@@ -22,19 +22,6 @@ from sqlalchemy import engine_from_config
 from webob.multidict import MultiDict
 
 
-class DummyMailer(object):
-    """
-    Mock mailer object. Saves message instances
-    instead of sending them.
-    """
-
-    def __init__(self):
-        self.messages = []
-
-    def send(self, message):
-        self.messages.append(message)
-
-
 class TestCase(unittest.TestCase):
 
     @classmethod
@@ -716,6 +703,7 @@ class ForgotPasswordTests(TestCase):
 
         from .models import User, DBSession
         from .views import forgot_password
+        from .mail import DummyMailer
 
         user = User(email="tester@gmail.com", password="test")
 
@@ -925,6 +913,7 @@ class EmailTests(TestCase):
         from .models import User, Photo
         from .views import send_shared_photo_email
         from .storage import FileStorage
+        from .mail import DummyMailer
 
         request = testing.DummyRequest()
         request.mailer = DummyMailer()
@@ -954,6 +943,7 @@ class EmailTests(TestCase):
         from .models import User, Invite, Photo
         from .views import send_invite_email
         from .storage import FileStorage
+        from .mail import DummyMailer
 
         request = testing.DummyRequest()
         request.mailer = DummyMailer()

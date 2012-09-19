@@ -138,7 +138,27 @@ class ConsoleMailer(object):
         sys.stdout.write(msg.as_string())
 
 
+@implementer(IMailer)
+class DummyMailer(object):
+    """Mock mailer object. Saves message instances
+    as property `messages` instead of sending them, so
+    message contents etc can be tests.
+    """
+
+    @classmethod
+    def from_settings(cls, settings, prefix):
+        return cls(from_address="support@example.com")
+
+    def __init__(self, from_address=None):
+        self.messages = []
+        self.from_address = from_address
+
+    def send(self, message):
+        self.messages.append(message)
+
+
 _mailer_classes = {
     'smtp': SMTP_Mailer,
     'console': ConsoleMailer,
+    'dummy': DummyMailer,
 }
