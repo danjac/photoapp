@@ -14,6 +14,12 @@
     </a></li>
     <li {% if request.matched_route.name == 'public_all' %} class="active" {% endif %}><a href="{{ request.route_url('public_all') }}">Everyone's photos</a></li>
 </ul>
+{% else %}
+
+<p class="lead">
+    These are photos members have chosen to make public, so everyone can see them.
+</p>
+
 {% endif %}
 
 {% endblock %}
