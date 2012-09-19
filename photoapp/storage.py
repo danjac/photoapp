@@ -6,10 +6,17 @@ from zope.interface import Attribute, Interface, implementer
 
 
 def get_storage(request):
+    """Request custom property which adds an IFileStorage
+    instance to the current request.
+    """
     return request.registry.queryUtility(IFileStorage)
 
 
 def includeme(config):
+    """Pyramid configuration hook:
+
+    Adds IFileStorage instance as 'fs' property to current request
+    """
 
     config.registry.registerUtility(
         FileStorage.from_settings(config.get_settings()), IFileStorage)
@@ -18,6 +25,9 @@ def includeme(config):
 
 
 class IFileStorage(Interface):
+    """Manages files in system (currently in local filesystem, in future
+    could be e.g. database storage or S3).
+    """
 
     def from_settings(settings, prefix):
         """Create IFileStorage instance from settings.
@@ -59,9 +69,7 @@ class IFileStorage(Interface):
 
 
 class IFileObj(Interface):
-    """
-    Refers to a specific file.
-    """
+    """Manages specific file in system."""
 
     path = Attribute("Path to given file")
 
@@ -108,6 +116,7 @@ class IFileObj(Interface):
 
 @implementer(IFileObj)
 class FileObj(object):
+    """Default implementation of IFileObj, for managing local files."""
 
     def __init__(self, fs, name):
         self.fs = fs
@@ -138,6 +147,11 @@ class FileObj(object):
 
 @implementer(IFileStorage)
 class FileStorage(object):
+    """Default implementation for managing files in local filesystem.
+
+    Configuration requires the setting `photoapp.filestorage.base_dir`
+    which should point to a read-writable directory in the local filesystem.
+    """
 
     @classmethod
     def from_settings(cls, settings, prefix='photoapp.filestorage.'):
