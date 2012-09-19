@@ -37,7 +37,9 @@ def upload_files(url, auth, base_dir, default_tags):
                 filename = os.path.basename(filename)
                 name, ext = os.path.splitext(filename)
                 rel_path = path[len(base_dir):]
-                tags = default_tags + rel_path.replace(os.path.sep, " ")
+                tags = rel_path.replace(os.path.sep, " ")
+                if default_tags:
+                    tags = default_tags + " " + tags
 
                 full_path = os.path.join(path, filename)
 
@@ -50,6 +52,8 @@ def upload_files(url, auth, base_dir, default_tags):
                 try:
                     requests.put(url, data, files=files, auth=auth)
                     print(full_path)
+                except Exception as e:
+                    print(e)
                 finally:
                     filenames.append(full_path)
                     log.write("%s\n" % full_path)
