@@ -265,7 +265,6 @@ class PhotoApp.Photo
 
         if confirm "Are you sure you want to delete this photo?"
             @modal.modal('hide')
-            alert @csrf
             $.post deleteURL, {csrf_token: @csrf}, (response) =>
                 if response.success?
                     @el.parent().remove()
