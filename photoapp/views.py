@@ -13,7 +13,6 @@ from pyramid.renderers import render
 
 from pyramid.httpexceptions import (
     HTTPFound,
-    HTTPForbidden,
     HTTPNotFound,
 )
 
@@ -31,7 +30,6 @@ from .models import (
 
 from .forms import (
     AccountForm,
-    SignupForm,
     DeleteAccountForm,
     PhotoUploadForm,
     PhotoEditForm,
@@ -189,17 +187,19 @@ def login(request):
     """
 
     data = {
-        'assertion' : request.POST['assertion'],
-        'audience' : request.host_url,
+        'assertion': request.POST['assertion'],
+        'audience': request.host_url,
     }
 
-    resp = requests.post('https://verifier.login.persona.org/verify',
-                         data=data,
-                         verify=True)
+    persona_url = request.registry.settings.get(
+        'photoapp.persona_verification_url',
+        'https://verifier.login.persona.org/verify')
 
-    if resp.ok:
+    verify_response = requests.post(persona_url, data=data, verify=True)
 
-        verify_data = simplejson.loads(resp.content)
+    if verify_response.ok:
+
+        verify_data = simplejson.loads(verify_response.content)
         if verify_data['status'] == 'okay':
 
             user = DBSession.query(User).filter_by(
@@ -208,17 +208,20 @@ def login(request):
 
             if user:
                 if user.is_active:
-                    request.response.headers.extend(
-                        remember(request, str(user.id))
-                    )
+                    user.last_login_at = datetime.datetime.now()
+                    response = {'success': True}
 
-                    if not user.name:
+                    if user.is_complete:
+                        response['url'] = request.route_url('home')
+                    else:
                         request.session.flash(
                             "Please complete the rest of your details"
                         )
-                        url = request.route_url('settings')
+                        response['url'] = request.route_url('settings')
 
-                    return {'success': True}
+                    request.response.headers = remember(request, str(user.id))
+
+                    return response
 
                 else:
                     return {'success': False}
@@ -233,9 +236,17 @@ def login(request):
 
             # go thru any invites, add photos etc
 
-            request.response.headers.extend(
-                remember(request, str(user.id))
+            invites = DBSession.query(Invite).filter_by(
+                email=user.email,
+                accepted_on=None,
             )
+
+            for invite in invites:
+
+                user.shared_photos.append(invite.photo)
+                invite.accepted_on = None
+
+            request.response.headers = remember(request, str(user.id))
 
             # we need other details e.g. first name
             # so redirect to edit account form
@@ -244,12 +255,10 @@ def login(request):
 
             request.session.flash("Please complete the rest of your details")
 
-            return {'success' : False,
+            return {'success': False,
                     'url': request.route_url('settings')}
 
     return {'success': False}
-
-
 
 
 @view_config(route_name="image",
@@ -631,7 +640,6 @@ def send_invite_email(request, invite, note):
     """
     Sends an email to someone who is not yet a member.
     """
-    url = request.route_url('signup', _query={'invite': invite.key})
 
     body = string.Template("""
     Hi, $name has shared a photo with you!
@@ -641,7 +649,7 @@ def send_invite_email(request, invite, note):
     $note
     """).substitute(name=request.user.name,
                     note=note,
-                    url=url)
+                    url=request.route_url('welcome'))
 
     subject = "A photo has been shared with you"
 

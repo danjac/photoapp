@@ -32,7 +32,6 @@ def includeme(config):
     # auth routes
 
     config.add_route('login', '/login')
-    config.add_route('signup', '/signup')
     config.add_route('delete_account', '/delete_account'),
     config.add_route('logout', '/logout')
 

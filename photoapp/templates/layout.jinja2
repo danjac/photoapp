@@ -73,10 +73,12 @@
             </ul>
             <ul class="nav pull-right">
               {% if request.user %}
+              {% if request.user.is_complete %}
               <li {{ active_tab('settings')}}><a href="{{ request.route_url('settings') }}"><img src="{{ request.user.gravatar_url(20) }}"> {{ request.user.name }}</a></li>
-              <li><a href="#" id="logout">Sign out</a></li>
+              {% endif %}
+              <li><a href="#" class="logout">Sign out</a></li>
               {% else %}
-              <li><a href="#" id="login">Sign in</a></li>
+              <li><a href="#" class="login">Sign in</a></li>
               {% endif %}
             </ul>
           </div><!--/.nav-collapse -->

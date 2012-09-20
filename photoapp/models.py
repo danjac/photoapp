@@ -27,7 +27,6 @@ from sqlalchemy import (
 
 
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.ext.hybrid import hybrid_property
 
 from sqlalchemy.orm import (
     scoped_session,
@@ -87,8 +86,6 @@ class User(TimestampedMixin, Base):
 
     last_login_at = Column(DateTime)
 
-    key = Column(String(30), unique=True)
-
     shared_photos = relationship("Photo",
                                  secondary="photos_users",
                                  backref="shared_users",
@@ -102,9 +99,12 @@ class User(TimestampedMixin, Base):
         if self.first_name and self.last_name:
             return self.first_name + " " + self.last_name
 
-    def reset_key(self):
-        self.key = random_string()
-        return self.key
+    @property
+    def is_complete(self):
+        """Check if registration complete"""
+        return all((self.first_name,
+                    self.last_name,
+                    self.email))
 
     def gravatar_url(self, size):
 

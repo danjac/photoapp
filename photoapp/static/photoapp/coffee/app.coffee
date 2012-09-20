@@ -33,12 +33,12 @@ class PhotoApp.Auth
 
         @doc = $(document)
 
-        @doc.on 'click', '#login', (event) => navigator.id.request()
+        @doc.on 'click', 'a.login', (event) => navigator.id.request()
 
-        @doc.on 'click', '#logout', (event) => navigator.id.logout()
+        @doc.on 'click', 'a.logout', (event) => navigator.id.logout()
 
         navigator.id.watch(
-            loggedInEmail: @email
+            loggedInUser: @email
             onlogin: (assertion) =>
                 $.ajax
                     dataType: "json"
@@ -46,7 +46,7 @@ class PhotoApp.Auth
                     url: @loginURL
                     data: {assertion: assertion}
                     success: (response, status, xhr) =>
-                        if response.url
+                        if response.url?
                             window.location = response.url
                         else
                             window.location.reload true

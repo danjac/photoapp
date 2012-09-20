@@ -3,9 +3,9 @@ import cgi
 import shutil
 import mock
 import unittest
-import datetime
 
 import transaction
+import simplejson
 
 from pyramid import testing
 from pyramid.paster import get_appsettings
@@ -316,202 +316,6 @@ class PhotoTests(TestCase):
         self.assert_(photo.__acl__ == acl)
 
 
-class UserTests(TestCase):
-
-    def test_reset_key(self):
-
-        from .models import User
-        u = User()
-        self.assert_(u.reset_key() is not None)
-
-    def test_set_password(self):
-
-        from .models import User
-        u = User(password="test")
-        self.assert_(u.password != "test")
-
-    def test_check_password_good(self):
-
-        from .models import User
-        u = User(password="test")
-        self.assert_(u.check_password("test"))
-
-    def test_check_password_bad(self):
-
-        from .models import User
-        u = User(password="test")
-        self.assert_(not u.check_password("TEST"))
-
-    def test_authenticate_if_no_user(self):
-
-        from .models import User
-
-        u = User.authenticate("tester@gmail.com", "test")
-        self.assert_(u is None)
-
-    def test_authenticate_if_bad_email(self):
-
-        from .models import User, DBSession
-
-        u = User(email="tester@gmail.com", password="test")
-        DBSession.add(u)
-        DBSession.flush()
-
-        u = User.authenticate("TESTER@gmail.com", "test")
-        self.assert_(u is None)
-
-    def test_authenticate_if_bad_password(self):
-
-        from .models import User, DBSession
-
-        u = User(email="tester@gmail.com", password="test")
-        DBSession.add(u)
-        DBSession.flush()
-
-        u = User.authenticate("tester@gmail.com", "test1")
-        self.assert_(u is None)
-
-    def test_authenticate_if_inactive(self):
-
-        from .models import User, DBSession
-
-        u = User(email="tester@gmail.com", password="test", is_active=False)
-        DBSession.add(u)
-        DBSession.flush()
-
-        u = User.authenticate("tester@gmail.com", "test")
-        self.assert_(u is None)
-
-    def test_authenticate_if_all_ok(self):
-
-        from .models import User, DBSession
-
-        u = User(email="tester@gmail.com", password="test")
-        DBSession.add(u)
-        DBSession.flush()
-
-        u = User.authenticate("tester@gmail.com", "test")
-        self.assert_(u is not None)
-
-
-class SignupTests(TestCase):
-
-    def test_get_signup_without_invite(self):
-        """
-        Email should be blank.
-        """
-
-        from .views import signup
-
-        res = signup(testing.DummyRequest())
-        self.assert_(res['form'].email.data is None)
-
-    def test_get_signup_with_invite(self):
-        """
-        We should have email == invite email.
-        """
-
-        from .models import User, Photo, Invite, DBSession
-        from .views import signup
-
-        user = User(email="tester@gmail.com")
-        photo = Photo(title="test", image="test.jpg", owner=user)
-        invite = Invite(email="friend@gmail.com", sender=user, photo=photo)
-
-        DBSession.add_all((user, photo, invite))
-        DBSession.flush()
-
-        req = testing.DummyRequest()
-        req.params['invite'] = invite.key
-
-        res = signup(req)
-        self.assert_(res['form'].email.data == 'friend@gmail.com')
-
-    def test_post_signup_without_invite(self):
-
-        from .views import signup
-        from .models import User, DBSession
-
-        req = self.make_POST_request(
-            email="tester@gmail.com",
-            password="test",
-            password_again="test",
-            first_name="Tester",
-            last_name="Tester",
-        )
-
-        req.user = None
-
-        res = signup(req)
-
-        self.assert_(res.status_int == 302)
-        self.assert_(res.location.route_name == 'home')
-        self.assert_(DBSession.query(User).count() == 1)
-
-    def test_post_signup_with_accepted_invite(self):
-
-        from .views import signup
-        from .models import User, Photo, Invite, DBSession
-
-        user = User(email="tester@gmail.com")
-        photo = Photo(title="test", image="test.jpg", owner=user)
-        invite = Invite(email="friend@gmail.com",
-                        sender=user,
-                        accepted_on=datetime.datetime.now(),
-                        photo=photo)
-
-        DBSession.add_all((user, photo, invite))
-        DBSession.flush()
-
-        req = self.make_POST_request(
-            email="friend@gmail.com",
-            password="test",
-            password_again="test",
-            first_name="Tester",
-            last_name="Tester",
-            invite=invite.key
-        )
-
-        req.user = None
-
-        res = signup(req)
-
-        self.assert_(res.status_int == 302)
-        self.assert_(res.location.route_name == 'home')
-        self.assert_(DBSession.query(User).count() == 2)
-        self.assert_(invite.accepted_on is not None)
-
-    def test_post_signup_with_invite(self):
-
-        from .views import signup
-        from .models import User, Photo, Invite, DBSession
-
-        user = User(email="tester@gmail.com")
-        photo = Photo(title="test", image="test.jpg", owner=user)
-        invite = Invite(email="friend@gmail.com", sender=user, photo=photo)
-
-        DBSession.add_all((user, photo, invite))
-        DBSession.flush()
-
-        req = self.make_POST_request(
-            email="friend@gmail.com",
-            password="test",
-            password_again="test",
-            first_name="Tester",
-            last_name="Tester",
-            invite=invite.key
-        )
-
-        req.user = None
-
-        res = signup(req)
-
-        self.assert_(res.status_int == 302)
-        self.assert_(res.location.route_name == 'shared')
-        self.assert_(DBSession.query(User).count() == 2)
-        self.assert_(invite.accepted_on is not None)
-
-
 class HomeTests(TestCase):
 
     def test_home_if_logged_in_user(self):
@@ -536,131 +340,145 @@ class HomeTests(TestCase):
 
 class LoginTests(TestCase):
 
-    def setUp(self):
-        super(LoginTests, self).setUp()
+    def make_mock_requests_post(self, ok, email):
+
+        class MockVerifyResponse(object):
+
+            def __init__(self):
+                self.ok = ok
+                self.content = simplejson.dumps({
+                    'status': 'okay' if ok else 'error',
+                    'email': email,
+                })
+
+        class MockRequests(object):
+
+            @classmethod
+            def post(cls, url, **kwargs):
+                return MockVerifyResponse()
+
+        return mock.patch('requests.post', MockRequests.post)
 
     def test_login_valid_user(self):
 
         from .views import login
         from .models import User, DBSession
 
-        u = User(email="danjac354@gmail.com", password="test")
+        u = User(email="danjac354@gmail.com")
         DBSession.add(u)
         DBSession.flush()
 
         request = self.make_POST_request(
-            email="danjac354@gmail.com",
-            password="test",
+            assertion='dummy',
         )
 
         request.host = "example.com"
         request.matched_route = mock.Mock()
         request.matched_route.name = "home"
 
-        response = login(request)
-        self.assert_(response.status_code == 302)
-        self.assert_(response.location.route_name == "home")
+        with self.make_mock_requests_post(True, u.email):
+            response = login(request)
 
-    def test_login_invalid_user(self):
+        self.assert_(response['success'] is True)
+
+    def test_login_new_user(self):
+        """Should create new user and pass url to settings"""
 
         from .views import login
+        from .models import User, DBSession
 
         request = self.make_POST_request(
-            email="danjac354@gmail.com",
-            password="test"
+            assertion="dummy",
         )
 
         request.matched_route = mock.Mock()
         request.matched_route.name = "home"
 
-        response = login(request)
-        self.assert_('form' in response)
+        with self.make_mock_requests_post(True, "danjac354@gmail.com"):
+            response = login(request)
 
-    def test_login_to_other_domain(self):
+        u = DBSession.query(User).first()
+        self.assert_(u.email == "danjac354@gmail.com")
+        self.assert_(response['url'].route_name == "settings")
+
+    def test_login_new_user_with_invites(self):
+        """Should create new user and pass url to settings.
+        Invite photos should be shared.
         """
-        If current page is "login" we should redirect
-        to the home page instead.
-        """
+
+        from .views import login
+        from .models import User, Photo, Invite, DBSession
+
+        sender = User(email="tester@gmail.com")
+        photo = Photo(owner=sender, title="test", image="test.jpg")
+
+        invite = Invite(sender=sender,
+                        photo=photo,
+                        email="danjac354@gmail.com")
+
+        DBSession.add_all((sender, invite, photo))
+        DBSession.flush()
+
+        request = self.make_POST_request(
+            assertion="dummy",
+        )
+
+        request.matched_route = mock.Mock()
+        request.matched_route.name = "home"
+
+        with self.make_mock_requests_post(True, "danjac354@gmail.com"):
+            response = login(request)
+
+        u = DBSession.query(User).filter_by(
+            email="danjac354@gmail.com"
+        ).first()
+
+        self.assert_(u.email == "danjac354@gmail.com")
+        self.assert_(u.shared_photos[0] == photo)
+        self.assert_(response['url'].route_name == "settings")
+
+    def test_login_invalid_email(self):
+        """Not verified by personas, just assume false"""
 
         from .views import login
         from .models import User, DBSession
 
-        u = User(email="danjac354@gmail.com", password="test")
-        DBSession.add(u)
-        DBSession.flush()
-
-        redirect = "http://google.com"
-
         request = self.make_POST_request(
-            email="danjac354@gmail.com",
-            next=redirect,
-            password="test"
+            assertion="dummy",
         )
 
-        request.host = "example.com"
         request.matched_route = mock.Mock()
-        request.matched_route.name = "login"
-        request.url = redirect
+        request.matched_route.name = "home"
 
-        response = login(request)
-        form = response['form']
-        self.assert_(form.errors['next'] == ['Invalid domain'])
+        with self.make_mock_requests_post(False, "danjac354@gmail.com"):
+            response = login(request)
 
-    def test_login_to_login_page(self):
-        """
-        If current page is "login" we should redirect
-        to the home page instead.
-        """
+        u = DBSession.query(User).first()
+        self.assert_(u is None)
+        self.assert_(response['success'] is False)
+
+    def test_login_inactive_user(self):
+        """User exists but is deactivatated, just assume false"""
 
         from .views import login
         from .models import User, DBSession
 
-        u = User(email="danjac354@gmail.com", password="test")
+        u = User(email="danjac354@gmail.com", is_active=False)
         DBSession.add(u)
         DBSession.flush()
 
-        redirect = "http://example.com/login"
-
         request = self.make_POST_request(
-            email="danjac354@gmail.com",
-            next=redirect,
-            password="test"
+            assertion='dummy',
         )
 
         request.host = "example.com"
         request.matched_route = mock.Mock()
-        request.matched_route.name = "login"
-        request.url = redirect
+        request.matched_route.name = "home"
 
-        response = login(request)
-        self.assert_(response.status_code == 302)
-        self.assert_(response.location.route_name == "home")
+        with self.make_mock_requests_post(True, u.email):
+            response = login(request)
 
-    def test_login_to_another_page(self):
-
-        from .views import login
-        from .models import User, DBSession
-
-        u = User(email="danjac354@gmail.com", password="test")
-        DBSession.add(u)
-        DBSession.flush()
-
-        redirect = "http://example.com/upload"
-
-        request = self.make_POST_request(
-            email="danjac354@gmail.com",
-            next=redirect,
-            password="test"
-        )
-
-        request.host = "example.com"
-        request.matched_route = mock.Mock()
-        request.matched_route.name = "upload"
-        request.url = redirect
-
-        response = login(request)
-        self.assert_(response.status_code == 302)
-        self.assert_(response.location == "http://example.com/upload")
+        self.assert_(response['success'] is False)
 
 
 class WelcomeTests(TestCase):
@@ -686,27 +504,6 @@ class WelcomeTests(TestCase):
         res = welcome(req)
         self.assert_(res.status_int == 302)
         self.assert_(res.location.route_name == 'home')
-
-
-class ForgotPasswordTests(TestCase):
-
-    def test_if_user_found(self):
-
-        from .models import User, DBSession
-        from .views import forgot_password
-        from .mail import DummyMailer
-
-        user = User(email="tester@gmail.com", password="test")
-
-        DBSession.add(user)
-        DBSession.flush()
-
-        req = self.make_POST_request(email="tester@gmail.com")
-        req.mailer = DummyMailer()
-
-        res = forgot_password(req)
-        self.assert_(res.status_int == 302)
-        self.assert_(len(req.mailer.messages), 1)
 
 
 class ImageRequiredTests(TestCase):
@@ -782,48 +579,6 @@ class SharedPhotosTests(TestCase):
         self.assert_(res['page'].item_count == 1)
 
 
-class SignupFormTests(TestCase):
-
-    def test_signup_with_unused_email(self):
-
-        from .forms import SignupForm
-
-        req = self.make_POST_request(
-            email="tester@gmail.com",
-            first_name="Dan",
-            last_name="Tester",
-            password="test",
-            password_again="test"
-        )
-
-        req.user = None
-
-        form = SignupForm(req)
-        self.assert_(form.validate())
-
-    def test_signup_with_used_email(self):
-
-        from .forms import SignupForm
-        from .models import User, DBSession
-
-        user = User(email="tester@gmail.com", password="test")
-
-        DBSession.add(user)
-        DBSession.flush()
-
-        req = self.make_POST_request(
-            email="tester@gmail.com",
-            first_name="Dan", last_name="Tester",
-            password="test",
-            password_again="test"
-        )
-
-        req.user = None
-
-        form = SignupForm(req)
-        self.assert_(not form.validate())
-
-
 class PublicPhotoTests(TestCase):
 
     def test_public_photos(self):
@@ -831,7 +586,7 @@ class PublicPhotoTests(TestCase):
         from .models import User, Photo, DBSession
         from .views import public_photos_for_user
 
-        user = User(email="tester@gmail.com", password="test")
+        user = User(email="tester@gmail.com")
         photo = Photo(title="test", owner=user, is_public=True)
 
         DBSession.add_all((user, photo))
@@ -848,7 +603,7 @@ class AccountFormTests(TestCase):
         from .forms import AccountForm
         from .models import User, DBSession
 
-        user = User(email="tester@gmail.com", password="test")
+        user = User(email="tester@gmail.com")
 
         DBSession.add(user)
         DBSession.flush()
@@ -857,8 +612,6 @@ class AccountFormTests(TestCase):
             email="tester@gmail.com",
             first_name="Dan",
             last_name="Tester",
-            password="test",
-            password_again="test"
         )
 
         req.user = user
@@ -871,12 +624,12 @@ class AccountFormTests(TestCase):
         from .forms import AccountForm
         from .models import User, DBSession
 
-        user = User(email="tester@gmail.com", password="test")
+        user = User(email="tester@gmail.com")
 
         DBSession.add(user)
         DBSession.flush()
 
-        user2 = User(email="tester2@gmail.com", password="test")
+        user2 = User(email="tester2@gmail.com")
 
         DBSession.add(user2)
         DBSession.flush()
@@ -885,8 +638,6 @@ class AccountFormTests(TestCase):
             email="tester2@gmail.com",
             first_name="Dan",
             last_name="Tester",
-            password="test",
-            password_again="test"
         )
 
         req.user = user
@@ -1123,67 +874,6 @@ class TestGetTags(TestCase):
         self.assert_(res['tags'][0]['link'].params['name'] == 'wallpaper')
 
 
-class ChangePasswordTests(TestCase):
-
-    def test_if_no_key_found(self):
-
-        from pyramid.httpexceptions import HTTPForbidden
-
-        from .views import change_password
-
-        self.assertRaises(HTTPForbidden,
-                          change_password,
-                          testing.DummyRequest())
-
-    def test_if_no_user_found(self):
-
-        from pyramid.httpexceptions import HTTPForbidden
-
-        from .views import change_password
-
-        req = testing.DummyRequest()
-        req.params['key'] = 'foo'
-
-        self.assertRaises(HTTPForbidden, change_password, req)
-
-    def test_if_user_found(self):
-
-        from .views import change_password
-        from .models import User, DBSession
-
-        user = User(email="tester@gmail.com", key="foo")
-        DBSession.add(user)
-        DBSession.flush()
-
-        req = testing.DummyRequest()
-        req.params['key'] = 'foo'
-
-        res = change_password(req)
-        self.assert_(res['form'] is not None)
-        self.assert_(res['form'].key.data == 'foo')
-
-    def test_change_password_successfully(self):
-
-        from .views import change_password
-        from .models import User, DBSession
-
-        user = User(email="tester@gmail.com", key="foo", password="test1")
-        self.assert_(user.check_password('test1'))
-
-        DBSession.add(user)
-        DBSession.flush()
-
-        req = self.make_POST_request(password='test2',
-                                     password_again='test2',
-                                     key='foo')
-
-        req.user = user
-        res = change_password(req)
-        self.assert_(res.location.route_name == 'login')
-
-        self.assert_(user.check_password('test2'))
-
-
 class LogoutTests(TestCase):
 
     def test_logout(self):
@@ -1194,5 +884,5 @@ class LogoutTests(TestCase):
         req.route_url = MockRoute
 
         res = logout(req)
-        self.assert_(res.status_int == 302)
-        self.assert_(res.location.route_name == "welcome")
+        self.assert_(res['success'])
+        self.assert_(res['url'].route_name == 'welcome')

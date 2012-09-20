@@ -1,13 +1,11 @@
 import cgi
 import mimetypes
-import urlparse
 
 from wtforms import (
     TextField,
     TextAreaField,
     FileField,
     BooleanField,
-    HiddenField,
     SubmitField,
     FieldList,
 )
@@ -16,10 +14,7 @@ from wtforms import (
 from wtforms.validators import (
     ValidationError,
     Required,
-    EqualTo,
     Email,
-    URL,
-    Optional,
 )
 
 from wtforms.ext.csrf import SecureForm
@@ -88,17 +83,6 @@ class AccountForm(Form):
             where = where & ~(User.email == self.request.user.email)
 
         if DBSession.query(exists().where(where)).scalar():
-            raise ValidationError("This email address is already taken")
-
-
-class SignupForm(AccountForm):
-
-    invite = HiddenField()
-    submit = SubmitField("Sign up")
-
-    def validate_email(self, field):
-
-        if DBSession.query(exists().where(User.email == field.data)).scalar():
             raise ValidationError("This email address is already taken")
 
 
