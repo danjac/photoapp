@@ -34,7 +34,6 @@ class PhotoApp.Auth
         @doc = $(document)
 
         @doc.on 'click', 'a.login', (event) => navigator.id.request()
-
         @doc.on 'click', 'a.logout', (event) => navigator.id.logout()
 
         navigator.id.watch(
