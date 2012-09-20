@@ -422,7 +422,7 @@ class SignupTests(TestCase):
         DBSession.flush()
 
         req = testing.DummyRequest()
-        req.params['invite'] = invite.key
+        req.params['email'] = invite.email
 
         res = signup(req)
         self.assert_(res['form'].email.data == 'friend@gmail.com')
@@ -469,7 +469,6 @@ class SignupTests(TestCase):
             password_again="test",
             first_name="Tester",
             last_name="Tester",
-            invite=invite.key
         )
 
         req.user = None

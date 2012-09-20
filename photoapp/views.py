@@ -208,24 +208,8 @@ def signup(request):
     Sign up a new user.
     """
 
-    invite_key = request.params.get('invite')
-    invite = None
-
-    if invite_key:
-        invite = DBSession.query(Invite).filter_by(
-            accepted_on=None,
-            key=invite_key).first()
-
-    if invite:
-
-        form = SignupForm(request,
-                          invite=invite_key,
-                          email=invite.email)
-
-    else:
-
-        form = SignupForm(request)
-        invite = None
+    form = SignupForm(request,
+                      email=request.params.get('email'))
 
     if form.validate():
 
@@ -235,12 +219,19 @@ def signup(request):
         DBSession.add(user)
         DBSession.flush()
 
-        if invite:
-            user.shared_photos.append(invite.photo)
-            invite.accepted_on = datetime.datetime.now()
+        invites = DBSession.query(Invite).filter(
+            (Invite.accepted_on == None) & (
+             Invite.email == user.email)
+        ).all()
+
+        if invites:
             redirect = request.route_url('shared')
         else:
             redirect = request.route_url('home')
+
+        for invite in invites:
+            user.shared_photos.append(invite.photo)
+            invite.accepted_on = datetime.datetime.now()
 
         request.session.flash("Welcome, %s" % user.first_name)
         headers = remember(request, str(user.id))
@@ -707,7 +698,7 @@ def send_invite_email(request, invite, note):
     """
     Sends an email to someone who is not yet a member.
     """
-    url = request.route_url('signup', _query={'invite': invite.key})
+    url = request.route_url('signup', _query={'email': invite.email})
 
     body = string.Template("""
     Hi, $name has shared a photo with you!
