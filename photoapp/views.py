@@ -219,7 +219,8 @@ def login(request):
                         )
                         response['url'] = request.route_url('settings')
 
-                    request.response.headers = remember(request, str(user.id))
+                    headers = remember(request, str(user.id))
+                    request.response.headers.extend(headers)
 
                     return response
 
@@ -245,7 +246,8 @@ def login(request):
                 user.shared_photos.append(invite.photo)
                 invite.accepted_on = None
 
-            request.response.headers = remember(request, str(user.id))
+            headers = remember(request, str(user.id))
+            request.response.headers.extend(headers)
 
             # we need other details e.g. first name
             # so redirect to edit account form
