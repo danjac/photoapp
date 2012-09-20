@@ -7,4 +7,6 @@
 *.coverage
 data
 test_uploads
+static/js/*
+static/css/*
 uploads
