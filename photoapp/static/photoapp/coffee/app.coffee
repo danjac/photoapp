@@ -65,7 +65,7 @@ class PhotoApp.Photo
 
     constructor: (@page, @el) ->
         @doc = @page.doc
-        @csrf = @page.csrf
+        @csrf = PhotoApp.options.csrf
 
         @modal = $('#photo-modal')
 
@@ -265,6 +265,7 @@ class PhotoApp.Photo
 
         if confirm "Are you sure you want to delete this photo?"
             @modal.modal('hide')
+            alert @csrf
             $.post deleteURL, {csrf_token: @csrf}, (response) =>
                 if response.success?
                     @el.parent().remove()
