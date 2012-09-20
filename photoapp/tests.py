@@ -420,10 +420,10 @@ class LoginTests(TestCase):
             response = login(request)
 
         u = DBSession.query(User).first()
+        self.assert_(u.email == "danjac354@gmail.com")
         # redirect to settings page to complete profile
         self.assert_(response.status_int == 302)
         self.assert_(response.location.route_name == "settings")
-
 
     def test_login_new_user_with_invites(self):
         """Should create new user and pass url to settings.
@@ -504,6 +504,7 @@ class LoginTests(TestCase):
             response = login(request)
 
         self.assert_(response['account_deactivated'])
+
 
 class WelcomeTests(TestCase):
 
