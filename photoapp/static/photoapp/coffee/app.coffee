@@ -72,6 +72,7 @@ class PhotoApp.Photo
 
     constructor: (@page, @el) ->
         @doc = @page.doc
+        @csrf = @page.csrf
 
         @modal = $('#photo-modal')
 
@@ -257,14 +258,6 @@ class PhotoApp.Photo
             $('#photo-modal-load').show().html(response.html)
             #$('#photo-modal-footer a').addClass('disabled')
 
-    delete: ->
-        if confirm "Are you sure you want to delete this photo?"
-            @modal.modal('hide')
-            $.post @deleteURL, null, (response) =>
-                if response.success?
-                    @el.parent().remove()
-                    PhotoApp.showMessage("Photo '#{@title}' has been deleted")
-
     edit: => @showForm @editURL
 
     share: => @showForm @shareURL
@@ -279,7 +272,7 @@ class PhotoApp.Photo
 
         if confirm "Are you sure you want to delete this photo?"
             @modal.modal('hide')
-            $.post deleteURL, null, (response) =>
+            $.post deleteURL, {csrf_token: @csrf}, (response) =>
                 if response.success?
                     @el.parent().remove()
                     PhotoApp.showMessage("Photo '#{@title}' has been deleted")
@@ -327,7 +320,7 @@ class PhotoApp.UploadPage
 
 class PhotoApp.PhotosPage
 
-    constructor: (@tagsURL) ->
+    constructor: (@tagsURL, @csrf) ->
         jQuery => @onload()
 
     loadTags: ->

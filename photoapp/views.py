@@ -311,6 +311,7 @@ def delete_photo(photo, request):
 
     DBSession.delete(photo)
     photo.delete_image_on_commit(request.fs)
+    print "DELETING PHOTO"
     return {'success': True}
 
 

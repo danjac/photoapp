@@ -18,7 +18,6 @@ requires = [
     'sqlalchemy',
     'zope.sqlalchemy',
     'psycopg2',
-    'paste',
     'wtforms',
     'passlib',
     'py_bcrypt',
