@@ -3,6 +3,8 @@ import operator
 import string
 
 import mailer
+import requests
+import simplejson
 
 from pyramid.view import view_config, forbidden_view_config
 from pyramid.security import remember, forget, NO_PERMISSION_REQUIRED
@@ -28,12 +30,9 @@ from .models import (
 )
 
 from .forms import (
-    LoginForm,
     AccountForm,
     SignupForm,
     DeleteAccountForm,
-    ForgotPasswordForm,
-    ChangePasswordForm,
     PhotoUploadForm,
     PhotoEditForm,
     PhotoShareForm,
@@ -159,6 +158,11 @@ def tagged_photos(tag, request):
     return {'page': page}
 
 
+@forbidden_view_config()
+def forbidden(request):
+    return HTTPFound(request.route_url('welcome'))
+
+
 @forbidden_view_config(xhr=True,
                        renderer='json')
 def forbidden_ajax(request):
@@ -169,143 +173,83 @@ def forbidden_ajax(request):
 
 
 @view_config(route_name='login',
-             permission=NO_PERMISSION_REQUIRED,
-             renderer='login.jinja2')
-@forbidden_view_config(renderer='login.jinja2')
+             xhr=True,
+             request_method="POST",
+             renderer='json',
+             permission=NO_PERMISSION_REQUIRED)
 def login(request):
-    """
-    Allows user to sign in
-    """
+    """Allows user to sign in using Mozilla Persona.
 
-    form = LoginForm(request, next=request.url)
+    Returns:
 
-    if form.validate():
+        dict:
 
-        user = User.authenticate(form.email.data, form.password.data)
-        if user:
-            user.last_login_at = datetime.datetime.now()
-
-            request.session.flash("Welcome back, %s" % user.first_name)
-
-            headers = remember(request, str(user.id))
-            default_redirect = request.route_url('home')
-
-            if request.matched_route.name == "login":
-                redirect = default_redirect
-            else:
-                redirect = form.next.data or default_redirect
-
-            return HTTPFound(redirect, headers=headers)
-
-    return {'form': form}
-
-
-@view_config(route_name='signup',
-             permission=NO_PERMISSION_REQUIRED,
-             renderer='signup.jinja2')
-def signup(request):
-    """
-    Sign up a new user.
+            success: True/False
+            url: next URL to redirect to
     """
 
-    invite_key = request.params.get('invite')
-    invite = None
+    data = {
+        'assertion' : request.POST['assertion'],
+        'audience' : request.host_url,
+    }
 
-    if invite_key:
-        invite = DBSession.query(Invite).filter_by(
-            accepted_on=None,
-            key=invite_key).first()
+    resp = requests.post('https://verifier.login.persona.org/verify',
+                         data=data,
+                         verify=True)
 
-    if invite:
+    if resp.ok:
 
-        form = SignupForm(request,
-                          invite=invite_key,
-                          email=invite.email)
+        verify_data = simplejson.loads(resp.content)
+        if verify_data['status'] == 'okay':
 
-    else:
+            user = DBSession.query(User).filter_by(
+                email=verify_data['email']
+            ).first()
 
-        form = SignupForm(request)
-        invite = None
+            if user:
+                if user.is_active:
+                    request.response.headers.extend(
+                        remember(request, str(user.id))
+                    )
 
-    if form.validate():
+                    if not user.name:
+                        request.session.flash(
+                            "Please complete the rest of your details"
+                        )
+                        url = request.route_url('settings')
 
-        user = User()
-        form.populate_obj(user)
+                    return {'success': True}
 
-        DBSession.add(user)
-        DBSession.flush()
+                else:
+                    return {'success': False}
 
-        if invite:
-            user.shared_photos.append(invite.photo)
-            invite.accepted_on = datetime.datetime.now()
-            redirect = request.route_url('shared')
-        else:
-            redirect = request.route_url('home')
+            # we don't have a user
+            # so let's make one
 
-        request.session.flash("Welcome, %s" % user.first_name)
-        headers = remember(request, str(user.id))
+            user = User(email=verify_data['email'])
 
-        return HTTPFound(redirect, headers=headers)
+            DBSession.add(user)
+            DBSession.flush()
 
-    return {'form': form}
+            # go thru any invites, add photos etc
 
+            request.response.headers.extend(
+                remember(request, str(user.id))
+            )
 
-@view_config(route_name='forgot_pass',
-             permission=NO_PERMISSION_REQUIRED,
-             renderer='forgot_password.jinja2')
-def forgot_password(request):
-    """
-    Resets and emails recovery key for a user so
-    they can change their password.
-    """
+            # we need other details e.g. first name
+            # so redirect to edit account form
+            # in future some kind of flag needed to indicate account
+            # is completed
 
-    form = ForgotPasswordForm(request)
+            request.session.flash("Please complete the rest of your details")
 
-    if form.validate():
-        user = DBSession.query(User).filter_by(email=form.email.data).first()
-        if user:
+            return {'success' : False,
+                    'url': request.route_url('settings')}
 
-            user.reset_key()
-
-            send_forgot_password_email(request, user)
-
-            request.session.flash(
-                "Please check your inbox, we have emailed "
-                "you instructions to recover your password")
-
-            return HTTPFound(request.route_url('home'))
-
-    return {'form': form}
+    return {'success': False}
 
 
-@view_config(route_name='change_pass',
-             permission=NO_PERMISSION_REQUIRED,
-             renderer='change_password.jinja2')
-def change_password(request):
-    """
-    Allows a user to change their password. If
-    no user signed in, checks the key value so
-    they can recover their account if password
-    forgotten.
-    """
-
-    key = request.params.get('key', None)
-    user = None
-
-    if key:
-        user = DBSession.query(User).filter_by(key=key).first()
-
-    if user is None:
-        raise HTTPForbidden()
-
-    form = ChangePasswordForm(request, key=key)
-    if form.validate():
-        user.password = form.password.data
-        user.key = None
-        request.session.flash("Please sign in again with your new password")
-        return HTTPFound(request.route_url('login'))
-
-    return {'form': form}
 
 
 @view_config(route_name="image",
@@ -554,14 +498,19 @@ def edit_account(request):
     return {'form': form}
 
 
-@view_config(route_name='logout')
+@view_config(route_name='logout',
+             xhr=True,
+             renderer='json',
+             request_method="POST")
 def logout(request):
     """
     Ends the current session.
     """
 
-    headers = forget(request)
-    return HTTPFound(request.route_url('welcome'), headers=headers)
+    request.response.headers = forget(request)
+
+    return {'success': True,
+            'url': request.route_url('welcome')}
 
 
 @view_config(route_name="delete_shared",
@@ -648,31 +597,6 @@ def photos_page(request, photos, items_per_page=18, **kwargs):
     return Page(photos,
                 int(request.params.get('page', 0)),
                 items_per_page=items_per_page, **kwargs)
-
-
-def send_forgot_password_email(request, user):
-    """
-    Send email with link to recover/change password.
-    """
-
-    url = request.route_url('change_pass', _query={'key': user.key})
-
-    body = string.Template("""
-    Hi, $first_name
-
-    Please go here: $url to change your password.
-
-    Thanks!
-    """).substitute(
-        first_name=user.first_name,
-        url=url,
-    )
-
-    message = mailer.Message(To=user.email,
-                             Subject="Change your password!",
-                             Body=body)
-
-    request.mailer.send(message)
 
 
 def send_shared_photo_email(request, photo, recipient, note):

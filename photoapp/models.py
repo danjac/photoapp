@@ -8,7 +8,6 @@ import mimetypes
 import Image
 import ImageOps
 
-from passlib.hash import bcrypt
 from pyramid.security import Allow, Everyone
 
 from sqlalchemy import (
@@ -83,8 +82,6 @@ class User(TimestampedMixin, Base):
     first_name = Column(Unicode(40))
     last_name = Column(Unicode(40))
 
-    _password = Column('password', String(80))
-
     is_active = Column(Boolean, default=True)
     is_admin = Column(Boolean, default=False)
 
@@ -100,31 +97,10 @@ class User(TimestampedMixin, Base):
     def __unicode__(self):
         return self.name or self.email
 
-    @classmethod
-    def authenticate(cls, email, password):
-
-        user = DBSession.query(cls).filter_by(
-            email=email,
-            is_active=True).first()
-
-        if user and user.check_password(password):
-            return user
-
     @property
     def name(self):
         if self.first_name and self.last_name:
             return self.first_name + " " + self.last_name
-
-    @hybrid_property
-    def password(self):
-        return self._password
-
-    @password.setter
-    def set_password(self, password):
-        self._password = bcrypt.encrypt(password)
-
-    def check_password(self, password):
-        return bcrypt.verify(password, self.password)
 
     def reset_key(self):
         self.key = random_string()

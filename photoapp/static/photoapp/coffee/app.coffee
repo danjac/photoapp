@@ -10,9 +10,9 @@ class PhotoApp.Message
     show: () ->
         $(@target).html(_.template(@tmpl, @)).show().fadeOut(3000)
 
-
 PhotoApp.showMessage = (message, target) ->
     new PhotoApp.Message(message, target).show()
+
 
 PhotoApp.paginate = ->
     # sets up infinite scrolling
@@ -23,6 +23,46 @@ PhotoApp.paginate = ->
         next: '.next a'
         loader: '<img src="ias/loader.gif">'
 
+
+class PhotoApp.Auth
+
+    constructor: (@email, @loginURL, @logoutURL) ->
+        jQuery => @onload()
+
+    onload: ->
+
+        @doc = $(document)
+
+        @doc.on 'click', '#login', (event) => navigator.id.request()
+
+        @doc.on 'click', '#logout', (event) => navigator.id.logout()
+
+        navigator.id.watch(
+            loggedInEmail: @email
+            onlogin: (assertion) =>
+                $.ajax
+                    dataType: "json"
+                    type: "POST"
+                    url: @loginURL
+                    data: {assertion: assertion}
+                    success: (response, status, xhr) =>
+                        if response.url
+                            window.location = response.url
+                        else
+                            window.location.reload true
+                    error: (response) =>
+                        console.log response
+
+            onlogout: =>
+                $.ajax
+                    dataType: "json"
+                    type: "POST"
+                    url: @logoutURL
+                    success: (response, status, xhr) =>
+                        window.location = response.url
+                    error: (response) =>
+                        console.log response
+        )
 
 class PhotoApp.Photo
 

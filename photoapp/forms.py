@@ -5,7 +5,6 @@ import urlparse
 from wtforms import (
     TextField,
     TextAreaField,
-    PasswordField,
     FileField,
     BooleanField,
     HiddenField,
@@ -72,29 +71,6 @@ class Form(SecureForm):
         return self.request.session.get_csrf_token()
 
 
-class LoginForm(Form):
-
-    next = HiddenField(validators=[Optional(),
-                                   URL(require_tld=False)])
-
-    email = TextField("Email address")
-    password = PasswordField("Password")
-    login = SubmitField("Sign in")
-
-    def validate_next(self, field):
-        """
-        Prevent CSRF attacks where someone
-        tries to redirect to an outside URL
-        post-login
-        """
-
-        if field.data:
-            domain = urlparse.urlparse(field.data).netloc
-
-            if domain and domain != self.request.host:
-                raise ValidationError("Invalid domain")
-
-
 class AccountForm(Form):
 
     first_name = TextField("First name", validators=[Required()])
@@ -102,13 +78,6 @@ class AccountForm(Form):
 
     email = TextField("Email address",
                       validators=[Required(), Email()])
-
-    password = PasswordField("New password", validators=[Required()])
-
-    password_again = PasswordField(
-        "Repeat password",
-        validators=[EqualTo('password')]
-    )
 
     submit = SubmitField("Save")
 
@@ -135,26 +104,6 @@ class SignupForm(AccountForm):
 
 class DeleteAccountForm(Form):
     pass
-
-
-class ForgotPasswordForm(Form):
-
-    email = TextField("Email address", validators=[Required(), Email()])
-    submit = SubmitField("Go")
-
-
-class ChangePasswordForm(Form):
-
-    key = HiddenField()
-
-    password = PasswordField("New password", validators=[Required()])
-
-    password_again = PasswordField(
-        "Repeat password",
-        validators=[EqualTo('password')]
-    )
-
-    submit = SubmitField("Change")
 
 
 class PhotoUploadForm(Form):

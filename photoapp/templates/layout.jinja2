@@ -74,10 +74,9 @@
             <ul class="nav pull-right">
               {% if request.user %}
               <li {{ active_tab('settings')}}><a href="{{ request.route_url('settings') }}"><img src="{{ request.user.gravatar_url(20) }}"> {{ request.user.name }}</a></li>
-              <li><a href="{{ request.route_url('logout') }}">Sign out</a></li>
+              <li><a href="#" id="logout">Sign out</a></li>
               {% else %}
-              <li {{ active_tab('login') }}><a href="{{ request.route_url('login') }}">Sign in</a></li>
-              <li {{ active_tab('signup') }}><a href="{{ request.route_url('signup') }}">Sign up</a></li>
+              <li><a href="#" id="login">Sign in</a></li>
               {% endif %}
             </ul>
           </div><!--/.nav-collapse -->
@@ -107,10 +106,20 @@
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://login.persona.org/include.js"></script>
     {% assets "jquery_js", "bootstrap_js", "ias_js", "photoapp_js" %}
     <script src="{{ ASSET_URL }}"></script>
     {% endassets %}
     {% block scripts %}{% endblock %}
+    <script>
+    {% if request.user %}
+    new PhotoApp.Auth('{{ request.user.email }}',
+                      '{{ request.route_url('login') }}',
+                      '{{ request.route_url('logout') }}');
+    {% else %}
+    new PhotoApp.Auth(null, '{{ request.route_url('login') }}', '{{ request.route_url('logout') }}');
+    {% endif %}
+    </script>
     <script type="text/template" id="message-template">
         <div class="alert alert-success">
             <button type="button" class="close" data-dismiss="alert">&times;</button>
