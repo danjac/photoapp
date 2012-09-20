@@ -17,51 +17,6 @@ from .security import Admins, UserID, PhotoID
 
 
 class AuthenticationPolicy(AuthTktAuthenticationPolicy):
-    """
-    Custom auth policy which permits both Basic Auth
-    logins and session logins.
-    """
-
-    def get_basic_credentials(self, request):
-        """
-        Get BASIC HTTP Auth creds for the API views.
-        """
-
-        auth = AUTHORIZATION(request.environ)
-
-        try:
-            method, auth = auth.split(' ', 1)
-        except ValueError:
-            return
-
-        if method.lower() == 'basic':
-
-            try:
-                auth = auth.strip().decode('base64')
-            except binascii.Error:
-                return
-
-        try:
-            login, password = auth.split(":", 1)
-        except ValueError:
-            return
-
-        return (login, password)
-
-    def unauthenticated_userid(self, request):
-        """
-        Return an (login, password) tuple if
-        Basic Auth, otherwise plain string or None.
-        """
-
-        userid = self.get_basic_credentials(request)
-
-        if userid:
-            return userid
-
-        return super(AuthenticationPolicy,
-                     self).unauthenticated_userid(request)
-
     def effective_principals(self, request):
 
         groups = [Everyone]
@@ -86,10 +41,6 @@ def get_user(request):
     """
 
     userid = unauthenticated_userid(request)
-
-    if isinstance(userid, tuple):
-
-        return User.authenticate(*userid)
 
     if userid:
 

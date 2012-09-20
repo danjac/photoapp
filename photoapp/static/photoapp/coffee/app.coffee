@@ -26,7 +26,7 @@ PhotoApp.paginate = ->
 
 class PhotoApp.Auth
 
-    constructor: (@email, @loginURL, @logoutURL) ->
+    constructor: (@email, @loginURL, @logoutURL, @csrf) ->
         jQuery => @onload()
 
     onload: ->
@@ -43,7 +43,9 @@ class PhotoApp.Auth
                     dataType: "json"
                     type: "POST"
                     url: @loginURL
-                    data: {assertion: assertion}
+                    data:
+                        csrf_token: @csrf
+                        assertion: assertion
                     success: (response, status, xhr) =>
                         if response.url?
                             window.location = response.url
@@ -57,8 +59,11 @@ class PhotoApp.Auth
                     dataType: "json"
                     type: "POST"
                     url: @logoutURL
+                    data:
+                        csrf_token: @csrf
                     success: (response, status, xhr) =>
-                        window.location = response.url
+                        if response.url?
+                            window.location = response.url
                     error: (response) =>
                         console.log response
         )

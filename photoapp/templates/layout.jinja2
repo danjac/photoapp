@@ -114,13 +114,10 @@
     {% endassets %}
     {% block scripts %}{% endblock %}
     <script>
-    {% if request.user %}
-    new PhotoApp.Auth('{{ request.user.email }}',
+    new PhotoApp.Auth('{{ request.user.email if request.user else '' }}',
                       '{{ request.route_url('login') }}',
-                      '{{ request.route_url('logout') }}');
-    {% else %}
-    new PhotoApp.Auth(null, '{{ request.route_url('login') }}', '{{ request.route_url('logout') }}');
-    {% endif %}
+                      '{{ request.route_url('logout') }}',
+                      '{{ request.session.get_csrf_token() }}');
     </script>
     <script type="text/template" id="message-template">
         <div class="alert alert-success">
