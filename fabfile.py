@@ -23,6 +23,10 @@ def deploy():
         # run migrations
         api.run("%s/alembic upgrade head" % api.env.python_path)
 
+        # rebuild static directories
+        api.run("rm -rf photoapp/static/js photoapp/static/css")
+        api.run("mkdir -p photoapp/static/js photoapp/static/css")
+
         # restart long-running processes
         api.sudo("/etc/init.d/memcached restart")
         api.sudo("supervisorctl restart photoapp")
