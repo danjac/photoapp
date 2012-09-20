@@ -59,6 +59,7 @@ setup(
     [console_scripts]
     initialize_photoapp_db = photoapp.scripts.initializedb:main
     drop_test_db = photoapp.scripts.drop_test_db:main
+    build_assets = photoapp.scripts.build_assets:main
     """,
     paster_plugins=['pyramid'],
 )

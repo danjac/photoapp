@@ -26,6 +26,7 @@ def deploy():
         # rebuild static directories
         api.run("rm -rf photoapp/static/js photoapp/static/css")
         api.run("mkdir -p photoapp/static/js photoapp/static/css")
+        api.run("%s/build_assets production.ini" % api.env.python_path)
 
         # restart long-running processes
         api.sudo("/etc/init.d/memcached restart")

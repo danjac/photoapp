@@ -1,57 +1,75 @@
 
 from webassets import Bundle
 
-bootstrap_css = Bundle(
-    'bootstrap/css/*.css',
-    filters='cssmin',
-    output='css/bootstrap.css',
-    debug=False,
-)
+assets = (
 
-bootstrap_js = Bundle(
-    'bootstrap/js/*.js',
-    filters='uglifyjs',
-    output='js/bootstrap.js',
-    debug=False,
-)
+    (
+        'bootstrap_css', Bundle(
+            'bootstrap/css/*.css',
+            filters='cssmin',
+            output='css/bootstrap.css',
+            debug=False,
+        )
 
+    ),
 
-jquery_js = Bundle(
-    'jquery/jquery-1.8.0.min.js',
-    'jquery/jqcloud-1.0.1.min.js',
-    'jquery/underscore-min.js',
-    filters='uglifyjs',
-    output='js/jquery.js',
-    debug=False,
-)
-
-jquery_css = Bundle(
-    'jquery/*.css',
-    filters='cssmin',
-    output='css/jquery.css',
-    debug=False,
-)
-
-ias_js = Bundle(
-    'ias/*.js',
-    filters='uglifyjs',
-    output='js/ias.js',
-    debug=False,
-)
-
-ias_css = Bundle(
-    'ias/*.css',
-    filters='cssmin',
-    output='css/ias.css',
-    debug=False,
-)
+    (
+        'bootstrap_js', Bundle(
+            'bootstrap/js/*.js',
+            filters='uglifyjs',
+            output='js/bootstrap.js',
+            debug=False,
+        )
+    ),
 
 
-app_coffee = Bundle(
-    'photoapp/coffee/*.coffee',
-    filters='coffeescript,uglifyjs',
-    output='js/photoapp.js',
-    debug=False,
+    (
+        'jquery_js', Bundle(
+            'jquery/jquery-1.8.0.min.js',
+            'jquery/jqcloud-1.0.1.min.js',
+            'jquery/underscore-min.js',
+            filters='uglifyjs',
+            output='js/jquery.js',
+            debug=False,
+        )
+    ),
+
+    (
+        'jquery_css', Bundle(
+            'jquery/*.css',
+            filters='cssmin',
+            output='css/jquery.css',
+            debug=False,
+        )
+    ),
+
+    (
+        'ias_js', Bundle(
+            'ias/*.js',
+            filters='uglifyjs',
+            output='js/ias.js',
+            debug=False,
+        )
+    ),
+
+    (
+        'ias_css', Bundle(
+            'ias/*.css',
+            filters='cssmin',
+            output='css/ias.css',
+            debug=False,
+        )
+    ),
+
+
+    (
+        'app_coffee', Bundle(
+            'photoapp/coffee/*.coffee',
+            filters='coffeescript,uglifyjs',
+            output='js/photoapp.js',
+            debug=False,
+        )
+    ),
 )
 
 
@@ -59,13 +77,8 @@ def includeme(config):
 
     config.include('pyramid_webassets')
 
-    config.add_webasset('bootstrap_css', bootstrap_css)
-    config.add_webasset('jquery_css', jquery_css)
-    config.add_webasset('ias_css', ias_css)
-    config.add_webasset('bootstrap_js', bootstrap_js)
-    config.add_webasset('jquery_js', jquery_js)
-    config.add_webasset('ias_js', ias_js)
-    config.add_webasset('photoapp_js', app_coffee)
+    for name, bundle in assets:
+        config.add_webasset(name, bundle)
 
     # Jinja2 integration
     config.add_jinja2_extension('webassets.ext.jinja2.AssetsExtension')
