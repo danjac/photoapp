@@ -17,7 +17,9 @@ bootstrap_js = Bundle(
 
 
 jquery_js = Bundle(
-    'jquery/*.js',
+    'jquery/jquery-1.8.0-min.js',
+    'jquery/jqcloud-1.0.1.min.js',
+    'jquery/underscore-min.js',
     filters='uglifyjs',
     output='js/jquery.js',
     debug=False,
