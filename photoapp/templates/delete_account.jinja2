@@ -3,7 +3,7 @@
 
 {% block content %}
 
-{% call forms.render_form(form) %}
+{% call forms.render_form(form, onsubmit="navigator.id.logout(); return true;") %}
     <p>
         Are you sure you want to delete your account? You will lose <b>ALL</b> your photos!
     </p>

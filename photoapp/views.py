@@ -584,7 +584,8 @@ def delete_account(request):
             photo.delete_image_on_commit(request.fs)
 
         request.session.flash("Your account has been deleted")
-        return HTTPFound(request.route_url("welcome"))
+        headers = forget(request)
+        return HTTPFound(request.route_url("welcome"), headers=headers)
 
     return {'form': form}
 
