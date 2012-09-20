@@ -63,7 +63,7 @@ assets = (
 
 
     (
-        'app_coffee', Bundle(
+        'photoapp_js', Bundle(
             'photoapp/coffee/*.coffee',
             filters='coffeescript,uglifyjs',
             output='js/photoapp.js',
