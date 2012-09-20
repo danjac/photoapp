@@ -5,6 +5,7 @@ from wtforms import (
     TextField,
     TextAreaField,
     FileField,
+    HiddenField,
     BooleanField,
     SubmitField,
     FieldList,
@@ -123,3 +124,8 @@ class PhotoShareForm(Form):
     )
 
     submit = SubmitField("Share")
+
+
+class LoginForm(Form):
+
+    assertion = HiddenField(validators=[Required()])

@@ -30,6 +30,7 @@ from .models import (
 
 from .forms import (
     AccountForm,
+    LoginForm,
     DeleteAccountForm,
     PhotoUploadForm,
     PhotoEditForm,
@@ -171,95 +172,88 @@ def forbidden_ajax(request):
 
 
 @view_config(route_name='login',
-             xhr=True,
              request_method="POST",
-             renderer='json',
+             renderer='login_failed.jinja2',
              permission=NO_PERMISSION_REQUIRED)
 def login(request):
     """Allows user to sign in using Mozilla Persona.
 
-    Returns:
-
-        dict:
-
-            success: True/False
-            url: next URL to redirect to
+    If no user matching the email address is found,
+    a new user with that email is created.
     """
 
-    data = {
-        'assertion': request.POST['assertion'],
-        'audience': request.host_url,
-    }
+    form = LoginForm(request)
 
-    persona_url = request.registry.settings.get(
-        'photoapp.persona_verification_url',
-        'https://verifier.login.persona.org/verify')
+    if form.validate():
 
-    verify_response = requests.post(persona_url, data=data, verify=True)
+        data = {
+            'assertion': form.assertion.data,
+            'audience': request.host_url,
+        }
 
-    if verify_response.ok:
+        url = request.registry.settings.get(
+            'photoapp.browserid_verification_url',
+            'https://verifier.login.persona.org/verify')
 
-        verify_data = simplejson.loads(verify_response.content)
-        if verify_data['status'] == 'okay':
+        response = requests.post(url, data=data, verify=True)
 
-            user = DBSession.query(User).filter_by(
-                email=verify_data['email']
-            ).first()
+        if response.ok:
 
-            if user:
-                if user.is_active:
-                    user.last_login_at = datetime.datetime.now()
-                    response = {'success': True}
+            payload = simplejson.loads(response.content)
 
-                    if user.is_complete:
-                        response['url'] = request.route_url('home')
+            if payload['status'] == 'okay':
+
+                user = DBSession.query(User).filter_by(
+                    email=payload['email']
+                ).first()
+
+                if user:
+
+                    if user.is_active:
+
+                        user.last_login_at = datetime.datetime.now()
+                        response = {'success': True}
+
+                        if user.is_complete:
+                            url = request.route_url('home')
+                        else:
+                            request.session.flash(
+                                "Please complete the rest of your details"
+                            )
+                            url = request.route_url('settings')
+
+                        headers = remember(request, str(user.id))
+                        return HTTPFound(url, headers=headers)
+
                     else:
-                        request.session.flash(
-                            "Please complete the rest of your details"
-                        )
-                        response['url'] = request.route_url('settings')
+                        # we probably want a specific message here
+                        return {'account_deactivated': True}
 
-                    headers = remember(request, str(user.id))
-                    request.response.headers.extend(headers)
+                user = User(email=payload['email'])
 
-                    return response
+                DBSession.add(user)
+                DBSession.flush()
 
-                return {'success': False}
+                invites = DBSession.query(Invite).filter_by(
+                    email=user.email,
+                    accepted_on=None,
+                )
 
-            # we don't have a user
-            # so let's make one
+                for invite in invites:
 
-            user = User(email=verify_data['email'])
+                    user.shared_photos.append(invite.photo)
+                    invite.accepted_on = None
 
-            DBSession.add(user)
-            DBSession.flush()
+                request.session.flash(
+                    "Please complete the rest of your details"
+                )
 
-            # go thru any invites, add photos etc
+                headers = remember(request, str(user.id))
 
-            invites = DBSession.query(Invite).filter_by(
-                email=user.email,
-                accepted_on=None,
-            )
+                return HTTPFound(request.route_url('settings'),
+                                 headers=headers)
 
-            for invite in invites:
-
-                user.shared_photos.append(invite.photo)
-                invite.accepted_on = None
-
-            headers = remember(request, str(user.id))
-            request.response.headers.extend(headers)
-
-            # we need other details e.g. first name
-            # so redirect to edit account form
-            # in future some kind of flag needed to indicate account
-            # is completed
-
-            request.session.flash("Please complete the rest of your details")
-
-            return {'success': False,
-                    'url': request.route_url('settings')}
-
-    return {'success': False}
+    return {}
 
 
 @view_config(route_name="image",
@@ -509,19 +503,14 @@ def edit_account(request):
     return {'form': form}
 
 
-@view_config(route_name='logout',
-             xhr=True,
-             renderer='json',
-             request_method="POST")
+@view_config(route_name='logout')
 def logout(request):
     """
     Ends the current session.
     """
 
-    request.response.headers = forget(request)
-
-    return {'success': True,
-            'url': request.route_url('welcome')}
+    headers = forget(request)
+    return HTTPFound(request.route_url('welcome'), headers=headers)
 
 
 @view_config(route_name="delete_shared",

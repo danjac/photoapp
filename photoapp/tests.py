@@ -359,12 +359,14 @@ class LoginTests(TestCase):
 
         return mock.patch('requests.post', MockRequests.post)
 
-    def test_login_valid_user(self):
+    def test_login_valid_user_if_not_complete(self):
+        """Redirect to settings page if not all details filled in"""
 
         from .views import login
         from .models import User, DBSession
 
         u = User(email="danjac354@gmail.com")
+
         DBSession.add(u)
         DBSession.flush()
 
@@ -372,14 +374,34 @@ class LoginTests(TestCase):
             assertion='dummy',
         )
 
-        request.host = "example.com"
-        request.matched_route = mock.Mock()
-        request.matched_route.name = "home"
+        with self.make_mock_requests_post(True, u.email):
+            response = login(request)
+
+        self.assert_(response.status_int == 302)
+        self.assert_(response.location.route_name == "settings")
+
+    def test_login_valid_user_if_complete(self):
+        """Redirect to home page if all details completed"""
+
+        from .views import login
+        from .models import User, DBSession
+
+        u = User(email="danjac354@gmail.com",
+                 first_name="Dan",
+                 last_name="Jacob")
+
+        DBSession.add(u)
+        DBSession.flush()
+
+        request = self.make_POST_request(
+            assertion='dummy',
+        )
 
         with self.make_mock_requests_post(True, u.email):
             response = login(request)
 
-        self.assert_(response['success'] is True)
+        self.assert_(response.status_int == 302)
+        self.assert_(response.location.route_name == "home")
 
     def test_login_new_user(self):
         """Should create new user and pass url to settings"""
@@ -398,8 +420,10 @@ class LoginTests(TestCase):
             response = login(request)
 
         u = DBSession.query(User).first()
-        self.assert_(u.email == "danjac354@gmail.com")
-        self.assert_(response['url'].route_name == "settings")
+        # redirect to settings page to complete profile
+        self.assert_(response.status_int == 302)
+        self.assert_(response.location.route_name == "settings")
+
 
     def test_login_new_user_with_invites(self):
         """Should create new user and pass url to settings.
@@ -435,7 +459,8 @@ class LoginTests(TestCase):
 
         self.assert_(u.email == "danjac354@gmail.com")
         self.assert_(u.shared_photos[0] == photo)
-        self.assert_(response['url'].route_name == "settings")
+        self.assert_(response.status_int == 302)
+        self.assert_(response.location.route_name == "settings")
 
     def test_login_invalid_email(self):
         """Not verified by personas, just assume false"""
@@ -455,7 +480,7 @@ class LoginTests(TestCase):
 
         u = DBSession.query(User).first()
         self.assert_(u is None)
-        self.assert_(response['success'] is False)
+        self.assert_(response == {})
 
     def test_login_inactive_user(self):
         """User exists but is deactivatated, just assume false"""
@@ -478,8 +503,7 @@ class LoginTests(TestCase):
         with self.make_mock_requests_post(True, u.email):
             response = login(request)
 
-        self.assert_(response['success'] is False)
-
+        self.assert_(response['account_deactivated'])
 
 class WelcomeTests(TestCase):
 
@@ -884,5 +908,4 @@ class LogoutTests(TestCase):
         req.route_url = MockRoute
 
         res = logout(req)
-        self.assert_(res['success'])
-        self.assert_(res['url'].route_name == 'welcome')
+        self.assert_(res.location.route_name == "welcome")

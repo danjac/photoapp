@@ -1,5 +1,3 @@
-
-
 PhotoApp = {} unless PhotoApp?
 
 class PhotoApp.Message
@@ -10,9 +8,18 @@ class PhotoApp.Message
     show: () ->
         $(@target).html(_.template(@tmpl, @)).show().fadeOut(3000)
 
+PhotoApp.options = {} unless PhotoApp.options?
+
 PhotoApp.showMessage = (message, target) ->
     new PhotoApp.Message(message, target).show()
 
+
+PhotoApp.configure = (options) ->
+    console.log options
+    PhotoApp.options[k] = v for k, v of options
+
+PhotoApp.authenticate = ->
+    new PhotoApp.Auth().start()
 
 PhotoApp.paginate = ->
     # sets up infinite scrolling
@@ -26,46 +33,32 @@ PhotoApp.paginate = ->
 
 class PhotoApp.Auth
 
-    constructor: (@email, @loginURL, @logoutURL, @csrf) ->
+    constructor: ->
+        @email = PhotoApp.options.currentUser
+
+    start: ->
         jQuery => @onload()
 
     onload: ->
 
         @doc = $(document)
+        @logoutURL = $('a.logout').attr 'href'
 
-        @doc.on 'click', 'a.login', (event) => navigator.id.request()
-        @doc.on 'click', 'a.logout', (event) => navigator.id.logout()
+        @doc.on 'click', 'a.login', (event) =>
+            event.preventDefault()
+            navigator.id.request()
+
+        @doc.on 'click', 'a.logout', (event) =>
+            navigator.id.logout()
 
         navigator.id.watch(
             loggedInUser: @email
             onlogin: (assertion) =>
-                $.ajax
-                    dataType: "json"
-                    type: "POST"
-                    url: @loginURL
-                    data:
-                        csrf_token: @csrf
-                        assertion: assertion
-                    success: (response, status, xhr) =>
-                        if response.url?
-                            window.location = response.url
-                        else
-                            window.location.reload true
-                    error: (response) =>
-                        console.log response
+                $('#assertion').val(assertion)
+                $('#login-form').submit()
 
             onlogout: =>
-                $.ajax
-                    dataType: "json"
-                    type: "POST"
-                    url: @logoutURL
-                    data:
-                        csrf_token: @csrf
-                    success: (response, status, xhr) =>
-                        if response.url?
-                            window.location = response.url
-                    error: (response) =>
-                        console.log response
+                # do nothing
         )
 
 class PhotoApp.Photo
@@ -320,7 +313,9 @@ class PhotoApp.UploadPage
 
 class PhotoApp.PhotosPage
 
-    constructor: (@tagsURL, @csrf) ->
+    constructor: (@tagsURL) ->
+        @csrf = PhotoApp.options.csrf
+
         jQuery => @onload()
 
     loadTags: ->
