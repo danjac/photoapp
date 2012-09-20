@@ -219,9 +219,9 @@ def signup(request):
         DBSession.add(user)
         DBSession.flush()
 
-        invites = DBSession.query(Invite).filter(
-            (Invite.accepted_on == None) & (
-             Invite.email == user.email)
+        invites = DBSession.query(Invite).filter_by(
+            accepted_on=None,
+            email=user.email,
         ).all()
 
         if invites:

@@ -124,6 +124,8 @@ class User(TimestampedMixin, Base):
         self._password = bcrypt.encrypt(password)
 
     def check_password(self, password):
+        if not password or not self.password:
+            return False
         return bcrypt.verify(password, self.password)
 
     def reset_key(self):
