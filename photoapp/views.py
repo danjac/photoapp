@@ -223,8 +223,7 @@ def login(request):
 
                     return response
 
-                else:
-                    return {'success': False}
+                return {'success': False}
 
             # we don't have a user
             # so let's make one
