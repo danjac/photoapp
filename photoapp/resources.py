@@ -2,6 +2,7 @@ from pyramid.security import Allow, Authenticated
 from pyramid.exceptions import NotFound
 
 from .models import DBSession
+from .security import Verified
 
 
 class Root(object):
@@ -9,7 +10,7 @@ class Root(object):
     def __init__(self, request):
         self.__acl__ = [
             (Allow, Authenticated, "view"),
-            (Allow, Authenticated, "upload"),
+            (Allow, Verified, "upload"),
         ]
         self.__name__ = "root"
         self.__parent__ = None

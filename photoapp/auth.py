@@ -9,7 +9,7 @@ from pyramid.authorization import ACLAuthorizationPolicy
 
 from .resources import Root
 from .models import User, DBSession
-from .security import Admins, UserID, PhotoID
+from .security import Admins, Verified, UserID, PhotoID
 
 
 class AuthenticationPolicy(AuthTktAuthenticationPolicy):
@@ -21,6 +21,9 @@ class AuthenticationPolicy(AuthTktAuthenticationPolicy):
 
             groups.append(Authenticated)
             groups.append(UserID(request.user.id))
+
+            if request.user.is_complete:
+                groups.append(Verified)
 
             if request.user.is_admin:
                 groups.append(Admins)

@@ -1,5 +1,7 @@
 Admins = "system:Admins"
 
+Verified = "system:Verified"
+
 
 def UserID(user_id):
     return "user:{0}".format(user_id)

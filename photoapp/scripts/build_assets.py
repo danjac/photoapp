@@ -1,7 +1,6 @@
 
 import os
 import sys
-import transaction
 
 from pyramid.paster import (
     get_appsettings,
@@ -11,6 +10,7 @@ from pyramid.paster import (
 from pyramid_webassets import get_webassets_env_from_settings
 
 from ..assets import assets
+
 
 def usage(argv):
     cmd = os.path.basename(argv[0])
