@@ -157,9 +157,9 @@ def tagged_photos(tag, request):
     return {'page': page}
 
 
-@forbidden_view_config()
+@forbidden_view_config(renderer='welcome.jinja2')
 def forbidden(request):
-    return HTTPFound(request.route_url('welcome'))
+    return welcome(request)
 
 
 @forbidden_view_config(xhr=True,
