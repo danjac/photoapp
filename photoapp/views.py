@@ -1,5 +1,4 @@
 import datetime
-import operator
 import string
 
 import mailer
@@ -18,7 +17,7 @@ from pyramid.httpexceptions import (
 
 from webhelpers.paginate import Page
 
-from sqlalchemy import func
+from sqlalchemy import func, and_, or_
 
 from .models import (
     DBSession,
@@ -115,24 +114,25 @@ def search(request):
     Search photos by title/tags
     """
 
-    # TBD: for Admins, include a) all photos and b) search by user name/email
-
     search_terms = request.params.get('search', '').split()
     search_terms = [s for s in search_terms if len(s) > 3]
     search_terms = set(search_terms[:5])
 
     if search_terms:
         query = [
-            (Photo.title.ilike(
-                "%%%s%%" % t)) | (Tag.name.ilike(t)) for t in search_terms
+            or_(Photo.title.ilike("%%%s%%" % t),
+                Tag.name.ilike(t)) for t in search_terms
         ]
 
-        query += [Photo.owner_id == request.user.id]
+        if not request.user.is_admin:
+            query += [or_(Photo.owner_id == request.user.id,
+                          Photo.is_public)]
 
-        query = reduce(operator.and_, query)
+        query = reduce(and_, query)
 
         photos = DBSession.query(Photo).filter(query).join(
-            Photo.tags).distinct().all()
+            Photo.tags
+        ).distinct().all()
 
         num_photos = len(photos)
     else:
@@ -169,7 +169,6 @@ def tagged_photos(tag, request):
     """
     page = photos_page(request, tag.photos)
     return {'page': page}
-
 
 
 @view_config(route_name='login',

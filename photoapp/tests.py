@@ -872,6 +872,43 @@ class SearchTests(TestCase):
 
         self.assert_(res['page'].item_count == 0)
 
+    def test_search_if_other_user_and_admin(self):
+
+        from .views import search
+        from .models import User, DBSession
+
+        self.make_photo()
+
+        other = User(email="another@gmail.com", is_admin=True)
+        DBSession.add(other)
+        DBSession.flush()
+
+        req = testing.DummyRequest()
+        req.user = other
+        req.GET['search'] = 'lamborghini'
+        res = search(req)
+
+        self.assert_(res['page'].item_count == 1)
+
+    def test_search_if_other_user_and_public(self):
+
+        from .views import search
+        from .models import User, DBSession
+
+        photo = self.make_photo()
+        photo.is_public = True
+
+        other = User(email="another@gmail.com")
+        DBSession.add(other)
+        DBSession.flush()
+
+        req = testing.DummyRequest()
+        req.user = other
+        req.GET['search'] = 'lamborghini'
+        res = search(req)
+
+        self.assert_(res['page'].item_count == 1)
+
 
 class TestGetTags(TestCase):
 
