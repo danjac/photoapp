@@ -45,6 +45,20 @@ def not_found(context, request):
     return {}
 
 
+@forbidden_view_config(renderer='forbidden.jinja2')
+def forbidden(request):
+    return {}
+
+
+@forbidden_view_config(xhr=True,
+                       renderer='json')
+def forbidden_ajax(request):
+    """
+    Forbidden view for AJAX requests.
+    """
+    return {'success': False}
+
+
 @view_config(route_name='welcome',
              permission=NO_PERMISSION_REQUIRED,
              renderer='welcome.jinja2')
@@ -156,19 +170,6 @@ def tagged_photos(tag, request):
     page = photos_page(request, tag.photos)
     return {'page': page}
 
-
-@forbidden_view_config(renderer='welcome.jinja2')
-def forbidden(request):
-    return welcome(request)
-
-
-@forbidden_view_config(xhr=True,
-                       renderer='json')
-def forbidden_ajax(request):
-    """
-    Forbidden view for AJAX requests.
-    """
-    return {'success': False}
 
 
 @view_config(route_name='login',
