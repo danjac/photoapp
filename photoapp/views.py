@@ -242,7 +242,7 @@ def login(request):
                 for invite in invites:
 
                     user.shared_photos.append(invite.photo)
-                    invite.accepted_on = None
+                    invite.accepted_on = datetime.datetime.now()
 
                 request.session.flash(
                     "Please complete the rest of your details"
