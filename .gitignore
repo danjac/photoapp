@@ -5,8 +5,8 @@
 *.webassets-cache
 *.egg-info
 *.coverage
-static/js
-static/css
+photoapp/static/js
+photoapp/static/css
 data
 test_uploads
 uploads
