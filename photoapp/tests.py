@@ -340,24 +340,17 @@ class HomeTests(TestCase):
 
 class LoginTests(TestCase):
 
-    def make_mock_requests_post(self, ok, email):
+    def make_mock_browserid_verify(self, ok, email):
 
-        class MockVerifyResponse(object):
+        status = 'okay' if ok else 'error'
 
-            def __init__(self):
-                self.ok = ok
-                self.content = simplejson.dumps({
-                    'status': 'okay' if ok else 'error',
-                    'email': email,
-                })
-
-        class MockRequests(object):
+        class MockBrowserId(object):
 
             @classmethod
-            def post(cls, url, **kwargs):
-                return MockVerifyResponse()
+            def verify(cls, assertion, url, **kwargs):
+                return {'email': email, 'status': status}
 
-        return mock.patch('requests.post', MockRequests.post)
+        return mock.patch('browserid.verify', MockBrowserId.verify)
 
     def test_login_valid_user_if_not_complete(self):
         """Redirect to settings page if not all details filled in"""
@@ -374,7 +367,7 @@ class LoginTests(TestCase):
             assertion='dummy',
         )
 
-        with self.make_mock_requests_post(True, u.email):
+        with self.make_mock_browserid_verify(True, u.email):
             response = login(request)
 
         self.assert_(response.status_int == 302)
@@ -397,7 +390,7 @@ class LoginTests(TestCase):
             assertion='dummy',
         )
 
-        with self.make_mock_requests_post(True, u.email):
+        with self.make_mock_browserid_verify(True, u.email):
             response = login(request)
 
         self.assert_(response.status_int == 302)
@@ -416,7 +409,7 @@ class LoginTests(TestCase):
         request.matched_route = mock.Mock()
         request.matched_route.name = "home"
 
-        with self.make_mock_requests_post(True, "danjac354@gmail.com"):
+        with self.make_mock_browserid_verify(True, "danjac354@gmail.com"):
             response = login(request)
 
         u = DBSession.query(User).first()
@@ -450,7 +443,7 @@ class LoginTests(TestCase):
         request.matched_route = mock.Mock()
         request.matched_route.name = "home"
 
-        with self.make_mock_requests_post(True, "danjac354@gmail.com"):
+        with self.make_mock_browserid_verify(True, "danjac354@gmail.com"):
             response = login(request)
 
         u = DBSession.query(User).filter_by(
@@ -475,7 +468,7 @@ class LoginTests(TestCase):
         request.matched_route = mock.Mock()
         request.matched_route.name = "home"
 
-        with self.make_mock_requests_post(False, "danjac354@gmail.com"):
+        with self.make_mock_browserid_verify(False, "danjac354@gmail.com"):
             response = login(request)
 
         u = DBSession.query(User).first()
@@ -500,7 +493,7 @@ class LoginTests(TestCase):
         request.matched_route = mock.Mock()
         request.matched_route.name = "home"
 
-        with self.make_mock_requests_post(True, u.email):
+        with self.make_mock_browserid_verify(True, u.email):
             response = login(request)
 
         self.assert_(response['account_deactivated'])

@@ -15,6 +15,7 @@ requires = [
     'pyramid_debugtoolbar',
     'pyramid_exclog',
     'cornice',
+    'pybrowserid',
     'sqlalchemy',
     'zope.sqlalchemy',
     'psycopg2',

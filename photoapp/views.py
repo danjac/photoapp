@@ -4,6 +4,7 @@ import string
 import mailer
 import requests
 import simplejson
+import browserid
 
 from pyramid.view import view_config, forbidden_view_config
 from pyramid.security import remember, forget, NO_PERMISSION_REQUIRED
@@ -186,72 +187,58 @@ def login(request):
 
     if form.validate():
 
-        data = {
-            'assertion': form.assertion.data,
-            'audience': request.host_url,
-        }
+        payload = browserid.verify(form.assertion.data, request.host_url)
 
-        url = request.registry.settings.get(
-            'photoapp.browserid_verification_url',
-            'https://verifier.login.persona.org/verify')
+        if payload['status'] == 'okay':
 
-        response = requests.post(url, data=data, verify=True)
+            user = DBSession.query(User).filter_by(
+                email=payload['email']
+            ).first()
 
-        if response.ok:
+            if user:
 
-            payload = simplejson.loads(response.content)
+                if user.is_active:
 
-            if payload['status'] == 'okay':
+                    user.last_login_at = datetime.datetime.now()
 
-                user = DBSession.query(User).filter_by(
-                    email=payload['email']
-                ).first()
-
-                if user:
-
-                    if user.is_active:
-
-                        user.last_login_at = datetime.datetime.now()
-                        response = {'success': True}
-
-                        if user.is_complete:
-                            url = request.route_url('home')
-                        else:
-                            request.session.flash(
-                                "Please complete the rest of your details"
-                            )
-                            url = request.route_url('settings')
-
-                        headers = remember(request, str(user.id))
-                        return HTTPFound(url, headers=headers)
-
+                    if user.is_complete:
+                        url = request.route_url('home')
                     else:
-                        # we probably want a specific message here
-                        return {'account_deactivated': True}
+                        request.session.flash(
+                            "Please complete the rest of your details"
+                        )
+                        url = request.route_url('settings')
 
-                user = User(email=payload['email'])
+                    headers = remember(request, str(user.id))
+                    return HTTPFound(url, headers=headers)
 
-                DBSession.add(user)
-                DBSession.flush()
+                else:
+                    # we probably want a specific message here
+                    return {'account_deactivated': True}
 
-                invites = DBSession.query(Invite).filter_by(
-                    email=user.email,
-                    accepted_on=None,
-                )
+            user = User(email=payload['email'])
 
-                for invite in invites:
+            DBSession.add(user)
+            DBSession.flush()
 
-                    user.shared_photos.append(invite.photo)
-                    invite.accepted_on = datetime.datetime.now()
+            invites = DBSession.query(Invite).filter_by(
+                email=user.email,
+                accepted_on=None,
+            )
 
-                request.session.flash(
-                    "Please complete the rest of your details"
-                )
+            for invite in invites:
 
-                headers = remember(request, str(user.id))
+                user.shared_photos.append(invite.photo)
+                invite.accepted_on = datetime.datetime.now()
 
-                return HTTPFound(request.route_url('settings'),
-                                 headers=headers)
+            request.session.flash(
+                "Please complete the rest of your details"
+            )
+
+            headers = remember(request, str(user.id))
+
+            return HTTPFound(request.route_url('settings'),
+                             headers=headers)
 
     return {}
 
