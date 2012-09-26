@@ -205,7 +205,7 @@ def signup(request):
 
 @view_config(route_name='login',
              request_method="POST",
-             renderer='login_failed.jinja2',
+             renderer='login.jinja2',
              permission=NO_PERMISSION_REQUIRED)
 def login(request):
     """Allows user to sign in using Mozilla Persona.
@@ -218,7 +218,10 @@ def login(request):
 
     if form.validate():
 
-        payload = browserid.verify(form.assertion.data, request.host_url)
+        try:
+            payload = browserid.verify(form.assertion.data, request.host_url)
+        except browserid.errors.InvalidSignatureError:
+            return {}
 
         if payload['status'] == 'okay':
 
@@ -228,7 +231,9 @@ def login(request):
 
             if user is None:
 
-                signup_form = AccountForm(request, email=payload['email'])
+                signup_form = AccountForm(request)
+                # set explicitly as we're in POST
+                signup_form.email.data = payload['email']
                 return {'signup_form': signup_form}
 
             if user.is_active:

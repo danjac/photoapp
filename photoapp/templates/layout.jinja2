@@ -81,7 +81,10 @@
               {% endif %}
               <li><a href="{{ request.route_url('logout') }}" class="logout">Sign out</a></li>
               {% else %}
+              {% block login_button %}
               <li><a href="#" class="login"><img src="https://developer.mozilla.org/files/3963/persona_sign_in_blue.png" alt="Sign in with Mozilla Persona"></a></li>
+
+            {% endblock %}
               {% endif %}
             </ul>
           </div><!--/.nav-collapse -->
@@ -107,9 +110,11 @@
     {% endblock %}
 
     {% if not request.user %}
+    {% block login_form %}
     {% call forms.render_form(login_form, id="login-form", action=request.route_url('login')) %}
     {{ login_form.assertion }}
     {% endcall %}
+    {% endblock %}
     {% endif %}
 
     </div> <!-- /container -->
