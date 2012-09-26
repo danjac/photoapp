@@ -2,8 +2,6 @@ import datetime
 import string
 
 import mailer
-import requests
-import simplejson
 import browserid
 
 from pyramid.view import view_config, forbidden_view_config
@@ -172,6 +170,39 @@ def tagged_photos(tag, request):
     return {'page': page}
 
 
+@view_config(route_name='signup',
+             renderer='signup.jinja2',
+             request_method='POST',
+             permission=NO_PERMISSION_REQUIRED)
+def signup(request):
+    """Sign up a new user"""
+
+    form = AccountForm(request)
+    if form.validate():
+
+        user = User()
+        form.populate_obj(user)
+
+        DBSession.add(user)
+        DBSession.flush()
+
+        # add invite photos to shared collection
+        invites = DBSession.query(Invite).filter_by(
+            email=user.email,
+            accepted_on=None,
+        )
+
+        for invite in invites:
+
+            user.shared_photos.append(invite.photo)
+            invite.accepted_on = datetime.datetime.now()
+
+        request.session.flash("Welcome, %s" % user.first_name)
+        headers = remember(request, str(user.id))
+        return HTTPFound(request.route_url('home'), headers=headers)
+    return {}
+
+
 @view_config(route_name='login',
              request_method="POST",
              renderer='login_failed.jinja2',
@@ -195,50 +226,21 @@ def login(request):
                 email=payload['email']
             ).first()
 
-            if user:
+            if user is None:
 
-                if user.is_active:
+                signup_form = AccountForm(request, email=payload['email'])
+                return {'signup_form': signup_form}
 
-                    user.last_login_at = datetime.datetime.now()
+            if user.is_active:
 
-                    if user.is_complete:
-                        url = request.route_url('home')
-                    else:
-                        request.session.flash(
-                            "Please complete the rest of your details"
-                        )
-                        url = request.route_url('settings')
+                user.last_login_at = datetime.datetime.now()
 
-                    headers = remember(request, str(user.id))
-                    return HTTPFound(url, headers=headers)
+                headers = remember(request, str(user.id))
+                request.session.flash("Welcome back, %s" % user.first_name)
+                return HTTPFound(request.route_url('home'), headers=headers)
 
-                else:
-                    # we probably want a specific message here
-                    return {'account_deactivated': True}
-
-            user = User(email=payload['email'])
-
-            DBSession.add(user)
-            DBSession.flush()
-
-            invites = DBSession.query(Invite).filter_by(
-                email=user.email,
-                accepted_on=None,
-            )
-
-            for invite in invites:
-
-                user.shared_photos.append(invite.photo)
-                invite.accepted_on = datetime.datetime.now()
-
-            request.session.flash(
-                "Please complete the rest of your details"
-            )
-
-            headers = remember(request, str(user.id))
-
-            return HTTPFound(request.route_url('settings'),
-                             headers=headers)
+            else:
+                return {'account_deactivated': True}
 
     return {}
 

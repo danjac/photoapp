@@ -5,7 +5,6 @@ import mock
 import unittest
 
 import transaction
-import simplejson
 
 from pyramid import testing
 from pyramid.paster import get_appsettings
@@ -352,27 +351,6 @@ class LoginTests(TestCase):
 
         return mock.patch('browserid.verify', MockBrowserId.verify)
 
-    def test_login_valid_user_if_not_complete(self):
-        """Redirect to settings page if not all details filled in"""
-
-        from .views import login
-        from .models import User, DBSession
-
-        u = User(email="danjac354@gmail.com")
-
-        DBSession.add(u)
-        DBSession.flush()
-
-        request = self.make_POST_request(
-            assertion='dummy',
-        )
-
-        with self.make_mock_browserid_verify(True, u.email):
-            response = login(request)
-
-        self.assert_(response.status_int == 302)
-        self.assert_(response.location.route_name == "settings")
-
     def test_login_valid_user_if_complete(self):
         """Redirect to home page if all details completed"""
 
@@ -400,7 +378,6 @@ class LoginTests(TestCase):
         """Should create new user and pass url to settings"""
 
         from .views import login
-        from .models import User, DBSession
 
         request = self.make_POST_request(
             assertion="dummy",
@@ -412,18 +389,14 @@ class LoginTests(TestCase):
         with self.make_mock_browserid_verify(True, "danjac354@gmail.com"):
             response = login(request)
 
-        u = DBSession.query(User).first()
-        self.assert_(u.email == "danjac354@gmail.com")
-        # redirect to settings page to complete profile
-        self.assert_(response.status_int == 302)
-        self.assert_(response.location.route_name == "settings")
+        self.assert_('signup_form' in response)
 
-    def test_login_new_user_with_invites(self):
+    def test_signup_new_user_with_invites(self):
         """Should create new user and pass url to settings.
         Invite photos should be shared.
         """
 
-        from .views import login
+        from .views import signup
         from .models import User, Photo, Invite, DBSession
 
         sender = User(email="tester@gmail.com")
@@ -437,14 +410,16 @@ class LoginTests(TestCase):
         DBSession.flush()
 
         request = self.make_POST_request(
-            assertion="dummy",
+            email="danjac354@gmail.com",
+            first_name="Test",
+            last_name="Tester",
         )
 
         request.matched_route = mock.Mock()
         request.matched_route.name = "home"
+        request.user = None
 
-        with self.make_mock_browserid_verify(True, "danjac354@gmail.com"):
-            response = login(request)
+        response = signup(request)
 
         u = DBSession.query(User).filter_by(
             email="danjac354@gmail.com"
@@ -453,7 +428,7 @@ class LoginTests(TestCase):
         self.assert_(u.email == "danjac354@gmail.com")
         self.assert_(u.shared_photos[0] == photo)
         self.assert_(response.status_int == 302)
-        self.assert_(response.location.route_name == "settings")
+        self.assert_(response.location.route_name == "home")
 
     def test_login_invalid_email(self):
         """Not verified by personas, just assume false"""
