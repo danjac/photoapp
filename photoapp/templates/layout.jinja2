@@ -4,10 +4,18 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>My Own Damn Photos</title>
+    {%
+
+    set descriptions = ('Plain and Simple Photo Uploads',
+                        'Your Photos, For Your Eyes Only',
+                        'Show Your Favorite Wallpapers Here',
+                        'Private Photo Collections',)
+    %}
+    <title>My Own Damn Photos :: {{ descriptions|random }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <meta name="description" content="{{ descriptions|random }}">
+    <meta name="keywords" content="photos, uploads, private, pictures, camera, github, wallpapers, open source">
+    <meta name="author" content="Dan Jacob">
 
     <!-- Le styles -->
     {% assets "bootstrap_css", "jquery_css", "ias_css" %}
