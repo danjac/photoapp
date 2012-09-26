@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>MyOwnDamnPhotos</title>
+    <title>My Own Damn Photos</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -52,7 +52,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="brand" href="{{ request.route_url('home') if request.user else request.route_url('welcome') }}">MyOwnDamnPhotos</a>
+          <a class="brand" href="{{ request.route_url('home') if request.user else request.route_url('welcome') }}">My Own Damn Photos</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
                 {% macro active_tab(name) -%} {% if request.matched_route.name == name %} class="active"{% endif %}{%- endmacro %}
