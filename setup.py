@@ -8,7 +8,6 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = [
     'pyramid',
-    'pyramid_jinja2',
     'pyramid_webassets',
     'pyramid_beaker',
     'pyramid_tm',
@@ -20,8 +19,6 @@ requires = [
     'zope.sqlalchemy',
     'psycopg2',
     'wtforms',
-    'passlib',
-    'py_bcrypt',
     'mailer',
     'webhelpers',
     'alembic',
