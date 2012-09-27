@@ -6,7 +6,7 @@
     ${forms.render_field(form.title)}
     ${forms.render_field(form.taglist)}
 
-    ${form.submit(value="Add", class="btn")}
+    ${form.submit(value="Add", class_="btn")}
 
     <button class="btn cancel-btn" type="button">Cancel</button>
 

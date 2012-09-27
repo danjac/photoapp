@@ -12,7 +12,7 @@
     ${forms.render_field(signup_form.last_name)}
     ${forms.render_field(signup_form.email)}
 
-    ${signup_form.submit(class="btn")}
+    ${signup_form.submit(class_="btn")}
 
 <%/forms:render_form>
 

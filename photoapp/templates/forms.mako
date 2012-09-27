@@ -1,7 +1,17 @@
 
 <%def name="render_form(form, method='POST', action=None, multipart=False, attrs=None)">
-<% attrs = attrs or {} %>
-<form method="${method}" action="${action or request.url}" ${'enctype="multipart/form-data"' if multipart else ''} ${' '.join('%s="%s"' % (k, v) for k, v in attrs.iteritems())|n}>
+<%
+attrs = attrs or {}
+
+attrs['method'] = method
+attrs['action'] = action or request.url
+
+if multipart:
+    attrs['enctype'] = 'multipart/form-data'
+
+attrs = ' '.join('%s="%s"' % (k, v) for k, v in attrs.iteritems())
+%>
+<form ${attrs|n}>
    ${form.csrf_token}
    ${caller.body()}
 </form>
@@ -13,11 +23,11 @@
 % endfor
 </%def>
 
-<%def name="render_field(field, attrs=None)">
+<%def name="render_field(field, attrs=None, with_label=True)">
 <% attrs = attrs or {} %>
 <div class="control-group ${'error' if field.errors else ''}">
     <div class="controls">
-    % if attrs.pop('with_label', True):
+    % if with_label:
     ${field.label(class_="control-label")}
     % endif
     ${field(**attrs)}
@@ -26,11 +36,12 @@
 </div>
 </%def>
 
-<%def name="render_checkbox_field(field)">
+<%def name="render_checkbox_field(field, attrs=None)">
+<% attrs = attrs or {} %>
 <div class="control-group ${'error' if field.errors else ''}">
     <div class="controls">
         <label class="checkbox">${field.label.text}
-        ${field(**kwargs)}
+        ${field(**attrs)}
         ${render_errors(field)}
         </label>
     </div>
