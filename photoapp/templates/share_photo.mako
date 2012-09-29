@@ -10,27 +10,19 @@
 
     <label>Recipients</label>
 
-    <dl class="share-email-list">
+    % for counter, item in enumerate(form.emails.entries):
+    <div class="control-group">
+        <div class="controls">
+            ${item}
+            % if counter > 0:
+            <a href="#" class="remove-share-email"><i class="icon-remove"></i></a>
+            % endif
+            ${forms.render_errors(item)}
+        </div>
+    </div>
+    % endfor
 
-        % for counter, item in enumerate(form.emails.entries):
-        <dd>
-            <div class="control-group">
-                <div class="controls">
-                    <input type="text" name="emails-${counter}">
-                    % if counter > 0:
-                    <a href="#" class="remove-share-email"><i class="icon-remove"></i></a>
-                    % endif
-                    ${forms.render_errors(item)}
-                </div>
-            </div>
-        </dd>
-        % endfor
-
-        <dd>
-            <button type="button" class="share-add-another-btn btn"><i class="icon-plus"></i> Add another</button>
-        </dd>
-
-    </dl>
+    <button type="button" class="share-add-another-btn btn"><i class="icon-plus"></i> Add another</button>
     ${form.submit(class_="btn")}
     <button class="btn cancel-btn" type="button">Cancel</button>
 

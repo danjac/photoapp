@@ -60,7 +60,7 @@
           <a class="brand" href="${request.route_url('home') if request.user else request.route_url('welcome')}">My Own Damn Photos</a>
           <div class="nav-collapse">
             <ul class="nav">
-            <%def name="active_tab(name)">${'class="active"' if request.matched_route.name == name else ''|n} </%def>
+            <%def name="active_tab(name)">${'class="active"' if request.matched_route and request.matched_route.name == name else ''|n} </%def>
 
               % if request.user:
               <li ${active_tab('home')}><a href="${request.route_url('home')}">Home</a></li>

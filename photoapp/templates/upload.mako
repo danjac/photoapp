@@ -43,3 +43,8 @@
 
 </%forms:render_form>
 
+<%block name="scripts">
+<script>
+    app = new PhotoApp.UploadPage();
+</script>
+</%block>
