@@ -58,14 +58,14 @@
           <a class="brand" href="{{ request.route_url('home') if request.user else request.route_url('welcome') }}">My Own Damn Photos</a>
           <div class="nav-collapse">
             <ul class="nav">
-                {% macro active_tab(name) -%} {% if request.matched_route.name == name %} class="active"{% endif %}{%- endmacro %}
+                {% macro active_tab() -%} {% if request.matched_route.name in varargs %} class="active"{% endif %}{%- endmacro %}
 
               {% if request.user %}
               <li {{ active_tab('home') }}><a href="{{ request.route_url('home') }}">Home</a></li>
-              <li {{ active_tab('shared') }}><a href="{{ request.route_url('shared') }}">Shared</a></li>
-              <li {{ active_tab('public') }}><a href="{{ request.route_url('public', id=request.user.id) }}">Public</a></li>
+              <li {{ active_tab('my_shared', "shared") }}><a href="{{ request.route_url('my_shared') }}">Shared</a></li>
+              <li {{ active_tab('public', 'public_all') }}><a href="{{ request.route_url('public', id=request.user.id) }}">Public</a></li>
               {% else %}
-              <li {{ active_tab('public_all') }}><a href="{{ request.route_url('public_all', id=request.user.id) }}">Public photos</a></li>
+              <li {{ active_tab('public', 'public_all') }}><a href="{{ request.route_url('public_all', id=request.user.id) }}">Public photos</a></li>
               {% endif %}
               {% if has_permission('upload') %}
               <li {{ active_tab('upload') }}><a href="{{ request.route_url('upload') }}">Upload</a></li>

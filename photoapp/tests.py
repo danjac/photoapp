@@ -551,6 +551,28 @@ class ImageRequiredTests(TestCase):
         ImageRequired()(form, field)
 
 
+class MySharedPhotosTests(TestCase):
+
+    def test_my_shared_photos(self):
+
+        from .models import User, Photo, DBSession
+        from .views import my_shared_photos
+
+        user = User(email="danjac354@gmail.com")
+        photo = Photo(owner=user, title="test", image="test.jpg")
+        user2 = User(email="user2@gmail.com")
+        user2.shared_photos.append(photo)
+
+        DBSession.add_all([user, photo, user2])
+        DBSession.flush()
+
+        req = testing.DummyRequest()
+        req.user = user
+
+        res = my_shared_photos(req)
+        self.assert_(res['page'].item_count == 1)
+
+
 class SharedPhotosTests(TestCase):
 
     def test_shared_photos(self):

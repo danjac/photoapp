@@ -24,6 +24,7 @@ from .models import (
     Photo,
     Tag,
     Invite,
+    photos_users,
 )
 
 from .forms import (
@@ -103,6 +104,22 @@ def shared_photos(request):
     """
 
     page = photos_page(request, request.user.shared_photos)
+
+    return {'page': page}
+
+
+@view_config(route_name='my_shared',
+             renderer='my_shared.jinja2')
+def my_shared_photos(request):
+    """
+    Photos shared by current user
+    """
+
+    photos = DBSession.query(Photo).filter(
+        and_(Photo.owner_id == request.user.id,
+             Photo.id.in_(DBSession.query(photos_users.c.photo_id))))
+
+    page = photos_page(request, photos)
 
     return {'page': page}
 
