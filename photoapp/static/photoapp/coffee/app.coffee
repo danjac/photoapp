@@ -311,7 +311,6 @@ class PhotoApp.UploadPage
 class PhotoApp.PhotosPage
 
     constructor: (@tagsURL) ->
-        @csrf = PhotoApp.options.csrf
 
         jQuery => @onload()
 
