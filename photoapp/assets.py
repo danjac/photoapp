@@ -5,8 +5,8 @@ assets = (
 
     (
         'bootstrap_css', Bundle(
-            'bootstrap/css/boostrap.css',
-            'bootstrap/css/boostrap-responsive.css',
+            'bootstrap/css/bootstrap.css',
+            'bootstrap/css/bootstrap-responsive.css',
             filters='cssmin',
             output='css/bootstrap.css',
             debug=False,
