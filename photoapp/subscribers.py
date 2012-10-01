@@ -8,7 +8,6 @@ from webhelpers.paginate import PageURL_WebOb
 
 from .resources import Root
 from .forms import LoginForm
-from .assets import assets
 
 
 @subscriber(NewRequest)
@@ -52,7 +51,6 @@ def add_renderer_globals(event):
     event['has_permission'] = _has_permission
     event['page_url'] = PageURL_WebOb(request)
     event['login_form'] = LoginForm(request)
-    event['assets'] = dict(assets)
 
     event['google_tracking_code'] = request.registry.settings.get(
         'photoapp.google_tracking_code'

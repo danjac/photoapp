@@ -37,13 +37,13 @@ from .forms import (
 
 
 @view_config(permission=NO_PERMISSION_REQUIRED,
-             renderer="not_found.mako",
+             renderer="not_found.jinja2",
              context=HTTPNotFound)
 def not_found(context, request):
     return {}
 
 
-@forbidden_view_config(renderer='forbidden.mako')
+@forbidden_view_config(renderer='forbidden.jinja2')
 def forbidden(request):
     return {}
 
@@ -59,7 +59,7 @@ def forbidden_ajax(request):
 
 @view_config(route_name='welcome',
              permission=NO_PERMISSION_REQUIRED,
-             renderer='welcome.mako')
+             renderer='welcome.jinja2')
 def welcome(request):
     """
     Splash page. If user signed in redirects to
@@ -79,7 +79,7 @@ def welcome(request):
 
 
 @view_config(route_name='home',
-             renderer='photos.mako')
+             renderer='photos.jinja2')
 def home(request):
     """
     All the user's photos shown here.
@@ -95,7 +95,7 @@ def home(request):
 
 
 @view_config(route_name='shared',
-             renderer='shared.mako')
+             renderer='shared.jinja2')
 def shared_photos(request):
     """
     Photos shared with the user.
@@ -107,7 +107,7 @@ def shared_photos(request):
 
 
 @view_config(route_name="search",
-             renderer='search.mako')
+             renderer='search.jinja2')
 def search(request):
     """
     Search photos by title/tags
@@ -161,7 +161,7 @@ def get_tags(request):
 
 
 @view_config(route_name='tag',
-             renderer='photos.mako')
+             renderer='photos.jinja2')
 def tagged_photos(tag, request):
     """
     Show all photos matching the given tag.
@@ -171,7 +171,7 @@ def tagged_photos(tag, request):
 
 
 @view_config(route_name='signup',
-             renderer='signup.mako',
+             renderer='signup.jinja2',
              request_method='POST',
              permission=NO_PERMISSION_REQUIRED)
 def signup(request):
@@ -205,7 +205,7 @@ def signup(request):
 
 @view_config(route_name='login',
              request_method="POST",
-             renderer='login.mako',
+             renderer='login.jinja2',
              permission=NO_PERMISSION_REQUIRED)
 def login(request):
     """Allows user to sign in using Mozilla Persona.
@@ -304,7 +304,7 @@ def delete_photo(photo, request):
 
 @view_config(route_name="upload",
              permission="upload",
-             renderer="upload.mako")
+             renderer="upload.jinja2")
 def upload(request):
     """
     Upload one or more photos to the user's collection.
@@ -359,7 +359,7 @@ def edit(photo, request):
                 'message': 'Your photo has been updated'}
 
     html = render(
-        'edit_photo.mako', {
+        'edit_photo.jinja2', {
         'form': form,
         'photo': photo,
         }, request)
@@ -369,7 +369,7 @@ def edit(photo, request):
 
 @view_config(route_name="public",
              permission=NO_PERMISSION_REQUIRED,
-             renderer="public.mako")
+             renderer="public.jinja2")
 def public_photos_for_user(user, request):
     """
     Show user's public photos
@@ -385,7 +385,7 @@ def public_photos_for_user(user, request):
 
 @view_config(route_name="public_all",
              permission=NO_PERMISSION_REQUIRED,
-             renderer="public.mako")
+             renderer="public.jinja2")
 def all_public_photos(request):
     """
     Return all photos marked public for
@@ -449,7 +449,7 @@ def share_photo(photo, request):
                 'message': message}
 
     html = render(
-        'share_photo.mako', {
+        'share_photo.jinja2', {
         'form': form,
         'photo': photo,
         }, request)
@@ -458,7 +458,7 @@ def share_photo(photo, request):
 
 
 @view_config(route_name='about',
-             renderer='about.mako',
+             renderer='about.jinja2',
              permission=NO_PERMISSION_REQUIRED)
 def about(request):
     """
@@ -468,7 +468,7 @@ def about(request):
 
 
 @view_config(route_name='contact',
-             renderer='contact.mako',
+             renderer='contact.jinja2',
              permission=NO_PERMISSION_REQUIRED)
 def contact(request):
     """
@@ -478,7 +478,7 @@ def contact(request):
 
 
 @view_config(route_name='settings',
-             renderer='edit_account.mako')
+             renderer='edit_account.jinja2')
 def edit_account(request):
     """
     Edit user account details.
@@ -556,7 +556,7 @@ def copy_photo(photo, request):
         return {'success': True, 'message': message}
 
     html = render(
-        'copy_photo.mako', {
+        'copy_photo.jinja2', {
         'photo': photo,
         'form': form,
         }, request)
@@ -565,7 +565,7 @@ def copy_photo(photo, request):
 
 
 @view_config(route_name="delete_account",
-             renderer="delete_account.mako")
+             renderer="delete_account.jinja2")
 def delete_account(request):
 
     form = DeleteAccountForm(request)
