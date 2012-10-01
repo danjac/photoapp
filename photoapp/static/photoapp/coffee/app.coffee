@@ -15,7 +15,6 @@ PhotoApp.showMessage = (message, target) ->
 
 
 PhotoApp.configure = (options) ->
-    console.log options
     PhotoApp.options[k] = v for k, v of options
 
 PhotoApp.authenticate = ->
@@ -65,7 +64,6 @@ class PhotoApp.Photo
 
     constructor: (@page, @el) ->
         @doc = @page.doc
-        @csrf = PhotoApp.options.csrf
 
         @modal = $('#photo-modal')
 
@@ -97,6 +95,7 @@ class PhotoApp.Photo
         @doc.off 'submit', '#edit-photo-form'
         @doc.off 'submit', '#copy-photo-form'
         @doc.off 'submit', '#share-photo-form'
+        @doc.off 'submit', '#delete-photo-form'
 
         @doc.off 'click', '#photo-modal .share-add-another-btn'
         @doc.off 'click', '#photo-modal .remove-share-email'
@@ -145,11 +144,19 @@ class PhotoApp.Photo
 
         @doc.on 'submit', '#copy-photo-form', (event) =>
             event.preventDefault()
-            @modal.modal('hide')
             @submitForm($('#copy-photo-form'), (response) =>
                 if response.success?
+                    @modal.modal('hide')
                     @el.parent().remove()
                     @showMessage(response.message)
+            )
+
+        @doc.on 'submit', '#delete-photo-form', (event) =>
+            event.preventDefault()
+            @submitForm($('#delete-photo-form'), (response) =>
+                @modal.modal('hide')
+                @el.parent().remove()
+                PhotoApp.showMessage("Photo '#{@title}' has been deleted")
             )
 
         @doc.on 'submit', '#edit-photo-form', (event) =>
@@ -257,19 +264,9 @@ class PhotoApp.Photo
 
     copy: => @showForm @copyURL
 
-    delete: => @deleteAction @deleteURL
+    delete: => @showForm @deleteURL
 
-    deleteShared: => @deleteAction @deleteSharedURL
-
-    deleteAction: (deleteURL) ->
-
-        if confirm "Are you sure you want to delete this photo?"
-            @modal.modal('hide')
-            $.post deleteURL, {csrf_token: @csrf}, (response) =>
-                if response.success?
-                    @el.parent().remove()
-                    PhotoApp.showMessage("Photo '#{@title}' has been deleted")
-
+    deleteShared: => @showForm @deleteSharedURL
 
 
 class PhotoApp.SharedPage

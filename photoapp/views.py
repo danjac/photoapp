@@ -30,6 +30,7 @@ from .forms import (
     AccountForm,
     LoginForm,
     DeleteAccountForm,
+    DeletePhotoForm,
     PhotoUploadForm,
     PhotoEditForm,
     PhotoShareForm,
@@ -289,7 +290,6 @@ def thumbnail(photo, request):
 
 @view_config(route_name="delete",
              permission="delete",
-             request_method="POST",
              renderer='json',
              xhr=True)
 def delete_photo(photo, request):
@@ -297,9 +297,19 @@ def delete_photo(photo, request):
     Deletes the photo.
     """
 
-    DBSession.delete(photo)
-    photo.delete_image_on_commit(request.fs)
-    return {'success': True}
+    form = DeletePhotoForm(request)
+    if form.validate():
+        DBSession.delete(photo)
+        photo.delete_image_on_commit(request.fs)
+        return {'success': True}
+
+    html = render(
+        'delete_photo.jinja2', {
+        'photo': photo,
+        'form': form,
+        }, request)
+
+    return {'success': False, 'html': html}
 
 
 @view_config(route_name="upload",
@@ -516,8 +526,19 @@ def delete_shared(photo, request):
     Does not delete the photo itself.
     """
 
-    request.user.shared_photos.remove(photo)
-    return {'success': True}
+    form = DeletePhotoForm(request)
+
+    if form.validate():
+        request.user.shared_photos.remove(photo)
+        return {'success': True}
+
+    html = render(
+        'delete_photo.jinja2', {
+        'photo': photo,
+        'form': form,
+        }, request)
+
+    return {'success': False, 'html': html}
 
 
 @view_config(route_name="copy",

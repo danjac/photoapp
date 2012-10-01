@@ -133,7 +133,6 @@
     <script>
 
     PhotoApp.configure({
-        csrf: '{{ request.session.get_csrf_token() }}',
         currentUser: '{{ request.user.email if request.user else '' }}',
     })
 

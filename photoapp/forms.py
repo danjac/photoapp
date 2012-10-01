@@ -129,3 +129,7 @@ class PhotoShareForm(Form):
 class LoginForm(Form):
 
     assertion = HiddenField(validators=[Required()])
+
+
+class DeletePhotoForm(Form):
+    pass
