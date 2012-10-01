@@ -1,0 +1,41 @@
+{% macro render_form(form, method="POST", action=None, multipart=False) %}
+<form method="{{ method }}" action="{{ action or request.url }}" {% if multipart %}enctype="multipart/form-data"{% endif %} {% for k, v in kwargs.items() %} {{ k }}="{{ v }}" {% endfor %}>
+   {{ form.csrf_token }}
+   {{ caller() }}
+</form>
+{% endmacro %}
+
+{% macro render_errors(field) %}
+{% for error in field.errors %}
+<span class="help-inline">{{ error }}</span>
+{% endfor %}
+{% endmacro %}
+
+{% macro render_field(field) %}
+<div class="control-group {% if field.errors %} error {% endif %}">
+    <div class="controls">
+    {% if kwargs.pop('with_label', True) %}
+    {{ field.label(class="control-label") }}
+    {% endif %}
+    {{ field(**kwargs) }}
+    {{ render_errors(field) }}
+    </div>
+</div>
+{% endmacro %}
+
+{% macro render_checkbox_field(field) %}
+<div class="control-group {% if field.errors %} error {% endif %}">
+    <div class="controls">
+        <label class="checkbox">{{ field.label.text }}
+        {{ field(**kwargs) }}
+        {{ render_errors(field) }}
+        </label>
+    </div>
+</div>
+{% endmacro %}
+
+
+
+
+
+
