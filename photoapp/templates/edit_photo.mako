@@ -8,7 +8,7 @@
     ${forms.render_field(form.taglist)}
     ${forms.render_checkbox_field(form.is_public)}
 
-    ${form.submit(class_="btn")}
+    ${form.submit(class="btn")}
 
     <button class="btn cancel-btn" type="button">Cancel</button>
 

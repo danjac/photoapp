@@ -32,14 +32,13 @@
         </dd>
         % endfor
 
-        % if len(form.images.entries) < 6:
+        % if form.images.entries|length < 6:
         <dd>
             <button type="button" class="upload-add-another-btn btn"><i class="icon-plus"></i> Add another</button>
         </dd>
         % endif
 
     </dl>
-    ${form.submit(class_="btn")}
-
-</%forms:render_form>
+    ${form.submit(class="btn")}}
+<%/forms:render_form>
 
