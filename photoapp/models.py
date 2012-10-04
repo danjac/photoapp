@@ -99,13 +99,6 @@ class User(TimestampedMixin, Base):
         if self.first_name and self.last_name:
             return self.first_name + " " + self.last_name
 
-    @property
-    def is_complete(self):
-        """Check if registration complete"""
-        return all((self.first_name,
-                    self.last_name,
-                    self.email))
-
     def gravatar_url(self, size):
 
         hashed = hashlib.md5(self.email.lower()).hexdigest()
