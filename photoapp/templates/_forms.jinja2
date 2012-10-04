@@ -1,9 +1,11 @@
 {% macro render_form(form, method="POST", action=None, multipart=False) %}
 <form method="{{ method }}" action="{{ action or request.url }}" {% if multipart %}enctype="multipart/form-data"{% endif %} {% for k, v in kwargs.items() %} {{ k }}="{{ v }}" {% endfor %}>
-   {{ form.csrf_token }}
+   {{ csrf_token() }}
    {{ caller() }}
 </form>
 {% endmacro %}
+
+{% macro csrf_token() %}<input type="hidden" name="csrf_token" value="{{ request.session.get_csrf_token() }}">{% endmacro %}
 
 {% macro render_errors(field) %}
 {% for error in field.errors %}

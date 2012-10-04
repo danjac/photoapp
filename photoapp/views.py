@@ -195,8 +195,8 @@ def tagged_photos(tag, request):
 def signup(request):
     """Sign up a new user"""
 
-    form = AccountForm(request)
-    if form.validate():
+    form = AccountForm(request.POST)
+    if request.method == 'POST' and form.validate():
 
         user = User()
         form.populate_obj(user)
@@ -218,7 +218,7 @@ def signup(request):
         request.session.flash("Welcome, %s" % user.first_name)
         headers = remember(request, str(user.id))
         return HTTPFound(request.route_url('home'), headers=headers)
-    return {}
+    return {'form': form}
 
 
 @view_config(route_name='login',
@@ -232,9 +232,9 @@ def login(request):
     a new user with that email is created.
     """
 
-    form = LoginForm(request)
+    form = LoginForm(request.POST)
 
-    if form.validate():
+    if request.method == 'POST' and form.validate():
 
         try:
             payload = browserid.verify(form.assertion.data, request.host_url)
@@ -249,9 +249,7 @@ def login(request):
 
             if user is None:
 
-                signup_form = AccountForm(request)
-                # set explicitly as we're in POST
-                signup_form.email.data = payload['email']
+                signup_form = AccountForm(email=payload['email'])
                 return {'signup_form': signup_form}
 
             if user.is_active:
@@ -314,8 +312,8 @@ def delete_photo(photo, request):
     Deletes the photo.
     """
 
-    form = DeletePhotoForm(request)
-    if form.validate():
+    form = DeletePhotoForm(request.POST)
+    if request.method == 'POST' and form.validate():
         DBSession.delete(photo)
         photo.delete_image_on_commit(request.fs)
         return {'success': True}
@@ -337,8 +335,8 @@ def upload(request):
     Upload one or more photos to the user's collection.
     """
 
-    form = PhotoUploadForm(request)
-    if form.validate():
+    form = PhotoUploadForm(request.POST)
+    if request.method == 'POST' and form.validate():
 
         for image in form.images.entries:
 
@@ -374,9 +372,9 @@ def edit(photo, request):
     Edit title and other photo details.
     """
 
-    form = PhotoEditForm(request, obj=photo)
+    form = PhotoEditForm(request.POST, obj=photo)
 
-    if form.validate():
+    if request.method == 'POST' and form.validate():
 
         form.populate_obj(photo)
 
@@ -435,9 +433,9 @@ def share_photo(photo, request):
     Share photo with another user.
     """
 
-    form = PhotoShareForm(request)
+    form = PhotoShareForm(request.POST)
 
-    if form.validate():
+    if request.method == 'POST' and form.validate():
 
         note = (form.note.data or '').strip()
 
@@ -511,9 +509,9 @@ def edit_account(request):
     Edit user account details.
     """
 
-    form = AccountForm(request, obj=request.user)
+    form = AccountForm(request.POST, obj=request.user)
 
-    if form.validate():
+    if request.method == 'POST' and form.validate():
 
         form.populate_obj(request.user)
         request.session.flash("Your account settings have been saved")
@@ -543,9 +541,9 @@ def delete_shared(photo, request):
     Does not delete the photo itself.
     """
 
-    form = DeletePhotoForm(request)
+    form = DeletePhotoForm(request.POST)
 
-    if form.validate():
+    if request.method == 'POST' and form.validate():
         request.user.shared_photos.remove(photo)
         return {'success': True}
 
@@ -574,7 +572,7 @@ def copy_photo(photo, request):
                          title=photo.title,
                          taglist=photo.taglist)
 
-    if form.validate():
+    if request.method == 'POST' and form.validate():
 
         new_photo = Photo(owner=request.user,
                           title=form.title.data)
@@ -606,8 +604,8 @@ def copy_photo(photo, request):
              renderer="delete_account.jinja2")
 def delete_account(request):
 
-    form = DeleteAccountForm(request)
-    if form.validate():
+    form = DeleteAccountForm(request.POST)
+    if request.method == 'POST' and form.validate():
 
         DBSession.delete(request.user)
 

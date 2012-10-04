@@ -1,11 +1,23 @@
 
 from pyramid.security import has_permission
-from pyramid.events import BeforeRender, subscriber
+from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.events import BeforeRender, NewRequest, subscriber
 
 from webhelpers.paginate import PageURL_WebOb
 
 from .resources import Root
 from .forms import LoginForm
+
+
+@subscriber(NewRequest)
+def check_csrf(event):
+    """Checks CSRF with each POST request"""
+    if event.request.method == "POST":
+        # add this in 1.4a2:
+        #event.request.session.check_csrf()
+        if event.request.POST.get(
+                'csrf_token') != event.request.session.get_csrf_token():
+            raise HTTPBadRequest('Invalid CSRF token')
 
 
 @subscriber(BeforeRender)
@@ -26,7 +38,7 @@ def add_renderer_globals(event):
 
     event['has_permission'] = _has_permission
     event['page_url'] = PageURL_WebOb(request)
-    event['login_form'] = LoginForm(request)
+    event['login_form'] = LoginForm()
 
     event['google_tracking_code'] = request.registry.settings.get(
         'photoapp.google_tracking_code'

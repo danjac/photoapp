@@ -2,6 +2,7 @@ import cgi
 import mimetypes
 
 from wtforms import (
+    Form,
     TextField,
     TextAreaField,
     FileField,
@@ -17,8 +18,6 @@ from wtforms.validators import (
     Required,
     Email,
 )
-
-from wtforms.ext.csrf import SecureForm
 
 from sqlalchemy import exists
 
@@ -43,30 +42,6 @@ class ImageRequired(object):
             raise ValidationError(message)
 
 
-class Form(SecureForm):
-
-    def __init__(self, request, *args, **kwargs):
-
-        self.request = request
-
-        if self.request.method == "POST":
-            formdata = self.request.POST
-
-        else:
-            formdata = None
-
-        super(Form, self).__init__(formdata, *args, **kwargs)
-
-    def validate(self, *args, **kwargs):
-
-        if self.request.method == "GET":
-            return False
-        return super(Form, self).validate(*args, **kwargs)
-
-    def generate_csrf_token(self, csrf_context=None):
-        return self.request.session.get_csrf_token()
-
-
 class AccountForm(Form):
 
     first_name = TextField("First name", validators=[Required()])
@@ -77,11 +52,15 @@ class AccountForm(Form):
 
     submit = SubmitField("Save")
 
+    def __init__(self, formdata=None, obj=None, *args, **kwargs):
+        super(AccountForm, self).__init__(formdata, obj, *args, **kwargs)
+        self.user = obj
+
     def validate_email(self, field):
 
         where = (User.email == field.data)
-        if self.request.user:
-            where = where & ~(User.email == self.request.user.email)
+        if self.user:
+            where = where & ~(User.email == self.user.email)
 
         if DBSession.query(exists().where(where)).scalar():
             raise ValidationError("This email address is already taken")

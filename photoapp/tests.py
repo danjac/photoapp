@@ -631,7 +631,7 @@ class AccountFormTests(TestCase):
 
         req.user = user
 
-        form = AccountForm(req)
+        form = AccountForm(req.POST, req.user)
         self.assert_(form.validate())
 
     def test_with_another_user_email(self):
@@ -657,7 +657,7 @@ class AccountFormTests(TestCase):
 
         req.user = user
 
-        form = AccountForm(req)
+        form = AccountForm(req.POST, req.user)
         self.assert_(not form.validate())
 
 
