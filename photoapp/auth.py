@@ -1,10 +1,10 @@
 from pyramid.security import (
-    unauthenticated_userid,
+    authenticated_userid,
     Everyone,
     Authenticated,
 )
 
-from pyramid.authentication import AuthTktAuthenticationPolicy
+from pyramid.authentication import SessionAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 
 from .resources import Root
@@ -12,7 +12,7 @@ from .models import User, DBSession
 from .security import Admins, UserID, PhotoID
 
 
-class AuthenticationPolicy(AuthTktAuthenticationPolicy):
+class AuthenticationPolicy(SessionAuthenticationPolicy):
     def effective_principals(self, request):
 
         groups = [Everyone]
@@ -36,24 +36,22 @@ def get_user(request):
     Returns the current authenticated user
     """
 
-    userid = unauthenticated_userid(request)
+    email = authenticated_userid(request)
 
-    if userid:
+    if email:
 
         return DBSession.query(User).filter_by(
-            is_active=True, id=userid
+            is_active=True, email=email
         ).first()
 
 
 def includeme(config):
 
-    authn_policy = AuthenticationPolicy('seekret')
-    authz_policy = ACLAuthorizationPolicy()
+    authn_policy = AuthenticationPolicy()
 
     config.set_root_factory(Root)
 
     config.set_authentication_policy(authn_policy)
-    config.set_authorization_policy(authz_policy)
     config.set_default_permission('view')
 
     config.set_request_property(get_user, 'user', reify=True)

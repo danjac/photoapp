@@ -5,7 +5,14 @@ import mailer
 import browserid
 
 from pyramid.view import view_config, forbidden_view_config
-from pyramid.security import remember, forget, NO_PERMISSION_REQUIRED
+
+from pyramid.security import (
+    remember,
+    forget,
+    authenticated_userid,
+    NO_PERMISSION_REQUIRED
+)
+
 from pyramid.response import Response, FileResponse
 from pyramid.renderers import render
 
@@ -29,7 +36,6 @@ from .models import (
 
 from .forms import (
     AccountForm,
-    LoginForm,
     DeleteAccountForm,
     DeletePhotoForm,
     PhotoUploadForm,
@@ -45,9 +51,15 @@ def not_found(context, request):
     return {}
 
 
-@forbidden_view_config(renderer='forbidden.jinja2')
+@forbidden_view_config(renderer='signup.jinja2')
 def forbidden(request):
-    return {}
+
+    email = authenticated_userid(request)
+    if email and not request.user:
+        # user does not exist yet
+        signup_form = AccountForm(email=email)
+        return {'form': signup_form}
+    return HTTPFound(request.route_url('welcome'))
 
 
 @forbidden_view_config(xhr=True,
@@ -220,50 +232,6 @@ def signup(request):
         return HTTPFound(request.route_url('home'), headers=headers)
     return {'form': form}
 
-
-@view_config(route_name='login',
-             request_method="POST",
-             renderer='login.jinja2',
-             permission=NO_PERMISSION_REQUIRED)
-def login(request):
-    """Allows user to sign in using Mozilla Persona.
-
-    If no user matching the email address is found,
-    a new user with that email is created.
-    """
-
-    form = LoginForm(request.POST)
-
-    if request.method == 'POST' and form.validate():
-
-        try:
-            payload = browserid.verify(form.assertion.data, request.host_url)
-        except browserid.errors.InvalidSignatureError:
-            return {}
-
-        if payload['status'] == 'okay':
-
-            user = DBSession.query(User).filter_by(
-                email=payload['email']
-            ).first()
-
-            if user is None:
-
-                signup_form = AccountForm(email=payload['email'])
-                return {'signup_form': signup_form}
-
-            if user.is_active:
-
-                user.last_login_at = datetime.datetime.now()
-
-                headers = remember(request, str(user.id))
-                request.session.flash("Welcome back, %s" % user.first_name)
-                return HTTPFound(request.route_url('home'), headers=headers)
-
-            else:
-                return {'account_deactivated': True}
-
-    return {}
 
 
 @view_config(route_name="image",
@@ -519,16 +487,6 @@ def edit_account(request):
         return HTTPFound(request.route_url('home'))
 
     return {'form': form}
-
-
-@view_config(route_name='logout')
-def logout(request):
-    """
-    Ends the current session.
-    """
-
-    headers = forget(request)
-    return HTTPFound(request.route_url('welcome'), headers=headers)
 
 
 @view_config(route_name="delete_shared",

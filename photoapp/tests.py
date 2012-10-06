@@ -337,143 +337,6 @@ class HomeTests(TestCase):
         self.assert_('login_form' not in response)
 
 
-class LoginTests(TestCase):
-
-    def make_mock_browserid_verify(self, ok, email):
-
-        status = 'okay' if ok else 'error'
-
-        class MockBrowserId(object):
-
-            @classmethod
-            def verify(cls, assertion, url, **kwargs):
-                return {'email': email, 'status': status}
-
-        return mock.patch('browserid.verify', MockBrowserId.verify)
-
-    def test_login_valid_user_if_complete(self):
-        """Redirect to home page if all details completed"""
-
-        from .views import login
-        from .models import User, DBSession
-
-        u = User(email="danjac354@gmail.com",
-                 first_name="Dan",
-                 last_name="Jacob")
-
-        DBSession.add(u)
-        DBSession.flush()
-
-        request = self.make_POST_request(
-            assertion='dummy',
-        )
-
-        with self.make_mock_browserid_verify(True, u.email):
-            response = login(request)
-
-        self.assert_(response.status_int == 302)
-        self.assert_(response.location.route_name == "home")
-
-    def test_login_new_user(self):
-        """Should create new user and pass url to settings"""
-
-        from .views import login
-
-        request = self.make_POST_request(
-            assertion="dummy",
-        )
-
-        request.matched_route = mock.Mock()
-        request.matched_route.name = "home"
-
-        with self.make_mock_browserid_verify(True, "danjac354@gmail.com"):
-            response = login(request)
-
-        self.assert_('signup_form' in response)
-
-    def test_signup_new_user_with_invites(self):
-        """Should create new user and pass url to settings.
-        Invite photos should be shared.
-        """
-
-        from .views import signup
-        from .models import User, Photo, Invite, DBSession
-
-        sender = User(email="tester@gmail.com")
-        photo = Photo(owner=sender, title="test", image="test.jpg")
-
-        invite = Invite(sender=sender,
-                        photo=photo,
-                        email="danjac354@gmail.com")
-
-        DBSession.add_all((sender, invite, photo))
-        DBSession.flush()
-
-        request = self.make_POST_request(
-            email="danjac354@gmail.com",
-            first_name="Test",
-            last_name="Tester",
-        )
-
-        request.matched_route = mock.Mock()
-        request.matched_route.name = "home"
-        request.user = None
-
-        response = signup(request)
-
-        u = DBSession.query(User).filter_by(
-            email="danjac354@gmail.com"
-        ).first()
-
-        self.assert_(u.email == "danjac354@gmail.com")
-        self.assert_(u.shared_photos[0] == photo)
-        self.assert_(response.status_int == 302)
-        self.assert_(response.location.route_name == "home")
-
-    def test_login_invalid_email(self):
-        """Not verified by personas, just assume false"""
-
-        from .views import login
-        from .models import User, DBSession
-
-        request = self.make_POST_request(
-            assertion="dummy",
-        )
-
-        request.matched_route = mock.Mock()
-        request.matched_route.name = "home"
-
-        with self.make_mock_browserid_verify(False, "danjac354@gmail.com"):
-            response = login(request)
-
-        u = DBSession.query(User).first()
-        self.assert_(u is None)
-        self.assert_(response == {})
-
-    def test_login_inactive_user(self):
-        """User exists but is deactivatated, just assume false"""
-
-        from .views import login
-        from .models import User, DBSession
-
-        u = User(email="danjac354@gmail.com", is_active=False)
-        DBSession.add(u)
-        DBSession.flush()
-
-        request = self.make_POST_request(
-            assertion='dummy',
-        )
-
-        request.host = "example.com"
-        request.matched_route = mock.Mock()
-        request.matched_route.name = "home"
-
-        with self.make_mock_browserid_verify(True, u.email):
-            response = login(request)
-
-        self.assert_(response['account_deactivated'])
-
-
 class WelcomeTests(TestCase):
 
     def test_welcome_if_no_user(self):
@@ -768,7 +631,7 @@ class AuthenticationTests(TestCase):
 
             self.config.set_authorization_policy(ACLAuthorizationPolicy())
 
-            authn_policy = testing.DummySecurityPolicy(userid=str(user.id))
+            authn_policy = testing.DummySecurityPolicy(userid=user.email)
             self.config.set_authentication_policy(authn_policy)
 
             request = testing.DummyRequest()
@@ -924,16 +787,3 @@ class TestGetTags(TestCase):
         self.assert_(res['tags'][0]['link'].route_name == 'tag')
         self.assert_(res['tags'][0]['link'].params['id'] == tag.id)
         self.assert_(res['tags'][0]['link'].params['name'] == 'wallpaper')
-
-
-class LogoutTests(TestCase):
-
-    def test_logout(self):
-
-        from .views import logout
-
-        req = testing.DummyRequest()
-        req.route_url = MockRoute
-
-        res = logout(req)
-        self.assert_(res.location.route_name == "welcome")

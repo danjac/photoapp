@@ -124,6 +124,6 @@
 
 {% block scripts %}
 <script>
-    new PhotoApp.PhotosPage('{{ request.route_url('tags') }}', '{{ request.session.get_csrf_token() }}');
+    new PhotoApp.PhotosPage('{{ request.route_url('tags') }}');
 </script>
 {% endblock %}

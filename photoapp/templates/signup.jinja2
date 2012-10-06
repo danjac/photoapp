@@ -3,7 +3,7 @@
 
 {% block content %}
 
-{% call forms.render_form(form) %}
+{% call forms.render_form(form, action=request.route_url('signup')) %}
 
     <legend>Sign up to get started</legend>
 

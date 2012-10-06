@@ -7,10 +7,13 @@ def main(global_config, **settings):
     config = Configurator(settings=settings)
 
     config.include('pyramid_jinja2')
-    config.include('pyramid_beaker')
     config.include('pyramid_tm')
     config.include('pyramid_exclog')
+    config.include('pyramid_persona')
     config.include('cornice')
+
+    # prevent conflicts
+    config.commit()
 
     # my stuff
     config.include('photoapp.models')

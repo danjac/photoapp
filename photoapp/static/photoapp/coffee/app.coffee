@@ -14,12 +14,6 @@ PhotoApp.showMessage = (message, target) ->
     new PhotoApp.Message(message, target).show()
 
 
-PhotoApp.configure = (options) ->
-    PhotoApp.options[k] = v for k, v of options
-
-PhotoApp.authenticate = ->
-    new PhotoApp.Auth().start()
-
 PhotoApp.paginate = ->
     # sets up infinite scrolling
     $.ias
@@ -29,36 +23,6 @@ PhotoApp.paginate = ->
         next: '.next a'
         loader: '<img src="ias/loader.gif">'
 
-
-class PhotoApp.Auth
-
-    constructor: ->
-        @email = PhotoApp.options.currentUser
-
-    start: ->
-        jQuery => @onload()
-
-    onload: ->
-
-        @doc = $(document)
-        @logoutURL = $('a.logout').attr 'href'
-
-        @doc.on 'click', 'a.login', (event) =>
-            event.preventDefault()
-            navigator.id.request()
-
-        @doc.on 'click', 'a.logout', (event) =>
-            navigator.id.logout()
-
-        navigator.id.watch(
-            loggedInUser: @email
-            onlogin: (assertion) =>
-                $('#assertion').val(assertion)
-                $('#login-form').submit()
-
-            onlogout: =>
-                # do nothing
-        )
 
 class PhotoApp.Photo
 
