@@ -50,15 +50,15 @@ def not_found(context, request):
     return {}
 
 
-@forbidden_view_config(renderer='signup.jinja2')
+@forbidden_view_config(renderer='forbidden.jinja2')
 def forbidden(request):
 
     email = authenticated_userid(request)
     if email and not request.user:
         # user does not exist yet
         signup_form = AccountForm(email=email)
-        return {'form': signup_form}
-    return HTTPFound(request.route_url('welcome'))
+        return {'signup_form': signup_form}
+    return {}
 
 
 @forbidden_view_config(xhr=True,
