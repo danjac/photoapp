@@ -2,7 +2,6 @@ import datetime
 import string
 
 import mailer
-import browserid
 
 from pyramid.view import view_config, forbidden_view_config
 
