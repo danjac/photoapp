@@ -1,5 +1,6 @@
 
 from pyramid.security import has_permission
+from pyramid.session import check_csrf_token
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.events import BeforeRender, NewRequest, subscriber
 
@@ -14,11 +15,7 @@ from .forms import LoginForm
 def check_csrf(event):
     """Checks CSRF with each POST request"""
     if event.request.method == "POST":
-        # add this in 1.4a2:
-        #event.request.session.check_csrf()
-        if event.request.POST.get(
-                'csrf_token') != event.request.session.get_csrf_token():
-            raise HTTPBadRequest('Invalid CSRF token')
+        check_csrf_token(event.request)
 
 
 @subscriber(BeforeRender)

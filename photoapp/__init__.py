@@ -12,8 +12,12 @@ def main(global_config, **settings):
     config.include('pyramid_persona')
     config.include('cornice')
 
-    # prevent conflicts
+    # prevent conflicts with persona
+    # and beaker/photoapp config
+
     config.commit()
+
+    config.include('pyramid_beaker')
 
     # my stuff
     config.include('photoapp.models')
