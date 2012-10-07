@@ -13,7 +13,7 @@ from pyramid.security import (
 )
 
 from pyramid.response import Response, FileResponse
-from pyramid.renderers import render
+from pyramid.renderers import render, render_to_response
 
 from pyramid.httpexceptions import (
     HTTPFound,
@@ -50,15 +50,18 @@ def not_found(context, request):
     return {}
 
 
-@forbidden_view_config(renderer='forbidden.jinja2')
+@forbidden_view_config(renderer='welcome.jinja2')
 def forbidden(request):
 
     email = authenticated_userid(request)
     if email and not request.user:
         # user does not exist yet
         signup_form = AccountForm(email=email)
-        return {'signup_form': signup_form}
-    return {}
+        return render_to_response('signup.jinja2', {
+                                  'form': signup_form,
+                                  }, request)
+
+    return welcome_page(request)
 
 
 @forbidden_view_config(xhr=True,
@@ -71,24 +74,15 @@ def forbidden_ajax(request):
 
 
 @view_config(route_name='welcome',
-             permission=NO_PERMISSION_REQUIRED,
-             renderer='welcome.jinja2')
+             renderer='welcome.jinja2',
+             permission=NO_PERMISSION_REQUIRED)
 def welcome(request):
     """
     Splash page. If user signed in redirects to
     home page.
     """
 
-    if request.user:
-        return HTTPFound(request.route_url('home'))
-
-    # get random set of photos
-
-    photos = DBSession.query(Photo).filter_by(
-        is_public=True
-    ).order_by(func.random()).limit(3)
-
-    return {'photos': photos}
+    return welcome_page(request)
 
 
 @view_config(route_name='home',
@@ -638,3 +632,15 @@ def send_invite_email(request, invite, note):
     message.attach(invite.photo.get_image(request.fs).path)
 
     request.mailer.send(message)
+
+
+@view_config(renderer='welcome.jinja2')
+def welcome_page(request):
+    if request.user:
+        return HTTPFound(request.route_url('home'))
+
+    photos = DBSession.query(Photo).filter_by(
+        is_public=True
+    ).order_by(func.random()).limit(3)
+
+    return {'photos': photos}
