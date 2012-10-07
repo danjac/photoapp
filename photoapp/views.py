@@ -634,7 +634,6 @@ def send_invite_email(request, invite, note):
     request.mailer.send(message)
 
 
-@view_config(renderer='welcome.jinja2')
 def welcome_page(request):
     if request.user:
         return HTTPFound(request.route_url('home'))
