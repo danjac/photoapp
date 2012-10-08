@@ -2,6 +2,7 @@ import sys
 import mailer
 
 from zope.interface import Interface, implementer
+from pyramid.path import DottedNameResolver
 
 from .manager import on_commit
 
@@ -49,8 +50,10 @@ def mailer_settings_factory(settings, prefix='photoapp.mailer.'):
         IMailer instance
     """
 
-    mailer_type = settings.get(prefix + 'type', 'console')
-    mailer_cls = _mailer_classes[mailer_type]
+    classname = settings.get(prefix + 'class',
+                             'photoapp.mail.SMTP_Mailer')
+
+    mailer_cls = DottedNameResolver().resolve(classname)
     return mailer_cls.from_settings(settings, prefix)
 
 
@@ -155,10 +158,3 @@ class DummyMailer(object):
 
     def send(self, message):
         self.messages.append(message)
-
-
-_mailer_classes = {
-    'smtp': SMTP_Mailer,
-    'console': ConsoleMailer,
-    'dummy': DummyMailer,
-}
