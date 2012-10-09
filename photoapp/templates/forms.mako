@@ -31,7 +31,9 @@ ${h.end_form()}
         % if field.type == 'BooleanField':
         <label class="checkbox">${field.label.text}
         % else:
+        % if attrs.pop('with_label', True):
         ${field.label(class_="control-label")}
+        % endif
         % endif
         ${field(**attrs)}
         ${errors(field.errors)}

@@ -1,9 +1,9 @@
 
-{% extends "layout.jinja2" %}
-{% import "_forms.jinja2" as forms with context %}
+<%inherit file="base.mako" />
+<%namespace file="forms.mako" name="forms" />
 
-{% block content %}
 
+<%text>
 <script type="text/template" id="image-field-template">
 <dd>
     <div class="control-group">
@@ -14,43 +14,44 @@
     </div>
 </dd>
 </script>
+</%text>
 
+<%forms:form form="${form}"
+             multipart="${True}"
+             legend="Upload up to three photos to your collection.">
 
-{% call forms.render_form(form, multipart=True) %}
-
-    <legend>Upload up to three photos to your collection.</legend>
-
-    {{ forms.render_field(form.title) }}
-    {{ forms.render_field(form.taglist) }}
-    {{ forms.render_checkbox_field(form.is_public) }}
+    ${forms.field(form.title)}
+    ${forms.field(form.taglist)}
+    ${forms.field(form.is_public)}
 
     <label>Photos</label>
     <dl>
-        {% for image in form.images.entries %}
-        <dd>{{ forms.render_field(image, with_label=False) }}
-        {% if loop.index > 1 %}
-        <a href="#" class="remove-upload-field"><i class="icon-remove"></i></a>
-        {% endif %}
+        % for counter, image in enumerate(form.images.entries):
+        <dd>${forms.field(image, with_label=False)}
+
+            % if counter > 0:
+            <a href="#" class="remove-upload-field"><i class="icon-remove"></i></a>
+            % endif
+
         </dd>
 
-        {% endfor %}
-        {% if form.images.entries|length < 6 %}
+        % endfor
+        % if len(form.images.entries) < 6:
         <dd>
             <button type="button" class="upload-add-another-btn btn"><i class="icon-plus"></i> Add another</button>
         </dd>
-        {% endif %}
+        % endif
 
     </dl>
 
+    ${form.submit(class_="btn")}
+
+</%forms:form>
 
 
-    {{ form.submit(class="btn")}}
-
-{% endcall %}
-{% endblock %}
-
-{% block scripts %}
+<%block name="scripts">
 <script>
     var page = new PhotoApp.UploadPage;
 </script>
-{% endblock %}
+
+</%block>
