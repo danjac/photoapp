@@ -4,7 +4,7 @@
 <%block name="page_header">
 <ul class="nav nav-tabs">
     <li class="active"><a href="#">Shared by me</a></li>
-    <li><a href="{{ request.route_url('shared') }}">Shared with me</a></li>
+    <li><a href="${request.route_url('shared')}">Shared with me</a></li>
 </ul>
 </%block>
 

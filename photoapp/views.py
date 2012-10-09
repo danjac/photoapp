@@ -519,7 +519,7 @@ def copy_photo(photo, request):
     The user can edit the photo before it's copied.
     """
 
-    form = PhotoEditForm(request,
+    form = PhotoEditForm(request.POST,
                          title=photo.title,
                          taglist=photo.taglist)
 
