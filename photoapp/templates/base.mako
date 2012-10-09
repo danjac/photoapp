@@ -19,7 +19,7 @@
     <!-- Le styles -->
     % for name in ('bootstrap_css', 'jquery_css', 'ias_css'):
         % for url in assets[name].urls():
-        ${h.stylesheet_link_tag(url)}
+        ${h.stylesheet_link(url)}
         % endfor
     % endfor
 
@@ -59,13 +59,15 @@
           <a class="brand" href="${request.route_url('home') if request.user else request.route_url('welcome')}">My Own Damn Photos</a>
           <div class="nav-collapse">
             <ul class="nav">
-            <%def active_tab(*routes)>${ ' class="active"' if request.matched_route and request.matched_route.name in routes else ''}</%def>
+
+            <%def name="active_tab(*routes)">${ ' class="active"' if request.matched_route and request.matched_route.name in routes else '' | n}</%def>
+
               % if request.user:
               <li ${active_tab('home')}><a href="${request.route_url('home')}">Home</a></li>
               <li ${active_tab('my_shared', "shared")}><a href="${request.route_url('my_shared')}">Shared</a></li>
               <li ${active_tab('public', 'public_all')}><a href="${request.route_url('public', id=request.user.id)}">Public</a></li>
               % else:
-              <li ${active_tab('public', 'public_all')}><a href="${request.route_url('public_all', id=request.user.id)}">Public photos</a></li>
+              <li ${active_tab('public', 'public_all')}><a href="${request.route_url('public_all')}">Public photos</a></li>
               % endif:
               % if has_permission('upload'):
               <li ${active_tab('upload')}><a href="${request.route_url('upload')}">Upload</a></li>
@@ -80,10 +82,9 @@
               <li ${active_tab('settings')}}><a href="${request.route_url('settings')}"><img src="${request.user.gravatar_url(20)}"> ${request.user.name}</a></li>
               <li><a href="${request.route_url('logout')}" id="signout">Sign out</a></li>
               % else:
-              {% block login_button:
+              <%block name="login_button">
               <li><a href="#" id="signin"><img src="https://developer.mozilla.org/files/3963/persona_sign_in_blue.png" alt="Sign in with Mozilla Persona"></a></li>
-
-            {% endblock:
+              </%block>
               % endif:
             </ul>
           </div><!--/.nav-collapse -->
@@ -105,8 +106,7 @@
         % endfor
     </div>
 
-    {% block content:
-    {% endblock:
+    ${next.body()}
 
     </div> <!-- /container -->
 
@@ -116,11 +116,11 @@
     <script src="https://login.persona.org/include.js"></script>
     % for name in 'jquery_js', 'bootstrap_js', 'ias_js', 'photoapp_js':
         % for url in assets[name].urls():
-        ${h.script_link_tag(url)}
+        ${h.javascript_link(url)}
         % endfor
     % endfor
     <script>${request.persona_js}</script>
-    <% block name="scripts" />
+    <%block name="scripts" />
     <%text>
     <script type="text/template" id="message-template">
         <div class="alert alert-success">
