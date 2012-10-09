@@ -1,16 +1,16 @@
 
-{% import "_forms.jinja2" as forms with context %}
-{% call forms.render_form(form, id="edit-photo-form") %}
+<%namespace file="forms.mako" name="forms" />
+<%forms:form form="${form}"
+             legend="Edit this photo"
+             id="edit-photo-form">
 
-    <legend>Edit this photo</legend>
 
-    {{ forms.render_field(form.title) }}
-    {{ forms.render_field(form.taglist) }}
-    {{ forms.render_checkbox_field(form.is_public) }}
+    ${forms.field(form.title)}
+    ${forms.field(form.taglist)}
+    ${forms.field(form.is_public)}
 
-    {{ form.submit(class="btn") }}
+    ${form.submit(class_="btn")}
+    ${forms.cancel()}
 
-    <button class="btn cancel-btn" type="button">Cancel</button>
 
-{% endcall %}
-
+</%forms:form>

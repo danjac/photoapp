@@ -25,6 +25,10 @@ ${h.end_form()}
     % endfor
 </%def>
 
+<%def name="cancel(text='Cancel')">
+    <button class="btn cancel-btn" type="button">${text}</button>
+</%def>
+
 <%def name="field(field, **attrs)">
     <div class="control-group ${'error' if field.errors else ''}">
         <div class="controls">
