@@ -90,7 +90,7 @@
            % if photo.is_public:
            data-is-public="1"
            % endif
-           % if request.user.id != photo.owner_id:
+           % if request.user is None or request.user.id != photo.owner_id:
            data-owner="${photo.owner.name}"
            data-owner-url="${request.route_url('public', id=photo.owner_id)}"
            % endif
