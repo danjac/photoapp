@@ -1,7 +1,6 @@
 
 from pyramid.security import has_permission
 from pyramid.session import check_csrf_token
-from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.events import BeforeRender, NewRequest, subscriber
 
 from webhelpers.paginate import PageURL_WebOb
@@ -9,6 +8,7 @@ from webhelpers.html import tags
 
 from .resources import Root
 from .forms import LoginForm
+from .assets import assets
 
 
 @subscriber(NewRequest)
@@ -38,7 +38,7 @@ def add_renderer_globals(event):
     event['page_url'] = PageURL_WebOb(request)
     event['login_form'] = LoginForm()
     event['h'] = tags
-
+    event['assets'] = dict(assets)
 
     event['google_tracking_code'] = request.registry.settings.get(
         'photoapp.google_tracking_code'

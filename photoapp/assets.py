@@ -81,10 +81,5 @@ def includeme(config):
     for name, bundle in assets:
         config.add_webasset(name, bundle)
 
-    # jinja2 integration
-    config.add_jinja2_extension('webassets.ext.jinja2.AssetsExtension')
-    jinja2_env = config.get_jinja2_environment()
-    jinja2_env.assets_environment = config.get_webassets_env()
-
     # add static views
     config.add_static_view('static', 'static')
